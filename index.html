@@ -884,21 +884,19 @@ function buildBoardFromState() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
-  placeObstacles();
+  // Place NEW random obstacles for this level
+  randomizeObstacles();
 }
 
-function placeObstacles() {
+function randomizeObstacles() {
   const boardEl = document.getElementById('board');
   const total = (cfg.rocks||0) + (cfg.ices||0);
   if (total === 0) return;
-
-  // Pick random positions (avoid top 2 rows so gems can still fall in)
   const positions = [];
   for (let r = 2; r < ROWS; r++)
     for (let c = 0; c < COLS; c++)
       positions.push({r, c});
   shuffle(positions);
-
   let placed = 0;
   for (const {r, c} of positions) {
     if (placed >= total) break;
@@ -1038,7 +1036,7 @@ function onSplashBtn() {
 // ═══════════════════════════════════════════════════
 function buildBoard() {
   const boardEl = document.getElementById('board');
-  boardEl.innerHTML = '';
+  boardEl.innerHTML = '<div id="bombPreview"></div>';
   computeCell();
 
   // BG grid
@@ -1072,21 +1070,19 @@ function buildBoard() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
-  placeObstacles();
+  // Place NEW random obstacles for this level
+  randomizeObstacles();
 }
 
-function placeObstacles() {
+function randomizeObstacles() {
   const boardEl = document.getElementById('board');
   const total = (cfg.rocks||0) + (cfg.ices||0);
   if (total === 0) return;
-
-  // Pick random positions (avoid top 2 rows so gems can still fall in)
   const positions = [];
   for (let r = 2; r < ROWS; r++)
     for (let c = 0; c < COLS; c++)
       positions.push({r, c});
   shuffle(positions);
-
   let placed = 0;
   for (const {r, c} of positions) {
     if (placed >= total) break;
@@ -1165,7 +1161,8 @@ function onBoardPointerMoveXY(x, y) {
 
 function safeGem(r, c) {
   let g, t = 0;
-  do { g = Math.floor(Math.random() * cfg.gemColors); t++; }
+  const colors = cfg.gemColors || 3;
+  do { g = Math.floor(Math.random() * colors); t++; }
   while (t < 12 && wouldMatch(r, c, g));
   return g;
 }
@@ -2432,11 +2429,11 @@ window.addEventListener('resize', () => {
 })();
 </script>
 <script>
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
       .then(r => console.log('SW registered'))
-      .catch(e => console.log('SW error:', e));
+      .catch(e => console.log('SW skipped (local):', e.message));
   });
 }
 </script>
