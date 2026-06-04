@@ -519,14 +519,14 @@ body::before{
 
 /* ── LIVES ── */
 .lives-bar{
-  display:flex;align-items:center;gap:6px;
+  display:flex;align-items:center;gap:3px;
   background:linear-gradient(135deg,#3a1080,#1a0550);
-  border:2px solid var(--gold);border-radius:13px;
-  padding:6px 12px;flex-shrink:0;
+  border:2px solid var(--gold);border-radius:11px;
+  padding:5px 8px;flex-shrink:0;
 }
-.life-heart{font-size:1.1rem;transition:transform .3s,filter .3s;}
-.life-heart.empty{filter:grayscale(1) opacity(.3);transform:scale(.85);}
-.life-timer{font-size:.6rem;color:var(--gold);font-weight:800;white-space:nowrap;}
+.life-heart{font-size:.95rem;transition:transform .3s,filter .3s;line-height:1;}
+.life-heart.empty{filter:grayscale(1) opacity(.25);transform:scale(.8);}
+.life-timer{font-size:.55rem;color:var(--gold);font-weight:800;white-space:nowrap;margin-left:2px;}
 
 /* lives splash */
 .lives-splash-hearts{display:flex;justify-content:center;gap:10px;margin:10px 0 16px;}
@@ -707,6 +707,12 @@ body::before{
     <button class="hdr-btn" onclick="openMap()" title="Mapa">🗺️</button>
     <button class="hdr-btn" onclick="openDaily()" title="Missões" id="dailyBtn">📋<span class="badge" id="dailyBadge" style="display:none">!</span></button>
     <button class="hdr-btn" onclick="openRank()" title="Ranking">🏆</button>
+    <div class="lives-bar" id="livesBar">
+      <span class="life-heart" id="lh0">❤️</span>
+      <span class="life-heart" id="lh1">❤️</span>
+      <span class="life-heart" id="lh2">❤️</span>
+      <span class="life-timer" id="lifeTimer" style="display:none;"></span>
+    </div>
     <div class="level-badge">
       <div class="level-lbl">Fase</div>
       <div class="level-num" id="lvlNum">1</div>
@@ -740,12 +746,6 @@ body::before{
   <div class="box score-box">
     <div class="lbl">Pontos</div>
     <div class="num" id="scoreVal">0</div>
-  </div>
-  <div class="lives-bar" id="livesBar">
-    <span class="life-heart" id="lh0">❤️</span>
-    <span class="life-heart" id="lh1">❤️</span>
-    <span class="life-heart" id="lh2">❤️</span>
-    <span class="life-timer" id="lifeTimer" style="display:none;"></span>
   </div>
   <div class="goal-wrap">
     <div class="goal-ttl">Objetivos</div>
