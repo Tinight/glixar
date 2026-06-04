@@ -13,8 +13,10 @@
 <title>Glixar ✨</title>
 <!-- Firebase SDK -->
 <script type="module">
-import { initializeApp }              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp }
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs,
+         query, orderBy, limit, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -31,33 +33,39 @@ const db    = getFirestore(fbApp);
 
 // ── Expose Firebase helpers to global scope ──
 window._fb = {
-  async saveScore(name, lvl, pts) {
+  // Upsert: one document per player (docId = sanitized name)
+  // Keeps highest totalScore and highest level reached
+  async saveScore(name, lvl, totalPts) {
     try {
-      await addDoc(collection(db, 'ranking'), {
-        name, level: lvl, score: pts,
-        date: new Date().toLocaleDateString('pt-BR'),
-        ts:   serverTimestamp()
-      });
+      const docId  = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 40);
+      const docRef = doc(db, 'ranking', docId);
+
+      // Get current entry to compare
+      const snap = await getDoc(docRef);
+      const existing = snap.exists() ? snap.data() : null;
+
+      // Only update if this is a better score or higher level
+      const newScore = totalPts;
+      const newLevel = lvl;
+      if (existing && existing.score >= newScore && existing.level >= newLevel) return true;
+
+      await setDoc(docRef, {
+        name,
+        score: Math.max(newScore, existing?.score || 0),
+        level: Math.max(newLevel, existing?.level || 0),
+        date:  new Date().toLocaleDateString('pt-BR'),
+        ts:    serverTimestamp()
+      }, { merge: true });
       return true;
     } catch(e) { console.warn('Firebase saveScore:', e); return false; }
   },
 
-  async getTop(n = 50) {
+  async getTop(n = 100) {
     try {
-      const q   = query(collection(db, 'ranking'), orderBy('score','desc'), limit(n));
-      const snap= await getDocs(q);
+      const q    = query(collection(db, 'ranking'), orderBy('score','desc'), limit(n));
+      const snap = await getDocs(q);
       return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     } catch(e) { console.warn('Firebase getTop:', e); return []; }
-  },
-
-  async getPersonalBest(name) {
-    try {
-      const q    = query(collection(db, 'ranking'),
-                         where('name','==',name),
-                         orderBy('score','desc'), limit(1));
-      const snap = await getDocs(q);
-      return snap.empty ? null : snap.docs[0].data();
-    } catch(e) { return null; }
   }
 };
 
@@ -2420,18 +2428,36 @@ function saveAndNext() {
 // Save to BOTH localStorage and Firebase
 async function saveScore() {
   if (!playerName) return;
-  const entry = { name: playerName, level, score, date: new Date().toLocaleDateString('pt-BR') };
 
-  // Local save
-  ranking.push(entry);
+  // Build entry with TOTAL accumulated score and highest level
+  const entry = {
+    name:  playerName,
+    level, // highest level reached
+    score: totalScore, // accumulated across all phases
+    date:  new Date().toLocaleDateString('pt-BR')
+  };
+
+  // Local save — keep only best entry per name
+  const existIdx = ranking.findIndex(r => r.name === playerName);
+  if (existIdx >= 0) {
+    const ex = ranking[existIdx];
+    ranking[existIdx] = {
+      ...ex,
+      score: Math.max(ex.score, totalScore),
+      level: Math.max(ex.level, level),
+      date:  entry.date
+    };
+  } else {
+    ranking.push(entry);
+  }
   ranking.sort((a,b) => b.score - a.score || b.level - a.level);
   if (ranking.length > 100) ranking.length = 100;
   localStorage.setItem('glixarRank', JSON.stringify(ranking));
 
   // Firebase save (non-blocking)
   if (window._fb) {
-    window._fb.saveScore(playerName, level, score)
-      .then(ok => { if(ok) console.log('Score saved to Firebase'); });
+    window._fb.saveScore(playerName, level, totalScore)
+      .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); });
   }
 }
 
@@ -2501,16 +2527,24 @@ function buildRankItems(ul, entries, isOnline) {
     li.className  = 'rank-item' + (isMe ? ' me' : '');
     const medal   = i===0?'gold':i===1?'silver':i===2?'bronze':'';
     const posIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
-    const badge   = isOnline
-      ? '<span class="rank-online">ONLINE</span>'
-      : (isMe ? '<span class="rank-new">EU</span>' : '');
     li.innerHTML  = `
       <span class="rank-pos ${medal}">${posIcon}</span>
-      <span class="rank-name">${e.name}${badge}${isMe?' 👈':''}</span>
-      <span class="rank-info">
-        <strong>${(e.score||0).toLocaleString('pt-BR')} pts</strong>
-        Fase ${e.level||1} · ${e.date||''}
-      </span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;color:#fff;font-size:.88rem;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${e.name}${isMe?' <span style="color:var(--gold);">👈 Você</span>':''}
+        </div>
+        <div style="font-size:.68rem;color:rgba(255,255,255,.45);margin-top:1px;">
+          Fase ${e.level||1} · ${e.date||''}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Luckiest Guy',cursive;font-size:1rem;
+             color:var(--gold);letter-spacing:.5px;">
+          ${(e.score||0).toLocaleString('pt-BR')}
+        </div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);">pontos</div>
+      </div>
     `;
     ul.appendChild(li);
   });
