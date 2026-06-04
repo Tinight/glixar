@@ -1272,7 +1272,7 @@ function startLevel() {
 
 function onSplashBtn() {
   document.getElementById('splash').classList.remove('show');
-  if (splashMode === 'win')   { level++; startLevel(); }
+  if (splashMode === 'win')   { level++; startLevel(); return; }
   else if (splashMode === 'pause') {
     // Just unpause — save is intact, board is still there
     levelOver = false;
@@ -2281,8 +2281,8 @@ function startTimer() {
       if (!levelOver) {
         levelOver = true;
         processing = false;
-        if (continues > 0) { splashMode='continue'; setTimeout(showContinueSplash, 300); }
-        else { splashMode='lose'; setTimeout(showLoseSplash, 300); }
+        splashMode = 'continue';
+        setTimeout(showContinueSplash, 300);
       }
     }
   }, 1000);
@@ -2435,7 +2435,7 @@ function renderMap() {
     starSpan.textContent = isDone ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : (isLocked ? '🔒' : '▶');
     bubble.appendChild(starSpan);
 
-    if (!isLocked) bubble.onclick = () => { closeMap(); if (lvl <= level) { level = lvl; continues=2; startLevel(); } };
+    if (!isLocked) bubble.onclick = () => { closeMap(); if (lvl <= level) { level = lvl; startLevel(); } };
 
     const info = document.createElement('div');
     info.className = 'map-info';
@@ -2591,13 +2591,12 @@ function closeMenuConfirm() {
 }
 function goToMenu() {
   closeMenuConfirm();
-  // Show a simple menu screen — just reload to boot (save is intact)
   stopTimer();
   cancelActiveTool();
   levelOver = true;
   processing = false;
   selected = null;
-  // Show a mini "menu" splash
+  resetSplashUI();
   document.getElementById('splashIcon').textContent  = '🏠';
   document.getElementById('splashTitle').textContent = 'Pausado';
   document.getElementById('splashMsg').innerHTML     = `Fase ${level} salva!<br>Continue quando quiser.`;
@@ -2616,6 +2615,17 @@ function goToMenu() {
 // ═══════════════════════════════════════════════════
 //  WIN / LOSE
 // ═══════════════════════════════════════════════════
+function resetSplashUI() {
+  // Always reset ALL splash elements before showing any splash
+  document.getElementById('splashStars').style.display        = 'none';
+  document.getElementById('chanceDots').style.display         = 'none';
+  document.getElementById('nameRow').style.display            = 'none';
+  document.getElementById('splashBtnRow').style.display       = 'none';
+  document.getElementById('livesSplashHearts').style.display  = 'none';
+  document.getElementById('splashTimer').style.display        = 'none';
+  document.getElementById('splashBtn').style.display          = 'none';
+}
+
 function checkWinLose() {
   if (levelOver) return;
 
@@ -2636,6 +2646,7 @@ function checkWinLose() {
 }
 
 function showWinSplash() {
+  resetSplashUI();
   const nextCfg  = getLevelConfig(level + 1);
   levelStars     = calcStars(moves, cfg.moves);
   totalStars    += levelStars;
@@ -2673,14 +2684,16 @@ function showWinSplash() {
   document.getElementById('nameRow').style.display    = hasName ? 'none' : 'flex';
   document.getElementById('splashBtn').style.display  = hasName ? 'block' : 'none';
   document.getElementById('splashBtn').textContent    = `▶ Fase ${level+1}`;
-  document.getElementById('splashBtnRow').style.display = 'none';
-  document.getElementById('chanceDots').style.display   = 'none';
+  document.getElementById('splashBtnRow').style.display       = 'none';
+  document.getElementById('chanceDots').style.display         = 'none';
+  document.getElementById('livesSplashHearts').style.display  = 'none';
+  document.getElementById('splashTimer').style.display        = 'none';
   if (hasName) saveScore();
   document.getElementById('splash').classList.add('show');
 }
 
 function showContinueSplash() {
-  // Lives-based continue
+  resetSplashUI();
   document.getElementById('splashIcon').textContent  = lives > 0 ? '😰' : '😵';
   document.getElementById('splashTitle').textContent = 'Sem Jogadas!';
   document.getElementById('splashStars').style.display       = 'none';
@@ -2713,6 +2726,7 @@ function showContinueSplash() {
 }
 
 function showLoseSplash() {
+  resetSplashUI();
   playLose();
   vibrate([80,30,80,30,120]);
   document.getElementById('splashIcon').textContent  = '💀';
@@ -2759,8 +2773,10 @@ function saveAndNext() {
   playerName = inp;
   localStorage.setItem('glixarName', playerName);
   saveScore();
-  document.getElementById('nameRow').style.display   = 'none';
-  document.getElementById('splashBtn').style.display = 'block';
+  document.getElementById('nameRow').style.display          = 'none';
+  document.getElementById('livesSplashHearts').style.display = 'none';
+  document.getElementById('splashTimer').style.display       = 'none';
+  document.getElementById('splashBtn').style.display         = 'block';
 }
 
 // Save to BOTH localStorage and Firebase
