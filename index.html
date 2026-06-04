@@ -994,11 +994,17 @@ let activeTool    = null;
 const PW_MAX      = 3;
 
 // ── LIVES SYSTEM ──
-const MAX_LIVES        = 3;
-const LIFE_REGEN_MS    = 30 * 60 * 1000; // 30 minutes per life
-let lives              = MAX_LIVES;
-let lifeRegenTimestamp = 0; // when next life regenerates
-let lifeTimerInterval  = null;
+const MAX_LIVES     = 3;
+const LIFE_REGEN_MS = 30 * 60 * 1000; // 30 min per life
+// lifeTimestamps[i] = timestamp when life i regenerates (0 = full)
+let lifeTimestamps  = [0, 0, 0];
+let lifeTimerInterval = null;
+
+function getLives() {
+  // Count how many slots are full (timestamp=0 or already passed)
+  const now = Date.now();
+  return lifeTimestamps.filter(t => t === 0 || t <= now).length;
+}
 let obstacleBoard = []; // obstacleBoard[r][c] = OB_* 
 let obstacleHp    = []; // hp for rocks (2=full, 1=cracked)
 let obstacleEls   = []; // DOM elements for obstacles
@@ -1182,7 +1188,7 @@ function newGame() {
   level = 1; score = 0; totalScore = 0; levelOver = false; activeTool = null;
   clearSave();
   // Restore full lives when starting fresh
-  lives = MAX_LIVES; lifeRegenTimestamp = 0;
+  lifeTimestamps = [0,0,0];
   saveLives();
   startLevel();
 }
@@ -1203,6 +1209,9 @@ function startLevel() {
   loadLives();
   updateLivesUI();
   startLifeTimer();
+  // Clean up expired timestamps
+  const _now = Date.now();
+  lifeTimestamps = lifeTimestamps.map(t => (t>0 && t<=_now) ? 0 : t);
 
   // Build goals from goalTypes config
   goals = {}; goalsTarget = {};
@@ -2282,7 +2291,7 @@ function startTimer() {
         levelOver = true;
         processing = false;
         splashMode = 'continue';
-        setTimeout(showContinueSplash, 300);
+        setTimeout(() => showContinueSplash(), 300);
       }
     }
   }, 1000);
@@ -2479,38 +2488,25 @@ function endTutorial(){tutStep=-1;document.getElementById('tutorialOverlay').cla
 //  LIVES SYSTEM
 // ═══════════════════════════════════════════════════
 function saveLives() {
-  localStorage.setItem('glixarLives', JSON.stringify({ lives, lifeRegenTimestamp }));
+  localStorage.setItem('glixarLives', JSON.stringify({ lifeTimestamps }));
 }
 
 function loadLives() {
   const raw = localStorage.getItem('glixarLives');
-  if (!raw) return;
+  if (!raw) { lifeTimestamps = [0,0,0]; return; }
   try {
     const d = JSON.parse(raw);
-    lives              = d.lives ?? MAX_LIVES;
-    lifeRegenTimestamp = d.lifeRegenTimestamp ?? 0;
-    // Recalculate lives regenerated while offline
-    if (lives < MAX_LIVES && lifeRegenTimestamp > 0) {
-      const now      = Date.now();
-      const elapsed  = now - lifeRegenTimestamp;
-      const regained = Math.floor(elapsed / LIFE_REGEN_MS);
-      if (regained > 0) {
-        lives = Math.min(MAX_LIVES, lives + regained);
-        // Advance timestamp by the amount consumed
-        lifeRegenTimestamp += regained * LIFE_REGEN_MS;
-        if (lives >= MAX_LIVES) lifeRegenTimestamp = 0;
-        saveLives();
-      }
-    }
-  } catch(e) {}
+    lifeTimestamps = d.lifeTimestamps || [0,0,0];
+  } catch(e) { lifeTimestamps = [0,0,0]; }
 }
 
+// Spend one life — sets the first full slot to regenerate
 function spendLife() {
-  if (lives <= 0) return false;
-  lives--;
-  if (lives < MAX_LIVES && lifeRegenTimestamp === 0) {
-    lifeRegenTimestamp = Date.now() + LIFE_REGEN_MS;
-  }
+  const now = Date.now();
+  // Find first full life slot (timestamp=0 or expired)
+  const idx = lifeTimestamps.findIndex(t => t === 0 || t <= now);
+  if (idx === -1) return false; // no lives
+  lifeTimestamps[idx] = now + LIFE_REGEN_MS;
   saveLives();
   updateLivesUI();
   startLifeTimer();
@@ -2519,38 +2515,40 @@ function spendLife() {
 
 function startLifeTimer() {
   clearInterval(lifeTimerInterval);
-  if (lives >= MAX_LIVES) {
-    updateLivesUI();
-    return;
-  }
+  if (getLives() >= MAX_LIVES) { updateLivesUI(); return; }
   lifeTimerInterval = setInterval(() => {
-    const now  = Date.now();
-    const left = lifeRegenTimestamp - now;
-    if (left <= 0) {
-      lives = Math.min(MAX_LIVES, lives + 1);
-      if (lives >= MAX_LIVES) {
-        lifeRegenTimestamp = 0;
-        clearInterval(lifeTimerInterval);
-      } else {
-        lifeRegenTimestamp = Date.now() + LIFE_REGEN_MS;
-      }
-      saveLives();
-    }
     updateLivesUI();
     updateSplashTimer();
+    // Auto-restore — getLives() recalculates from timestamps
+    if (getLives() >= MAX_LIVES) {
+      clearInterval(lifeTimerInterval);
+      // Clean up expired timestamps
+      lifeTimestamps = lifeTimestamps.map(t => (t > 0 && t <= Date.now()) ? 0 : t);
+      saveLives();
+    }
   }, 1000);
 }
 
+function getNextRegenMs() {
+  // Find the soonest regenerating life
+  const now = Date.now();
+  const active = lifeTimestamps.filter(t => t > now);
+  if (active.length === 0) return 0;
+  return Math.min(...active) - now;
+}
+
 function updateLivesUI() {
+  const cur = getLives();
   for (let i = 0; i < MAX_LIVES; i++) {
     const el = document.getElementById('lh'+i);
-    if (el) el.className = 'life-heart' + (i < lives ? '' : ' empty');
+    if (el) el.className = 'life-heart' + (i < cur ? '' : ' empty');
   }
   const timerEl = document.getElementById('lifeTimer');
   if (timerEl) {
-    if (lives < MAX_LIVES && lifeRegenTimestamp > 0) {
+    const ms = getNextRegenMs();
+    if (cur < MAX_LIVES && ms > 0) {
       timerEl.style.display = 'block';
-      timerEl.textContent   = formatTimeLeft(lifeRegenTimestamp - Date.now());
+      timerEl.textContent   = formatTimeLeft(ms);
     } else {
       timerEl.style.display = 'none';
     }
@@ -2560,11 +2558,9 @@ function updateLivesUI() {
 function updateSplashTimer() {
   const el = document.getElementById('splashTimer');
   if (!el || el.style.display === 'none') return;
-  if (lives >= MAX_LIVES) {
-    el.style.display = 'none';
-    return;
-  }
-  el.textContent = '❤️ em ' + formatTimeLeft(lifeRegenTimestamp - Date.now());
+  const ms = getNextRegenMs();
+  if (getLives() >= MAX_LIVES || ms <= 0) { el.style.display='none'; return; }
+  el.textContent = '❤️ em ' + formatTimeLeft(ms);
 }
 
 function formatTimeLeft(ms) {
@@ -2576,9 +2572,10 @@ function formatTimeLeft(ms) {
 }
 
 function updateSplashLivesHearts() {
+  const cur = getLives();
   for (let i = 0; i < MAX_LIVES; i++) {
     const el = document.getElementById('slh'+i);
-    if (el) el.className = i < lives ? '' : 'empty';
+    if (el) el.className = i < cur ? '' : 'empty';
   }
 }
 
@@ -2694,33 +2691,34 @@ function showWinSplash() {
 
 function showContinueSplash() {
   resetSplashUI();
-  document.getElementById('splashIcon').textContent  = lives > 0 ? '😰' : '😵';
+  const cur = getLives();
   document.getElementById('splashTitle').textContent = 'Sem Jogadas!';
-  document.getElementById('splashStars').style.display       = 'none';
-  document.getElementById('chanceDots').style.display        = 'none';
-  document.getElementById('nameRow').style.display           = 'none';
-
-  if (lives > 0) {
-    document.getElementById('splashMsg').innerHTML =
-      `Você tem <strong style="color:#ff6666">${lives} vida${lives>1?'s':''}</strong> restante${lives>1?'s':''}<br>Quer usar uma para continuar?`;
-    document.getElementById('splashBtnRow').style.display      = 'flex';
-    document.getElementById('splashBtn').style.display         = 'none';
-    document.getElementById('splashTimer').style.display       = 'none';
-  } else {
-    // No lives left — show timer
-    document.getElementById('splashMsg').innerHTML =
-      'Sem vidas! Aguarde ou recomeça do zero.';
-    document.getElementById('splashBtnRow').style.display      = 'none';
-    document.getElementById('splashBtn').style.display         = 'block';
-    document.getElementById('splashBtn').textContent           = '🔄 Recomeçar do Zero';
-    document.getElementById('splashTimer').style.display       = 'block';
-    updateSplashTimer();
-    splashMode = 'lose';
-  }
 
   // Hearts display
   document.getElementById('livesSplashHearts').style.display = 'flex';
   updateSplashLivesHearts();
+
+  if (cur > 0) {
+    document.getElementById('splashIcon').textContent = '😰';
+    document.getElementById('splashMsg').innerHTML =
+      `<strong style="color:#ff6666">${cur} vida${cur>1?'s':''}</strong> disponível${cur>1?'is':''}<br>Como quer usar?`;
+    // Show the two-option row (customized below)
+    document.getElementById('splashBtnRow').style.display = 'flex';
+    // Update button labels
+    const btns = document.querySelectorAll('#splashBtnRow .btn');
+    if (btns[0]) { btns[0].textContent = '🔄 Recomeçar Fase'; btns[0].onclick = onRestartWithLife; }
+    if (btns[1]) { btns[1].textContent = '❤️ +5 Jogadas';     btns[1].onclick = onContinue; }
+  } else {
+    // No lives — show timer for next regen
+    document.getElementById('splashIcon').textContent = '😵';
+    document.getElementById('splashMsg').innerHTML    =
+      'Sem vidas! Próxima vida em:';
+    document.getElementById('splashTimer').style.display = 'block';
+    updateSplashTimer();
+    document.getElementById('splashBtn').style.display  = 'block';
+    document.getElementById('splashBtn').textContent    = '🔄 Recomeçar do Zero';
+    splashMode = 'lose';
+  }
 
   document.getElementById('splash').classList.add('show');
 }
@@ -2744,19 +2742,30 @@ function showLoseSplash() {
   document.getElementById('splash').classList.add('show');
 }
 
+// Use life → +5 moves, keep current board state
 function onContinue() {
-  if (lives <= 0) return;
+  if (getLives() <= 0) return;
   spendLife();
-  // Give half the original moves back
-  moves = Math.max(5, Math.floor(cfg.moves / 2));
+  moves += 5; // always +5, not cumulative
   levelOver = false;
   document.getElementById('splash').classList.remove('show');
   if (timerPhase) {
-    timerSeconds = Math.max(20, Math.floor((cfg.timerSecs||60) * 0.4));
+    timerSeconds = Math.max(20, (timerSeconds||0) + 30); // +30s bonus
     updateTimerUI();
     startTimer();
   }
   updateUI();
+  // If lost again later, show continue splash again
+}
+
+// Use life → restart the phase from scratch
+function onRestartWithLife() {
+  if (getLives() <= 0) return;
+  spendLife();
+  document.getElementById('splash').classList.remove('show');
+  // Reset phase score but keep level
+  score = 0;
+  startLevel();
 }
 
 function onGiveUp() {
@@ -3023,6 +3032,9 @@ window.addEventListener('resize', () => {
   loadLives();
   updateLivesUI();
   startLifeTimer();
+  // Clean up expired timestamps
+  const _now = Date.now();
+  lifeTimestamps = lifeTimestamps.map(t => (t>0 && t<=_now) ? 0 : t);
   if (hasSave()) {
     const ok = loadSave();
     if (ok) {
