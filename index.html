@@ -11,6 +11,58 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Glixar ✨</title>
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp }              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, where, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyBpREe4gru6rOwd37p0WfJ_jbebPDfPpoo",
+  authDomain:        "glixar-378b8.firebaseapp.com",
+  projectId:         "glixar-378b8",
+  storageBucket:     "glixar-378b8.firebasestorage.app",
+  messagingSenderId: "995894560957",
+  appId:             "1:995894560957:web:6e8e7e53c6a10a722e8fd4"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db    = getFirestore(fbApp);
+
+// ── Expose Firebase helpers to global scope ──
+window._fb = {
+  async saveScore(name, lvl, pts) {
+    try {
+      await addDoc(collection(db, 'ranking'), {
+        name, level: lvl, score: pts,
+        date: new Date().toLocaleDateString('pt-BR'),
+        ts:   serverTimestamp()
+      });
+      return true;
+    } catch(e) { console.warn('Firebase saveScore:', e); return false; }
+  },
+
+  async getTop(n = 50) {
+    try {
+      const q   = query(collection(db, 'ranking'), orderBy('score','desc'), limit(n));
+      const snap= await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) { console.warn('Firebase getTop:', e); return []; }
+  },
+
+  async getPersonalBest(name) {
+    try {
+      const q    = query(collection(db, 'ranking'),
+                         where('name','==',name),
+                         orderBy('score','desc'), limit(1));
+      const snap = await getDocs(q);
+      return snap.empty ? null : snap.docs[0].data();
+    } catch(e) { return null; }
+  }
+};
+
+console.log('🔥 Firebase connected!');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -405,6 +457,10 @@ body::before{
 .rank-info{text-align:right;font-size:.75rem;color:rgba(255,255,255,.6);}
 .rank-info strong{color:var(--gold);font-size:.85rem;display:block;}
 .rank-close{width:100%;font-size:1rem;padding:11px;}
+.rank-item .rank-online{font-size:.6rem;background:#44dd44;color:#003300;
+  border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:900;}
+.rank-item .rank-new{font-size:.6rem;background:#FFD700;color:#3a1800;
+  border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:900;}
 
 /* name input inside splash */
 .name-row{display:flex;gap:8px;margin-bottom:14px;}
@@ -666,6 +722,13 @@ body::before{
 <div class="rank-overlay" id="rankOverlay">
   <div class="rank-box">
     <h2>🏆 Ranking</h2>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button id="tabGlobal" class="btn btn-hint" style="flex:1;font-size:.85rem;padding:8px;" onclick="switchRankTab('global')">🌐 Global</button>
+      <button id="tabLocal"  class="btn"          style="flex:1;font-size:.85rem;padding:8px;background:rgba(255,255,255,.1);" onclick="switchRankTab('local')">📱 Meu dispositivo</button>
+    </div>
+    <div id="rankLoading" style="text-align:center;padding:20px;color:rgba(255,255,255,.5);display:none;">
+      ⏳ Carregando...
+    </div>
     <ul class="rank-list" id="rankList"></ul>
     <button class="btn btn-new rank-close" onclick="closeRank()">Fechar</button>
   </div>
@@ -2354,41 +2417,100 @@ function saveAndNext() {
   document.getElementById('splashBtn').style.display = 'block';
 }
 
-function saveScore() {
+// Save to BOTH localStorage and Firebase
+async function saveScore() {
   if (!playerName) return;
   const entry = { name: playerName, level, score, date: new Date().toLocaleDateString('pt-BR') };
+
+  // Local save
   ranking.push(entry);
-  // Keep top 50, sort by level desc then score desc
-  ranking.sort((a,b) => b.level - a.level || b.score - a.score);
-  if (ranking.length > 50) ranking.length = 50;
+  ranking.sort((a,b) => b.score - a.score || b.level - a.level);
+  if (ranking.length > 100) ranking.length = 100;
   localStorage.setItem('glixarRank', JSON.stringify(ranking));
+
+  // Firebase save (non-blocking)
+  if (window._fb) {
+    window._fb.saveScore(playerName, level, score)
+      .then(ok => { if(ok) console.log('Score saved to Firebase'); });
+  }
+}
+
+// Current rank tab
+let _rankTab = 'global';
+
+function switchRankTab(tab) {
+  _rankTab = tab;
+  const gBtn = document.getElementById('tabGlobal');
+  const lBtn = document.getElementById('tabLocal');
+  if (gBtn && lBtn) {
+    gBtn.style.background = tab==='global' ? '' : 'rgba(255,255,255,.1)';
+    lBtn.style.background = tab==='local'  ? '' : 'rgba(255,255,255,.1)';
+    gBtn.className = 'btn ' + (tab==='global' ? 'btn-hint' : '');
+    lBtn.className = 'btn ' + (tab==='local'  ? 'btn-hint' : '');
+  }
+  renderRankList();
 }
 
 // ── RANKING UI ──
 function openRank() {
-  renderRankList();
+  _rankTab = 'global';
+  switchRankTab('global');
   document.getElementById('rankOverlay').classList.add('show');
 }
 function closeRank() {
   document.getElementById('rankOverlay').classList.remove('show');
 }
-function renderRankList() {
-  const ul = document.getElementById('rankList');
-  ul.innerHTML = '';
-  if (ranking.length === 0) {
-    ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Nenhum recorde ainda!</li>';
-    return;
+
+async function renderRankList() {
+  const ul      = document.getElementById('rankList');
+  const loading = document.getElementById('rankLoading');
+  ul.innerHTML  = '';
+
+  if (_rankTab === 'global') {
+    // Show loading
+    if (loading) loading.style.display = 'block';
+
+    let entries = [];
+    if (window._fb) {
+      entries = await window._fb.getTop(50);
+    }
+
+    if (loading) loading.style.display = 'none';
+
+    if (entries.length === 0) {
+      ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Seja o primeiro! Jogue e complete uma fase. 🏆</li>';
+      return;
+    }
+    buildRankItems(ul, entries, true);
+
+  } else {
+    // Local ranking
+    if (loading) loading.style.display = 'none';
+    if (ranking.length === 0) {
+      ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Nenhum recorde local ainda!</li>';
+      return;
+    }
+    buildRankItems(ul, ranking, false);
   }
-  ranking.forEach((e, i) => {
-    const isMe = e.name === playerName;
-    const li   = document.createElement('li');
-    li.className = 'rank-item' + (isMe ? ' me' : '');
-    const medal = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-    const posIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
-    li.innerHTML = `
+}
+
+function buildRankItems(ul, entries, isOnline) {
+  entries.forEach((e, i) => {
+    const isMe    = e.name === playerName;
+    const li      = document.createElement('li');
+    li.className  = 'rank-item' + (isMe ? ' me' : '');
+    const medal   = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const posIcon = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
+    const badge   = isOnline
+      ? '<span class="rank-online">ONLINE</span>'
+      : (isMe ? '<span class="rank-new">EU</span>' : '');
+    li.innerHTML  = `
       <span class="rank-pos ${medal}">${posIcon}</span>
-      <span class="rank-name">${e.name}${isMe?' 👈':''}</span>
-      <span class="rank-info"><strong>${e.score.toLocaleString('pt-BR')} pts</strong>Fase ${e.level} · ${e.date}</span>
+      <span class="rank-name">${e.name}${badge}${isMe?' 👈':''}</span>
+      <span class="rank-info">
+        <strong>${(e.score||0).toLocaleString('pt-BR')} pts</strong>
+        Fase ${e.level||1} · ${e.date||''}
+      </span>
     `;
     ul.appendChild(li);
   });
