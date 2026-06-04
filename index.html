@@ -421,6 +421,83 @@ body::before{
 .btn-continue{background:linear-gradient(180deg,#44dd44,#229900);}
 .btn-give-up {background:linear-gradient(180deg,#ff4444,#cc0000);}
 
+/* ── MAP SCREEN ── */
+.map-overlay{display:none;position:fixed;inset:0;background:linear-gradient(160deg,#0e0628,#2a0a5e);
+  z-index:250;flex-direction:column;align-items:center;overflow-y:auto;padding:16px 12px 32px;}
+.map-overlay.show{display:flex;}
+.map-header{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.map-title{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);text-shadow:0 2px 0 var(--gold-dark);}
+.map-close{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:10px;
+  padding:6px 14px;color:#fff;font-family:'Luckiest Guy',cursive;font-size:.9rem;cursor:pointer;}
+.map-path{width:100%;max-width:440px;display:flex;flex-direction:column;gap:0;position:relative;}
+.map-node{
+  display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;
+}
+.map-node:nth-child(odd) {flex-direction:row;}
+.map-node:nth-child(even){flex-direction:row-reverse;}
+.map-bubble{
+  width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.2);
+  background:linear-gradient(135deg,#2a0a6e,#12043a);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Luckiest Guy',cursive;font-size:.9rem;color:rgba(255,255,255,.4);
+  flex-shrink:0;transition:all .3s;position:relative;cursor:pointer;
+}
+.map-bubble.done{border-color:var(--gold);background:linear-gradient(135deg,#4a1a8e,#2a0860);color:var(--gold);}
+.map-bubble.current{border-color:#44ffaa;box-shadow:0 0 16px #44ffaa88;color:#fff;
+  animation:mapPulse .8s ease infinite alternate;}
+.map-bubble.locked{opacity:.4;cursor:default;}
+.map-stars{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  display:flex;gap:1px;font-size:.55rem;white-space:nowrap;}
+.map-info{flex:1;min-width:0;}
+.map-info-label{font-weight:800;color:#fff;font-size:.85rem;}
+.map-info-sub{font-size:.7rem;color:rgba(255,255,255,.4);}
+.map-connector{width:3px;height:24px;background:rgba(255,255,255,.1);margin:0 auto;margin-left:28px;}
+.map-connector.done{background:var(--gold);}
+@keyframes mapPulse{from{box-shadow:0 0 8px #44ffaa44;}to{box-shadow:0 0 20px #44ffaacc;}}
+
+/* ── DAILY MISSIONS ── */
+.daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:250;align-items:center;justify-content:center;padding:16px;}
+.daily-overlay.show{display:flex;}
+.daily-box{background:linear-gradient(135deg,#2a0860,#0e0330);border:3px solid var(--gold);
+  border-radius:20px;padding:20px 16px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;}
+.daily-box h2{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);text-align:center;margin-bottom:4px;}
+.daily-date{text-align:center;font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:14px;}
+.daily-mission{background:rgba(255,255,255,.07);border-radius:12px;padding:12px;margin-bottom:8px;}
+.daily-mission.done{border:1.5px solid #44dd44;background:rgba(68,221,68,.08);}
+.dm-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.dm-icon{font-size:1.4rem;}
+.dm-name{font-weight:800;color:#fff;font-size:.9rem;flex:1;}
+.dm-reward{font-size:.75rem;color:var(--gold);font-weight:800;}
+.dm-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.dm-fill{height:100%;background:linear-gradient(90deg,#44dd44,#00aa44);border-radius:3px;transition:width .4s;}
+.dm-progress{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:3px;text-align:right;}
+.dm-done-badge{font-size:.75rem;color:#44dd44;font-weight:800;margin-top:4px;}
+
+/* ── TIMER ── */
+.timer-box{background:linear-gradient(135deg,#8b0000,#4a0000);border:2px solid #ff4444;
+  border-radius:13px;padding:7px 12px;text-align:center;min-width:70px;flex-shrink:0;}
+.timer-box .num{color:#ff6666;}
+.timer-box.urgent{animation:timerPulse .4s ease infinite alternate;}
+.timer-box.urgent .num{color:#ff2222;}
+@keyframes timerPulse{from{border-color:#ff2222;}to{border-color:#ff8888;box-shadow:0 0 12px #ff222288;}}
+
+/* ── VARIED GOALS ── */
+.gi.goal-rock{background:rgba(120,120,120,.2);border:1px solid rgba(150,150,150,.3);}
+.gi.goal-ice {background:rgba(100,180,255,.15);border:1px solid rgba(150,200,255,.3);}
+.gi.goal-combo{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.3);}
+.gi.goal-time{background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.3);}
+
+/* map + daily buttons in header */
+.hdr-btns{display:flex;gap:6px;align-items:center;}
+.hdr-btn{background:linear-gradient(135deg,#4a1a8e,#2a0860);border:2px solid var(--gold);
+  border-radius:10px;padding:5px 8px;cursor:pointer;font-size:1rem;
+  transition:filter .15s,transform .1s;position:relative;}
+.hdr-btn:hover{filter:brightness(1.2);transform:scale(1.05);}
+.hdr-btn .badge{position:absolute;top:-5px;right:-5px;background:#ff4444;color:#fff;
+  border-radius:50%;width:16px;height:16px;font-size:.6rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;}
+
 /* combo badge */
 .combo-badge{
   position:fixed;top:50%;left:50%;
@@ -438,8 +515,10 @@ body::before{
 
 <div class="hdr">
   <div class="logo">✨ Glixar</div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="rank-btn" onclick="openRank()" title="Ranking">🏆</button>
+  <div class="hdr-btns">
+    <button class="hdr-btn" onclick="openMap()" title="Mapa">🗺️</button>
+    <button class="hdr-btn" onclick="openDaily()" title="Missões" id="dailyBtn">📋<span class="badge" id="dailyBadge" style="display:none">!</span></button>
+    <button class="hdr-btn" onclick="openRank()" title="Ranking">🏆</button>
     <div class="level-badge">
       <div class="level-lbl">Fase</div>
       <div class="level-num" id="lvlNum">1</div>
@@ -452,6 +531,11 @@ body::before{
     <div class="icon">⚡</div>
     <div class="num" id="movesVal">20</div>
     <div class="lbl">Jogadas</div>
+  </div>
+  <div class="box timer-box" id="timerBox" style="display:none;">
+    <div class="icon">⏱️</div>
+    <div class="num" id="timerVal">90</div>
+    <div class="lbl">Seg</div>
   </div>
   <div class="box score-box">
     <div class="lbl">Pontos</div>
@@ -539,6 +623,25 @@ body::before{
   </div>
 </div>
 
+<!-- MAP OVERLAY -->
+<div class="map-overlay" id="mapOverlay">
+  <div class="map-header">
+    <div class="map-title">🗺️ Mapa</div>
+    <button class="map-close" onclick="closeMap()">✕ Fechar</button>
+  </div>
+  <div class="map-path" id="mapPath"></div>
+</div>
+
+<!-- DAILY MISSIONS OVERLAY -->
+<div class="daily-overlay" id="dailyOverlay">
+  <div class="daily-box">
+    <h2>📋 Missões</h2>
+    <div class="daily-date" id="dailyDate"></div>
+    <div id="dailyList"></div>
+    <button class="btn btn-new" style="width:100%;margin-top:8px;" onclick="closeDaily()">Fechar</button>
+  </div>
+</div>
+
 <!-- RANKING OVERLAY -->
 <div class="rank-overlay" id="rankOverlay">
   <div class="rank-box">
@@ -568,10 +671,25 @@ const OB_NONE = 0;
 const OB_ROCK = 1; // rock: needs 2 adjacent matches to break
 const OB_ICE  = 2; // ice: traps gem underneath, 1 adjacent match frees it
 
-// Stars thresholds (fraction of moves remaining)
-const STAR3 = 0.6; // 60%+ moves left → 3 stars
-const STAR2 = 0.3; // 30%+ moves left → 2 stars
-// else 1 star
+// Stars thresholds
+const STAR3 = 0.6;
+const STAR2 = 0.3;
+
+// Goal types
+const GOAL_GEM   = 'gem';   // collect X of gem color
+const GOAL_ROCK  = 'rock';  // break X rocks
+const GOAL_ICE   = 'ice';   // free X ice
+const GOAL_COMBO = 'combo'; // make X combos
+
+// Mission definitions (daily)
+const MISSION_DEFS = [
+  { id:'matches',  icon:'💎', name:'Combinar 30 gemas',    target:30,  type:'matches',  reward:'hammer' },
+  { id:'combos',   icon:'🔥', name:'Fazer 5 combos',       target:5,   type:'combos',   reward:'bomb'   },
+  { id:'rocks',    icon:'🪨', name:'Quebrar 8 pedras',      target:8,   type:'rocks',    reward:'shuffle'},
+  { id:'phases',   icon:'🏆', name:'Completar 2 fases',    target:2,   type:'phases',   reward:'hammer' },
+  { id:'specials', icon:'✨', name:'Criar 3 gemas especiais',target:3,  type:'specials', reward:'bomb'   },
+  { id:'stars',    icon:'⭐', name:'Ganhar 5 estrelas',     target:5,   type:'stars',    reward:'shuffle'},
+];
 
 // Level difficulty table (infinite: extrapolates)
 function getLevelConfig(lvl) {
@@ -588,7 +706,27 @@ function getLevelConfig(lvl) {
   // Obstacles start appearing from level 3
   const rocks = lvl < 3 ? 0 : Math.min(6, Math.floor((lvl - 2) * 0.8));
   const ices  = lvl < 5 ? 0 : Math.min(4, Math.floor((lvl - 4) * 0.6));
-  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks, ices };
+  // Timer phase every 7th level starting level 7
+  const hasTimer  = lvl >= 7 && (lvl % 7 === 0);
+  const timerSecs = hasTimer ? Math.max(45, 90 - Math.floor(lvl/7)*8) : 0;
+  // Varied goal types — introduced gradually
+  const goalTypes = buildGoalTypes(lvl, rocks, ices);
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks, ices, hasTimer, timerSecs, goalTypes };
+}
+
+function buildGoalTypes(lvl, rocks, ices) {
+  // Returns array of goal type objects for this level
+  const types = [];
+  // Always have at least 1 gem goal
+  const gemCount = lvl <= 5 ? 1 : lvl <= 10 ? (rocks>0?1:2) : 1;
+  for (let i = 0; i < gemCount; i++) types.push({ type: GOAL_GEM });
+  // Rock goal if rocks present and level >= 4
+  if (rocks > 0 && lvl >= 4) types.push({ type: GOAL_ROCK, target: Math.min(rocks, 4) });
+  // Ice goal if ice present and level >= 6
+  if (ices > 0 && lvl >= 6) types.push({ type: GOAL_ICE, target: Math.min(ices, 3) });
+  // Combo goal every 5 levels starting lvl 5
+  if (lvl >= 5 && lvl % 5 === 0) types.push({ type: GOAL_COMBO, target: 3 + Math.floor(lvl/10) });
+  return types;
 }
 
 // Power-up definitions
@@ -627,7 +765,26 @@ let obstacleHp    = []; // hp for rocks (2=full, 1=cracked)
 let obstacleEls   = []; // DOM elements for obstacles
 let levelStars    = 0;  // stars earned this level (1-3)
 let totalStars    = parseInt(localStorage.getItem('glixarStars')||'0');
-let tutStep       = -1; // -1 = not active
+let tutStep       = -1;
+
+// Timer state
+let timerSeconds  = 0;
+let timerInterval = null;
+let timerPhase    = false; // true if this level has time limit
+
+// Daily missions
+let dailyMissions = [];
+let dailyProgress = {};
+let lastDailyDate = '';
+
+// Map / level stars record
+let levelStarsMap  = JSON.parse(localStorage.getItem('glixarMap') || '{}'); // {level: stars}
+
+// Combo counter for missions
+let sessionCombos   = 0;
+let sessionMatches  = 0;
+let sessionSpecials = 0;
+let sessionRocks    = 0;
 
 // ═══════════════════════════════════════════════════
 //  SAVE / LOAD
@@ -637,7 +794,7 @@ const SAVE_KEY = 'glixarSave';
 function saveGame() {
   if (levelOver) return;
   const data = {
-    level, score, totalScore, moves, continues,
+    level, score, totalScore, moves, continues, timerSeconds, timerPhase,
     goals: {...goals},
     goalsTarget: {...goalsTarget},
     pwCounts: {...pwCounts},
@@ -672,6 +829,8 @@ function loadSave() {
     special       = d.special;
     obstacleBoard = d.obstacleBoard || Array.from({length:ROWS},()=>new Array(COLS).fill(OB_NONE));
     obstacleHp    = d.obstacleHp    || Array.from({length:ROWS},()=>new Array(COLS).fill(0));
+    timerSeconds  = d.timerSeconds  || 0;
+    timerPhase    = d.timerPhase    || false;
     return true;
   } catch(e) {
     console.warn('Save corrupt:', e);
@@ -691,6 +850,13 @@ function resumeGame() {
   document.getElementById('splash').classList.remove('show');
   updateUI(); renderGoals(); renderPowers();
   buildBoardFromState();
+  initDailyMissions();
+  updateDailyBadge();
+  if (timerPhase && timerSeconds > 0) {
+    document.getElementById('timerBox').style.display = 'flex';
+    updateTimerUI();
+    startTimer();
+  }
 }
 
 function discardSave() {
@@ -795,9 +961,28 @@ function startLevel() {
   selected = null; processing = false; comboCount = 0; levelOver = false; continues = 2; activeTool = null;
   cancelActiveTool();
 
-  // Pick random goal gems
-  const picks = shuffle(Array.from({length: cfg.gemColors}, (_,i) => i)).slice(0, cfg.goalCount);
-  picks.forEach(g => { goalsTarget[g] = cfg.goalAmt; goals[g] = 0; });
+  // Build goals from goalTypes config
+  goals = {}; goalsTarget = {};
+  const goalTypesArr = cfg.goalTypes || [{type:GOAL_GEM}];
+  const gemPicks = shuffle(Array.from({length:cfg.gemColors},(_,i)=>i));
+  let gemIdx = 0;
+  goalTypesArr.forEach(gt => {
+    if (gt.type === GOAL_GEM) {
+      const g = gemPicks[gemIdx++ % cfg.gemColors];
+      goalsTarget['gem_'+g] = cfg.goalAmt;
+      goals['gem_'+g] = 0;
+    } else if (gt.type === GOAL_ROCK) {
+      goalsTarget['rock'] = gt.target;
+      goals['rock'] = 0;
+    } else if (gt.type === GOAL_ICE) {
+      goalsTarget['ice'] = gt.target;
+      goals['ice'] = 0;
+    } else if (gt.type === GOAL_COMBO) {
+      goalsTarget['combo'] = gt.target;
+      goals['combo'] = 0;
+    }
+  });
+  sessionCombos = 0; sessionMatches = 0; sessionSpecials = 0; sessionRocks = 0;
 
   // Power-ups: give 1 of each if empty, otherwise keep accumulated (max 3)
   if (!pwCounts || Object.keys(pwCounts).length === 0) {
@@ -819,6 +1004,22 @@ function startLevel() {
   renderGoals();
   renderPowers();
   buildBoard();
+
+  // Timer phase
+  stopTimer();
+  timerPhase = cfg.hasTimer || false;
+  if (timerPhase) {
+    timerSeconds = cfg.timerSecs;
+    document.getElementById('timerBox').style.display = 'flex';
+    updateTimerUI();
+    startTimer();
+  } else {
+    document.getElementById('timerBox').style.display = 'none';
+  }
+
+  // Daily missions init
+  initDailyMissions();
+  updateDailyBadge();
 
   // Tutorial for first 3 levels
   if (level <= 3) startTutorial(level);
@@ -1300,17 +1501,38 @@ async function resolveMatches(matchResult, pivot) {
   });
   extraCells.forEach(key => cells.add(key));
 
-  // Score + goals + particles
+  // Score + goals + particles + missions
+  const matchCount = cells.size;
+  sessionMatches += matchCount;
+  trackMission('matches', matchCount);
+
   cells.forEach(key => {
     const {r,c} = uk(key);
     if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
     const g = board[r][c];
     if (g < 0) return;
     score += 60 * comboCount; totalScore += 60 * comboCount;
-    if (goalsTarget[g] !== undefined)
-      goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+    // Gem goals use key format gem_N
+    const gemKey = 'gem_' + g;
+    if (goalsTarget[gemKey] !== undefined)
+      goals[gemKey] = Math.min((goals[gemKey]||0)+1, goalsTarget[gemKey]);
     spawnGemParticles(r, c, g);
   });
+
+  // Combo goal
+  if (comboCount >= 2) {
+    sessionCombos++;
+    trackMission('combos', 1);
+    if (goalsTarget['combo'] !== undefined)
+      goals['combo'] = Math.min((goals['combo']||0)+1, goalsTarget['combo']);
+  }
+
+  // Special gems created (shapes.length > 0)
+  if (shapes && shapes.length > 0) {
+    sessionSpecials += shapes.length;
+    trackMission('specials', shapes.length);
+  }
+
   updateUI(); renderGoals();
   playMatch();
   vibrate([15]);
@@ -1367,16 +1589,25 @@ async function popCells(cellSet) {
     const el = obstacleEls[r][c];
     if (el) { el.classList.add('obs-crack-anim'); setTimeout(()=>el.classList.remove('obs-crack-anim'),300); }
     if (obstacleHp[r][c] <= 0) {
-      // Destroy obstacle
+      const wasType = obstacleBoard[r][c];
       if (el) { el.classList.add('popping'); }
       setTimeout(() => {
         if (obstacleEls[r][c]) { obstacleEls[r][c].remove(); obstacleEls[r][c] = null; }
         obstacleBoard[r][c] = OB_NONE;
-        // Unfreeze gem if was ice
         if (gemEls[r][c]) gemEls[r][c].style.filter = '';
       }, 310);
       spawnParticles(r, c, '#aaaaaa');
       vibrate([30]);
+      if (wasType === OB_ROCK) {
+        sessionRocks++;
+        trackMission('rocks', 1);
+        if (goalsTarget['rock'] !== undefined)
+          goals['rock'] = Math.min((goals['rock']||0)+1, goalsTarget['rock']);
+      } else if (wasType === OB_ICE) {
+        if (goalsTarget['ice'] !== undefined)
+          goals['ice'] = Math.min((goals['ice']||0)+1, goalsTarget['ice']);
+      }
+      renderGoals();
     } else {
       // Rock cracked — update visual
       if (el && obstacleBoard[r][c] === OB_ROCK) {
@@ -1717,6 +1948,188 @@ function launchConfetti() {
 function calcStars(ml,tm){const r=ml/tm;return r>=STAR3?3:r>=STAR2?2:1;}
 
 // ═══════════════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════════════
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (processing && !levelOver) return; // pause during animations
+    timerSeconds--;
+    updateTimerUI();
+    if (timerSeconds <= 10) vibrate([20]);
+    if (timerSeconds <= 0) {
+      stopTimer();
+      if (!levelOver) {
+        levelOver = true;
+        processing = false;
+        if (continues > 0) { splashMode='continue'; setTimeout(showContinueSplash, 300); }
+        else { splashMode='lose'; setTimeout(showLoseSplash, 300); }
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function updateTimerUI() {
+  const el = document.getElementById('timerVal');
+  const box = document.getElementById('timerBox');
+  if (!el) return;
+  el.textContent = timerSeconds;
+  if (timerSeconds <= 10) box.classList.add('urgent');
+  else box.classList.remove('urgent');
+}
+
+// ═══════════════════════════════════════════════════
+//  DAILY MISSIONS
+// ═══════════════════════════════════════════════════
+function todayStr() {
+  return new Date().toLocaleDateString('pt-BR');
+}
+
+function initDailyMissions() {
+  const today = todayStr();
+  const saved = JSON.parse(localStorage.getItem('glixarDaily') || '{}');
+  if (saved.date !== today) {
+    // New day — pick 3 random missions
+    const picks = shuffle([...MISSION_DEFS]).slice(0, 3);
+    dailyMissions = picks;
+    dailyProgress = {};
+    picks.forEach(m => { dailyProgress[m.id] = 0; });
+    lastDailyDate = today;
+    localStorage.setItem('glixarDaily', JSON.stringify({ date: today, missions: picks, progress: dailyProgress }));
+  } else {
+    dailyMissions = saved.missions || [];
+    dailyProgress = saved.progress || {};
+    lastDailyDate = today;
+  }
+  updateDailyBadge();
+}
+
+function saveDailyProgress() {
+  localStorage.setItem('glixarDaily', JSON.stringify({
+    date: lastDailyDate, missions: dailyMissions, progress: dailyProgress
+  }));
+}
+
+function trackMission(type, amount) {
+  let changed = false;
+  dailyMissions.forEach(m => {
+    if (m.type === type && (dailyProgress[m.id]||0) < m.target) {
+      dailyProgress[m.id] = Math.min(m.target, (dailyProgress[m.id]||0) + amount);
+      if (dailyProgress[m.id] >= m.target) {
+        // Mission complete! Award power-up
+        setTimeout(() => {
+          showToast('📋 Missão completa! +1 ' + m.reward);
+          pwCounts[m.reward] = Math.min(PW_MAX, (pwCounts[m.reward]||0) + 1);
+          renderPowers();
+        }, 600);
+      }
+      changed = true;
+    }
+  });
+  if (changed) { saveDailyProgress(); updateDailyBadge(); }
+}
+
+function updateDailyBadge() {
+  const badge = document.getElementById('dailyBadge');
+  if (!badge) return;
+  const hasIncomplete = dailyMissions.some(m => (dailyProgress[m.id]||0) < m.target);
+  badge.style.display = hasIncomplete ? 'flex' : 'none';
+}
+
+function openDaily() {
+  initDailyMissions();
+  const list = document.getElementById('dailyList');
+  const dateEl = document.getElementById('dailyDate');
+  if (dateEl) dateEl.textContent = '📅 ' + todayStr();
+  list.innerHTML = '';
+  dailyMissions.forEach(m => {
+    const prog = dailyProgress[m.id] || 0;
+    const done = prog >= m.target;
+    const pct  = Math.round(prog/m.target*100);
+    const div  = document.createElement('div');
+    div.className = 'daily-mission' + (done ? ' done' : '');
+    div.innerHTML = `
+      <div class="dm-top">
+        <span class="dm-icon">${m.icon}</span>
+        <span class="dm-name">${m.name}</span>
+        <span class="dm-reward">+1 ${m.reward==='hammer'?'🔨':m.reward==='bomb'?'💣':'🔀'}</span>
+      </div>
+      ${done
+        ? '<div class="dm-done-badge">✅ Concluída!</div>'
+        : `<div class="dm-bar"><div class="dm-fill" style="width:${pct}%"></div></div>
+           <div class="dm-progress">${prog}/${m.target}</div>`
+      }
+    `;
+    list.appendChild(div);
+  });
+  document.getElementById('dailyOverlay').classList.add('show');
+}
+
+function closeDaily() {
+  document.getElementById('dailyOverlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════
+//  MAP
+// ═══════════════════════════════════════════════════
+function openMap() {
+  renderMap();
+  document.getElementById('mapOverlay').classList.add('show');
+}
+
+function closeMap() {
+  document.getElementById('mapOverlay').classList.remove('show');
+}
+
+function renderMap() {
+  const path = document.getElementById('mapPath');
+  path.innerHTML = '';
+  const maxLevel = Math.max(level + 3, Object.keys(levelStarsMap).length + 3);
+  for (let lvl = 1; lvl <= maxLevel; lvl++) {
+    // Connector line (not before first)
+    if (lvl > 1) {
+      const conn = document.createElement('div');
+      conn.className = 'map-connector' + ((levelStarsMap[lvl-1] || 0) > 0 ? ' done' : '');
+      path.appendChild(conn);
+    }
+    const stars = levelStarsMap[lvl] || 0;
+    const isCurrent = lvl === level;
+    const isDone    = stars > 0;
+    const isLocked  = lvl > level;
+    const lcfg      = getLevelConfig(lvl);
+
+    const node = document.createElement('div');
+    node.className = 'map-node';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'map-bubble' + (isDone ? ' done' : '') + (isCurrent ? ' current' : '') + (isLocked ? ' locked' : '');
+    bubble.textContent = lvl;
+
+    // Stars under bubble
+    const starSpan = document.createElement('div');
+    starSpan.className = 'map-stars';
+    starSpan.textContent = isDone ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : (isLocked ? '🔒' : '▶');
+    bubble.appendChild(starSpan);
+
+    if (!isLocked) bubble.onclick = () => { closeMap(); if (lvl <= level) { level = lvl; continues=2; startLevel(); } };
+
+    const info = document.createElement('div');
+    info.className = 'map-info';
+    info.innerHTML = `<div class="map-info-label">Fase ${lvl} ${lcfg.hasTimer ? '⏱️' : ''}</div>
+      <div class="map-info-sub">${lcfg.label} · ${lcfg.moves} jogadas${lcfg.rocks>0?' · 🪨'+lcfg.rocks:''}${lcfg.ices>0?' · ❄️'+lcfg.ices:''}</div>`;
+
+    node.appendChild(bubble);
+    node.appendChild(info);
+    path.appendChild(node);
+  }
+}
+
+// ═══════════════════════════════════════════════════
 //  TUTORIAL
 // ═══════════════════════════════════════════════════
 const TUTORIAL_STEPS=[
@@ -1749,7 +2162,7 @@ function endTutorial(){tutStep=-1;document.getElementById('tutorialOverlay').cla
 function checkWinLose() {
   if (levelOver) return;
 
-  const won = Object.keys(goalsTarget).every(g => (goals[g]||0) >= goalsTarget[g]);
+  const won = Object.keys(goalsTarget).every(k => (goals[k]||0) >= goalsTarget[k]);
   if (won) {
     levelOver  = true;
     processing = false;
@@ -1775,6 +2188,16 @@ function showWinSplash() {
   levelStars     = calcStars(moves, cfg.moves);
   totalStars    += levelStars;
   localStorage.setItem('glixarStars', totalStars);
+  // Save best stars for this level to map
+  const prev = levelStarsMap[level] || 0;
+  if (levelStars > prev) {
+    levelStarsMap[level] = levelStars;
+    localStorage.setItem('glixarMap', JSON.stringify(levelStarsMap));
+  }
+  // Track mission: phases completed + stars
+  trackMission('phases', 1);
+  trackMission('stars', levelStars);
+  stopTimer();
 
   playWin();
   vibrate([50,30,50,30,100]);
@@ -1838,11 +2261,16 @@ function showLoseSplash() {
 function onContinue() {
   const penalty = continues === 2 ? 2 : 4;
   continues--;
-  // Give extra moves = base moves of the level minus penalty
   const extraMoves = Math.max(3, Math.floor(cfg.moves / 2) - penalty);
   moves = extraMoves;
   levelOver = false;
   document.getElementById('splash').classList.remove('show');
+  // Restore timer if this was a timer phase
+  if (timerPhase) {
+    timerSeconds = Math.max(20, Math.floor((cfg.timerSecs||60) * 0.4));
+    updateTimerUI();
+    startTimer();
+  }
   updateUI();
 }
 
@@ -1911,7 +2339,7 @@ function updateUI() {
 
   // Progress bar
   const total = Object.values(goalsTarget).reduce((a,b)=>a+b, 0);
-  const done  = Object.entries(goals).reduce((a,[g,v])=> a + Math.min(v, goalsTarget[g]||0), 0);
+  const done  = Object.entries(goals).reduce((a,[k,v])=> a + Math.min(v, goalsTarget[k]||0), 0);
   const pct   = total ? Math.round(done/total*100) : 0;
   document.getElementById('progFill').style.width = pct + '%';
   document.getElementById('progLbl').textContent  = `Fase ${level} — ${cfg.label||'Normal'}`;
@@ -1920,13 +2348,23 @@ function updateUI() {
 function renderGoals() {
   const div = document.getElementById('goalsDiv');
   div.innerHTML = '';
-  Object.entries(goalsTarget).forEach(([g, target]) => {
-    g = parseInt(g);
-    const count = Math.min(goals[g]||0, target);
+  Object.entries(goalsTarget).forEach(([key, target]) => {
+    const count = Math.min(goals[key]||0, target);
     const done  = count >= target;
     const item  = document.createElement('div');
-    item.className = 'gi' + (done ? ' done' : '');
-    item.innerHTML = `<span class="g">${GEMS[g]}</span> ${count}/${target}`;
+    let icon = '', extraClass = '';
+    if (key.startsWith('gem_')) {
+      const g = parseInt(key.split('_')[1]);
+      icon = GEMS[g]; extraClass = '';
+    } else if (key === 'rock') {
+      icon = '🪨'; extraClass = ' goal-rock';
+    } else if (key === 'ice') {
+      icon = '❄️'; extraClass = ' goal-ice';
+    } else if (key === 'combo') {
+      icon = '🔥'; extraClass = ' goal-combo';
+    }
+    item.className = 'gi' + extraClass + (done ? ' done' : '');
+    item.innerHTML = `<span class="g">${icon}</span> ${count}/${target}`;
     div.appendChild(item);
   });
 }
