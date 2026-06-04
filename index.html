@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castle Match ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold-dark:#C8A200;
+  --bg0:#0e0628; --bg1:#2a0a5e; --bg2:#1a0040;
+  --panel:rgba(255,255,255,0.07); --border:rgba(255,255,255,0.13);
+  --GAP:4px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Nunito',sans-serif;
+  background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:8px 6px 16px;overflow-x:hidden;overflow-y:auto;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%,rgba(255,255,255,.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 38%  9%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(2px 2px at 63% 33%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 82%  7%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 91% 58%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(2px 2px at 24% 52%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at  6% 74%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 72% 79%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 48% 91%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 33% 84%,rgba(255,255,255,.6) 0%,transparent 100%);
+}
+
+/* ── HEADER ── */
+.hdr{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;position:relative;z-index:2;}
+.logo{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:var(--gold);
+  text-shadow:0 2px 0 var(--gold-dark),0 4px 10px rgba(0,0,0,.6);letter-spacing:2px;}
+.level-badge{
+  background:linear-gradient(135deg,#4a1a8e,#2a0860);
+  border:2px solid var(--gold);border-radius:14px;padding:5px 14px;text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);}
+.level-lbl{font-size:.58rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;}
+.level-num{font-size:1.3rem;font-weight:900;color:var(--gold);line-height:1;}
+
+/* ── INFO BAR ── */
+.info-bar{width:100%;max-width:440px;display:flex;align-items:stretch;gap:8px;
+  margin-bottom:6px;position:relative;z-index:2;}
+.box{background:linear-gradient(135deg,#35108a,#180550);border:2px solid var(--gold);
+  border-radius:13px;padding:7px 12px;text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);flex-shrink:0;}
+.box .icon{font-size:1rem;}
+.box .num{font-size:1.4rem;font-weight:900;color:#fff;line-height:1.1;}
+.box .lbl{font-size:.58rem;color:rgba(255,255,255,.45);text-transform:uppercase;}
+
+.score-box{flex:1;background:linear-gradient(135deg,#4a1a8e,#2d0a60);}
+.score-box .num{color:var(--gold);}
+
+.goal-wrap{flex:2;background:var(--panel);border:1.5px solid var(--border);
+  border-radius:13px;padding:6px 10px;display:flex;flex-direction:column;justify-content:center;}
+.goal-ttl{font-size:.58rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.goals{display:flex;gap:6px;flex-wrap:wrap;}
+.gi{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.09);
+  border-radius:8px;padding:2px 7px;font-size:.72rem;font-weight:800;color:#fff;transition:all .3s;}
+.gi.done{opacity:.35;text-decoration:line-through;}
+.gi .g{font-size:.95rem;}
+
+/* ── POWER-UPS BAR ── */
+.powers{width:100%;max-width:440px;display:flex;gap:5px;margin-bottom:6px;
+  position:relative;z-index:2;}
+.pw{flex:1;background:linear-gradient(135deg,#2a0a6e,#12043a);
+  border:2px solid rgba(255,255,255,.15);border-radius:13px;
+  padding:5px 3px;text-align:center;cursor:pointer;
+  transition:filter .15s,transform .1s,border-color .2s;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);}
+.pw:hover{filter:brightness(1.2);transform:translateY(-2px);}
+.pw:active{transform:translateY(1px);}
+.pw.has{border-color:var(--gold);}
+.pw .pi{font-size:1.2rem;display:block;}
+.pw .pc{font-size:.6rem;color:rgba(255,255,255,.55);font-weight:800;}
+.pw .pn{font-size:.75rem;font-weight:900;color:#fff;}
+
+/* ── BOARD ── */
+.board-wrap{
+  position:relative;z-index:1;
+  background:linear-gradient(135deg,#2e0e78 0%,#190558 100%);
+  border:3px solid var(--gold);border-radius:18px;padding:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05),
+             inset 0 1px 0 rgba(255,255,255,.1);
+  max-width:440px;width:100%;
+}
+#board{position:relative;width:100%;overflow:visible;}
+
+.grid-bg{position:absolute;border-radius:9px;
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.05);}
+
+/* ── GEM ── */
+.gem-el{
+  position:absolute;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;user-select:none;will-change:top,left,transform,opacity;
+  transition:top .36s cubic-bezier(.3,0,.2,1.55),
+             left .2s cubic-bezier(.4,0,.2,1),
+             transform .12s ease,opacity .22s ease,box-shadow .15s ease;
+  font-size:clamp(1.1rem,4vw,1.5rem);
+}
+.gem-el::after{
+  content:'';position:absolute;top:3px;left:5px;
+  width:40%;height:32%;background:rgba(255,255,255,.32);
+  border-radius:50%;pointer-events:none;
+}
+.gem-el:hover{transform:scale(1.09);filter:brightness(1.18);}
+.gem-el.selected{
+  transform:scale(1.14)!important;filter:brightness(1.35);
+  box-shadow:0 0 0 3px var(--gold),0 0 18px var(--gold);z-index:10!important;
+}
+.gem-el.popping{animation:pop .3s ease forwards!important;pointer-events:none;}
+.gem-el.swapping{
+  transition:top .17s cubic-bezier(.4,0,.2,1),
+             left .17s cubic-bezier(.4,0,.2,1),transform .12s;
+}
+.gem-el.hint-glow{animation:hpulse .55s ease infinite alternate;z-index:5;}
+
+/* special gem overlays */
+.gem-el .sp-icon{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:1.1em;pointer-events:none;z-index:3;text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+
+@keyframes pop{
+  0%  {transform:scale(1);opacity:1;}
+  45% {transform:scale(1.6);opacity:.7;}
+  100%{transform:scale(0);opacity:0;}
+}
+@keyframes hpulse{
+  from{transform:scale(1);   box-shadow:0 0 0 2px rgba(255,215,0,.4);}
+  to  {transform:scale(1.11);box-shadow:0 0 0 4px rgba(255,215,0,.95);}
+}
+@keyframes splashIn{
+  0%  {opacity:0;transform:scale(.5);}
+  60% {opacity:1;transform:scale(1.05);}
+  80% {transform:scale(.97);}
+  100%{opacity:1;transform:scale(1);}
+}
+@keyframes sparkle{
+  0%,100%{opacity:1;transform:scale(1) rotate(0deg);}
+  50%{opacity:.6;transform:scale(1.3) rotate(180deg);}
+}
+
+/* GEM COLORS */
+.gc-0{background:radial-gradient(circle at 35% 28%,#ff7db0,#b8003a);}
+.gc-1{background:radial-gradient(circle at 35% 28%,#5ee0ff,#0068cc);}
+.gc-2{background:radial-gradient(circle at 35% 28%,#ffe36a,#c88000);}
+.gc-3{background:radial-gradient(circle at 35% 28%,#6af2a0,#008c40);}
+.gc-4{background:radial-gradient(circle at 35% 28%,#cc66ff,#7200cc);}
+.gc-5{background:radial-gradient(circle at 35% 28%,#ff9040,#cc3c00);}
+
+/* Special gem glow rings */
+.sp-rocket{box-shadow:0 0 0 2.5px #ffe36a,0 0 10px #ffc200;}
+.sp-bomb  {box-shadow:0 0 0 2.5px #ff4444,0 0 10px #ff0000;}
+.sp-cross {box-shadow:0 0 0 2.5px #cc66ff,0 0 10px #9900ff;}
+.sp-rainbow{box-shadow:0 0 0 2.5px #fff,0 0 12px #fff;animation:rbglow 1.2s linear infinite;}
+@keyframes rbglow{
+  0%  {box-shadow:0 0 0 2.5px #ff6b9d,0 0 12px #ff6b9d;}
+  25% {box-shadow:0 0 0 2.5px #ffe36a,0 0 12px #ffe36a;}
+  50% {box-shadow:0 0 0 2.5px #6af2a0,0 0 12px #6af2a0;}
+  75% {box-shadow:0 0 0 2.5px #cc66ff,0 0 12px #cc66ff;}
+  100%{box-shadow:0 0 0 2.5px #ff6b9d,0 0 12px #ff6b9d;}
+}
+
+/* ── BOTTOM BUTTONS ── */
+.actions{width:100%;max-width:440px;display:flex;gap:8px;margin-top:8px;
+  position:relative;z-index:2;}
+.btn{
+  flex:1;font-family:'Luckiest Guy',cursive;font-size:.95rem;letter-spacing:1px;
+  border:none;outline:none;cursor:pointer;border-radius:13px;padding:11px 6px;
+  transition:transform .12s,filter .12s;box-shadow:0 4px 0 rgba(0,0,0,.45);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.btn:hover{filter:brightness(1.12);}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45);}
+.btn-new    {background:linear-gradient(180deg,#ffd700,#e08800);color:#3a1800;text-shadow:0 1px 0 rgba(255,255,255,.3);}
+.btn-hint   {background:linear-gradient(180deg,#44ccff,#0077bb);}
+.btn-restart{background:linear-gradient(180deg,#66dd44,#228800);}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-90px);
+  background:linear-gradient(135deg,#ffe066,#ffaa00);color:#3a1800;
+  font-family:'Luckiest Guy',cursive;font-size:1.25rem;letter-spacing:1px;
+  padding:11px 26px;border-radius:16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5);
+  z-index:200;pointer-events:none;white-space:nowrap;
+  transition:transform .38s cubic-bezier(.34,1.56,.64,1);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── LEVEL-UP SPLASH ── */
+.splash{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:150;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.splash.show{display:flex;}
+.splash-box{
+  background:linear-gradient(135deg,#3a1080,#1e0660);
+  border:3px solid var(--gold);border-radius:22px;
+  padding:28px 24px;text-align:center;
+  width:100%;max-width:320px;
+  box-shadow:0 16px 48px rgba(0,0,0,.75);
+  animation:splashIn .4s cubic-bezier(.34,1.4,.64,1) both;
+}
+.splash-box h2{font-family:'Luckiest Guy',cursive;font-size:2rem;color:var(--gold);margin-bottom:4px;}
+.splash-box p{color:rgba(255,255,255,.8);margin-bottom:18px;font-size:.95rem;line-height:1.5;}
+.splash-box .big{font-size:2.8rem;margin-bottom:10px;}
+.splash-box .btn{font-size:1.05rem;padding:13px 22px;width:100%;max-width:220px;margin:0 auto;display:block;}
+
+/* ── PROGRESS BAR ── */
+.prog-wrap{width:100%;max-width:440px;margin-bottom:4px;position:relative;z-index:2;}
+.prog-bar{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;
+  background:linear-gradient(90deg,#ffd700,#ff9900);
+  transition:width .5s cubic-bezier(.4,0,.2,1);}
+.prog-lbl{font-size:.6rem;color:rgba(255,255,255,.4);text-align:right;margin-top:2px;}
+
+/* ── RANK MODAL ── */
+.rank-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  z-index:200;align-items:center;justify-content:center;padding:16px;
+}
+.rank-overlay.show{display:flex;}
+.rank-box{
+  background:linear-gradient(135deg,#2a0860,#0e0330);
+  border:3px solid var(--gold);border-radius:20px;
+  padding:20px 16px;width:100%;max-width:360px;
+  box-shadow:0 16px 48px rgba(0,0,0,.8);
+}
+.rank-box h2{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);
+  text-align:center;margin-bottom:12px;text-shadow:0 2px 0 var(--gold-dark);}
+.rank-list{list-style:none;display:flex;flex-direction:column;gap:6px;
+  max-height:52vh;overflow-y:auto;margin-bottom:14px;}
+.rank-item{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;
+}
+.rank-item.me{background:rgba(255,215,0,.18);border:1.5px solid rgba(255,215,0,.5);}
+.rank-pos{font-family:'Luckiest Guy',cursive;font-size:1.1rem;
+  color:var(--gold);min-width:28px;text-align:center;}
+.rank-pos.gold{color:#FFD700;}
+.rank-pos.silver{color:#C0C0C0;}
+.rank-pos.bronze{color:#CD7F32;}
+.rank-name{flex:1;font-weight:800;color:#fff;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-info{text-align:right;font-size:.75rem;color:rgba(255,255,255,.6);}
+.rank-info strong{color:var(--gold);font-size:.85rem;display:block;}
+.rank-close{width:100%;font-size:1rem;padding:11px;}
+
+/* name input inside splash */
+.name-row{display:flex;gap:8px;margin-bottom:14px;}
+.name-input{
+  flex:1;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);
+  border-radius:10px;padding:10px 12px;color:#fff;font-family:'Nunito',sans-serif;
+  font-size:.95rem;font-weight:700;outline:none;
+}
+.name-input:focus{border-color:var(--gold);}
+.name-input::placeholder{color:rgba(255,255,255,.35);}
+
+/* rank button in header */
+.rank-btn{
+  background:linear-gradient(135deg,#4a1a8e,#2a0860);
+  border:2px solid var(--gold);border-radius:12px;
+  padding:5px 10px;cursor:pointer;font-size:1.1rem;
+  transition:filter .15s,transform .1s;flex-shrink:0;
+}
+.rank-btn:hover{filter:brightness(1.2);transform:scale(1.05);}
+
+/* continue splash extras */
+.continue-chances{
+  display:flex;gap:6px;justify-content:center;margin-bottom:14px;
+}
+.chance-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);
+  transition:all .3s;
+}
+.chance-dot.active{background:var(--gold);border-color:var(--gold-dark);
+  box-shadow:0 0 8px var(--gold);}
+.splash-btn-row{display:flex;gap:8px;}
+.splash-btn-row .btn{flex:1;font-size:.9rem;padding:11px 6px;}
+.btn-continue{background:linear-gradient(180deg,#44dd44,#229900);}
+.btn-give-up {background:linear-gradient(180deg,#ff4444,#cc0000);}
+
+/* combo badge */
+.combo-badge{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  font-family:'Luckiest Guy',cursive;font-size:2.5rem;
+  color:#fff;text-shadow:0 0 20px #ff9900,0 2px 0 #cc5500;
+  pointer-events:none;z-index:300;white-space:nowrap;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;
+}
+.combo-badge.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">✨ Castle</div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="rank-btn" onclick="openRank()" title="Ranking">🏆</button>
+    <div class="level-badge">
+      <div class="level-lbl">Fase</div>
+      <div class="level-num" id="lvlNum">1</div>
+    </div>
+  </div>
+</div>
+
+<div class="info-bar">
+  <div class="box">
+    <div class="icon">⚡</div>
+    <div class="num" id="movesVal">20</div>
+    <div class="lbl">Jogadas</div>
+  </div>
+  <div class="box score-box">
+    <div class="lbl">Pontos</div>
+    <div class="num" id="scoreVal">0</div>
+  </div>
+  <div class="goal-wrap">
+    <div class="goal-ttl">Objetivos</div>
+    <div class="goals" id="goalsDiv"></div>
+  </div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="prog-lbl" id="progLbl">Fase 1 — Normal</div>
+</div>
+
+<div class="powers" id="powersBar">
+  <!-- filled by JS -->
+</div>
+
+<div class="board-wrap">
+  <div id="board"></div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-restart" onclick="restartLevel()">🔁 Fase</button>
+  <button class="btn btn-hint" onclick="showHint()">💡 Dica</button>
+  <button class="btn btn-new" onclick="newGame()">🏠 Menu</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="combo-badge" id="comboBadge"></div>
+
+<!-- WIN / CONTINUE / GAME OVER SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-box">
+    <div class="big" id="splashIcon">🎉</div>
+    <h2 id="splashTitle">Fase Completa!</h2>
+    <p id="splashMsg">Parabéns!</p>
+    <!-- chances dots (shown on lose) -->
+    <div class="continue-chances" id="chanceDots" style="display:none;">
+      <div class="chance-dot" id="dot0"></div>
+      <div class="chance-dot" id="dot1"></div>
+    </div>
+    <!-- name row (shown on win to save score) -->
+    <div class="name-row" id="nameRow" style="display:none;">
+      <input class="name-input" id="nameInput" type="text" maxlength="18" placeholder="Seu nome para o ranking...">
+      <button class="btn btn-hint" style="flex:0 0 auto;padding:10px 14px;" onclick="saveAndNext()">✔</button>
+    </div>
+    <!-- single button (win/give-up screens) -->
+    <button class="btn btn-new" id="splashBtn" onclick="onSplashBtn()" style="width:100%;">▶ Próxima Fase</button>
+    <!-- two-button row (continue screen) -->
+    <div class="splash-btn-row" id="splashBtnRow" style="display:none;">
+      <button class="btn btn-give-up" onclick="onGiveUp()">❌ Desistir</button>
+      <button class="btn btn-continue" onclick="onContinue()">▶ Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- RANKING OVERLAY -->
+<div class="rank-overlay" id="rankOverlay">
+  <div class="rank-box">
+    <h2>🏆 Ranking</h2>
+    <ul class="rank-list" id="rankList"></ul>
+    <button class="btn btn-new rank-close" onclick="closeRank()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONSTANTS & CONFIG
+// ═══════════════════════════════════════════════════
+const ROWS = 8, COLS = 8;
+const GEMS  = ['❤️','💙','💛','💚','💜','🧡'];
+const GAP   = 3;
+
+// Special gem types (stored as type + 100*special_id)
+const SP_NONE    = 0;
+const SP_ROCKET  = 1; // match 4 in line → clears row or col
+const SP_BOMB    = 2; // match L or T (5?) → 3×3 blast
+const SP_CROSS   = 3; // match T/cross → cross blast
+const SP_RAINBOW = 4; // match 5 in line → clears all of that color
+
+// Level difficulty table (infinite: extrapolates)
+function getLevelConfig(lvl) {
+  // Smoother infinite scaling
+  const moves     = Math.max(14, 28 - Math.floor((lvl - 1) * 0.6));
+  const gemColors = Math.min(6, 3 + Math.floor((lvl - 1) / 4));
+  const goalCount = lvl <= 2 ? 1 : lvl <= 5 ? 2 : 3;
+  const goalAmt   = Math.min(30, 6 + Math.floor((lvl - 1) * 1.5));
+  const label     = lvl <= 3  ? 'Normal'  :
+                    lvl <= 8  ? 'Médio'   :
+                    lvl <= 15 ? 'Difícil' :
+                    lvl <= 25 ? 'Épico'   : 'Lendário';
+  const powerUps  = lvl <= 10 ? 1 : 0;
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps };
+}
+
+// Power-up definitions
+const POWERUPS = [
+  { id:'hammer', icon:'🔨', name:'Martelo',  count:1 },
+  { id:'shuffle',icon:'🔀', name:'Shuffle',  count:1 },
+  { id:'bomb',   icon:'💣', name:'Bomba',    count:1 },
+];
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+let level      = 1;
+let score      = 0;
+let totalScore = 0;
+let moves      = 20;
+let levelOver  = false;
+let board      = []; // board[r][c] = gemColor (0-5), -1 = empty
+let special    = []; // special[r][c] = SP_* constant
+let gemEls     = [];
+let selected   = null;
+let processing = false;
+let goals      = {}, goalsTarget = {};
+let cfg        = {};
+let pwCounts   = {};
+let CELL       = 44;
+let comboCount = 0;
+let splashMode  = ''; // 'win' | 'lose' | 'continue'
+let continues   = 2;
+let playerName  = localStorage.getItem('castleName') || '';
+let ranking     = JSON.parse(localStorage.getItem('castleRank') || '[]');
+
+// ═══════════════════════════════════════════════════
+//  LAYOUT HELPERS
+// ═══════════════════════════════════════════════════
+function computeCell() {
+  const w = document.getElementById('board').offsetWidth;
+  CELL = Math.floor((w - GAP * (COLS - 1)) / COLS);
+  document.getElementById('board').style.height = (CELL * ROWS + GAP * (ROWS - 1)) + 'px';
+}
+const cLeft = c => c * (CELL + GAP);
+const cTop  = r => r * (CELL + GAP);
+
+// ═══════════════════════════════════════════════════
+//  GAME INIT
+// ═══════════════════════════════════════════════════
+function newGame() {
+  level = 1; score = 0; totalScore = 0; levelOver = false;
+  startLevel();
+}
+
+function restartLevel() {
+  if (processing && !levelOver) return;
+  score = 0; levelOver = false;
+  startLevel();
+}
+
+function startLevel() {
+  cfg = getLevelConfig(level);
+  moves = cfg.moves;
+  score = 0;
+  goals = {}; goalsTarget = {};
+  selected = null; processing = false; comboCount = 0; levelOver = false; continues = 2;
+
+  // Pick random goal gems
+  const picks = shuffle(Array.from({length: cfg.gemColors}, (_,i) => i)).slice(0, cfg.goalCount);
+  picks.forEach(g => { goalsTarget[g] = cfg.goalAmt; goals[g] = 0; });
+
+  // Power-ups
+  pwCounts = {};
+  POWERUPS.forEach(p => { pwCounts[p.id] = cfg.powerUps > 0 ? p.count : 0; });
+
+  document.getElementById('splash').classList.remove('show');
+  updateUI();
+  renderGoals();
+  renderPowers();
+  buildBoard();
+}
+
+function onSplashBtn() {
+  document.getElementById('splash').classList.remove('show');
+  if (splashMode === 'win') { level++; continues = 2; startLevel(); }
+  else { level = 1; totalScore = 0; continues = 2; newGame(); }
+}
+
+// ═══════════════════════════════════════════════════
+//  BOARD BUILD
+// ═══════════════════════════════════════════════════
+function buildBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  computeCell();
+
+  // BG grid
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const bg = document.createElement('div');
+      bg.className = 'grid-bg';
+      bg.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;`;
+      boardEl.appendChild(bg);
+    }
+
+  // Data
+  board   = Array.from({length:ROWS}, () => new Array(COLS).fill(0));
+  special = Array.from({length:ROWS}, () => new Array(COLS).fill(SP_NONE));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      board[r][c] = safeGem(r, c);
+
+  // Clear initial matches
+  let tries = 0;
+  while (findAllMatches().cells.size > 0 && tries++ < 40)
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        if (quickMatchAt(r,c)) board[r][c] = safeGem(r, c);
+
+  // DOM
+  gemEls = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      gemEls[r][c] = makeGemEl(board[r][c], SP_NONE, r, c, false);
+      boardEl.appendChild(gemEls[r][c]);
+    }
+}
+
+function safeGem(r, c) {
+  let g, t = 0;
+  do { g = Math.floor(Math.random() * cfg.gemColors); t++; }
+  while (t < 12 && wouldMatch(r, c, g));
+  return g;
+}
+
+function wouldMatch(r, c, g) {
+  if (c >= 2 && board[r][c-1] === g && board[r][c-2] === g) return true;
+  if (r >= 2 && board[r-1]?.[c] === g && board[r-2]?.[c] === g) return true;
+  return false;
+}
+
+// ═══════════════════════════════════════════════════
+//  GEM DOM ELEMENT
+// ═══════════════════════════════════════════════════
+function makeGemEl(type, sp, r, c, fromAbove) {
+  const el = document.createElement('div');
+  const spClass = sp === SP_ROCKET ? 'sp-rocket' : sp === SP_BOMB ? 'sp-bomb' :
+                  sp === SP_CROSS  ? 'sp-cross'  : sp === SP_RAINBOW ? 'sp-rainbow' : '';
+  el.className  = `gem-el gc-${type}${spClass ? ' '+spClass : ''}`;
+  el.style.width = el.style.height = CELL + 'px';
+  el.style.left  = cLeft(c) + 'px';
+  el.style.top   = fromAbove ? (-CELL - GAP) + 'px' : cTop(r) + 'px';
+  el.style.zIndex = 2;
+  if (fromAbove) el.style.opacity = '0';
+  el.dataset.r = r; el.dataset.c = c; el.dataset.type = type; el.dataset.sp = sp;
+
+  // Inner emoji
+  const inner = document.createElement('span');
+  inner.style.cssText = 'position:relative;z-index:1;line-height:1;';
+  inner.textContent = sp === SP_RAINBOW ? '🌈' : GEMS[type];
+  el.appendChild(inner);
+
+  // Special icon overlay
+  if (sp !== SP_NONE) {
+    const ico = document.createElement('div');
+    ico.className = 'sp-icon';
+    ico.textContent = sp === SP_ROCKET ? '🚀' : sp === SP_BOMB ? '💣' :
+                      sp === SP_CROSS  ? '✳️'  : '';
+    el.appendChild(ico);
+  }
+
+  el.addEventListener('click', () => onCellClick(+el.dataset.r, +el.dataset.c));
+  return el;
+}
+
+function refreshGemEl(r, c) {
+  // Rebuild element visuals in-place (after special assignment)
+  const old = gemEls[r][c];
+  if (!old) return;
+  const sp   = special[r][c];
+  const type = board[r][c];
+  const nu   = makeGemEl(type, sp, r, c, false);
+  nu.style.top  = old.style.top;
+  nu.style.left = old.style.left;
+  old.replaceWith(nu);
+  gemEls[r][c] = nu;
+}
+
+// ═══════════════════════════════════════════════════
+//  CLICK / SWAP
+// ═══════════════════════════════════════════════════
+function onCellClick(r, c) {
+  if (processing) return;
+
+  // If clicking a rainbow gem while another is selected, activate rainbow
+  if (selected && special[r][c] === SP_RAINBOW) {
+    const {r:sr, c:sc} = selected;
+    gemEls[sr][sc].classList.remove('selected');
+    selected = null;
+    activateRainbow(r, c, board[sr][sc]);
+    return;
+  }
+  if (selected && special[selected.r][selected.c] === SP_RAINBOW) {
+    const {r:sr, c:sc} = selected;
+    gemEls[sr][sc].classList.remove('selected');
+    selected = null;
+    activateRainbow(sr, sc, board[r][c]);
+    return;
+  }
+
+  if (!selected) {
+    selected = {r, c};
+    gemEls[r][c].classList.add('selected');
+  } else {
+    const {r:sr, c:sc} = selected;
+    gemEls[sr][sc].classList.remove('selected');
+    if (sr === r && sc === c) { selected = null; return; }
+    if (Math.abs(sr-r) + Math.abs(sc-c) === 1) {
+      selected = null;
+      trySwap(sr, sc, r, c);
+    } else {
+      selected = {r, c};
+      gemEls[r][c].classList.add('selected');
+    }
+  }
+}
+
+async function trySwap(r1,c1,r2,c2) {
+  processing = true;
+  startWatchdog();
+  try {
+    animSwap(r1,c1,r2,c2);
+    dataSwap(r1,c1,r2,c2);
+    await delay(190);
+
+    const matches = findAllMatches();
+    if (matches.cells.size === 0) {
+      animSwap(r1,c1,r2,c2);
+      dataSwap(r1,c1,r2,c2);
+      await delay(190);
+      return;
+    }
+
+    moves--; updateUI();
+    comboCount = 0;
+    await resolveMatches(matches, null);
+    if (!levelOver) checkWinLose();
+  } catch(e) {
+    console.error('trySwap error:', e);
+  } finally {
+    processing = false;
+  }
+}
+
+function animSwap(r1,c1,r2,c2) {
+  const a = gemEls[r1][c1], b = gemEls[r2][c2];
+  [a,b].forEach(el => el.classList.add('swapping'));
+  a.style.top  = cTop(r2)+'px';  a.style.left = cLeft(c2)+'px';
+  b.style.top  = cTop(r1)+'px';  b.style.left = cLeft(c1)+'px';
+  setTimeout(() => [a,b].forEach(el => el.classList.remove('swapping')), 200);
+}
+
+function dataSwap(r1,c1,r2,c2) {
+  [board[r1][c1],   board[r2][c2]]   = [board[r2][c2],   board[r1][c1]];
+  [special[r1][c1], special[r2][c2]] = [special[r2][c2], special[r1][c1]];
+  [gemEls[r1][c1],  gemEls[r2][c2]]  = [gemEls[r2][c2],  gemEls[r1][c1]];
+  gemEls[r1][c1].dataset.r = r1; gemEls[r1][c1].dataset.c = c1;
+  gemEls[r2][c2].dataset.r = r2; gemEls[r2][c2].dataset.c = c2;
+}
+
+// ═══════════════════════════════════════════════════
+//  MATCH FINDING — returns {cells: Set, shapes}
+// ═══════════════════════════════════════════════════
+function findAllMatches() {
+  const hLines = [], vLines = [];
+
+  // Horizontal runs ≥ 3
+  for (let r = 0; r < ROWS; r++) {
+    let c = 0;
+    while (c < COLS) {
+      if (board[r][c] < 0) { c++; continue; }
+      let e = c;
+      while (e+1 < COLS && board[r][e+1] === board[r][c] && board[r][e+1] >= 0) e++;
+      if (e - c >= 2) hLines.push({ r, c1:c, c2:e, gem:board[r][c], len: e-c+1 });
+      c = e + 1;
+    }
+  }
+  // Vertical runs ≥ 3
+  for (let c = 0; c < COLS; c++) {
+    let r = 0;
+    while (r < ROWS) {
+      if (board[r][c] < 0) { r++; continue; }
+      let e = r;
+      while (e+1 < ROWS && board[e+1][c] === board[r][c] && board[e+1][c] >= 0) e++;
+      if (e - r >= 2) vLines.push({ c, r1:r, r2:e, gem:board[r][c], len: e-r+1 });
+      r = e + 1;
+    }
+  }
+
+  const cells = new Set();
+  const shapes = []; // { type, r, c, gem, extraCells }
+
+  // Collect all matched cells and classify shapes
+  // We detect combined shapes: L, T, cross, 4, 5
+  const hSet = new Set(); const vSet = new Set();
+  hLines.forEach(l => { for(let cc=l.c1;cc<=l.c2;cc++) hSet.add(k(l.r,cc)); });
+  vLines.forEach(l => { for(let rr=l.r1;rr<=l.r2;rr++) vSet.add(k(rr,l.c)); });
+
+  // Process each horizontal line
+  hLines.forEach(hl => {
+    // Find intersecting vertical lines
+    const crosses = vLines.filter(vl =>
+      vl.gem === hl.gem && vl.c >= hl.c1 && vl.c <= hl.c2
+    );
+
+    if (crosses.length > 0) {
+      // L / T / cross shape
+      const allCells = new Set();
+      for (let cc = hl.c1; cc <= hl.c2; cc++) allCells.add(k(hl.r, cc));
+      crosses.forEach(vl => { for(let rr=vl.r1;rr<=vl.r2;rr++) allCells.add(k(rr, vl.c)); });
+      allCells.forEach(key => cells.add(key));
+
+      const totalLen = allCells.size;
+      let spType = SP_NONE;
+      // Classify: cross / T (big) → cross bomb, L → bomb, 4-line → rocket
+      if (totalLen >= 9 || (hl.len >= 3 && crosses.some(v => v.len >= 3))) spType = SP_CROSS;
+      else spType = SP_BOMB;
+
+      // Pivot = intersection point
+      const pivC = crosses[0].c;
+      const pivR = hl.r;
+      shapes.push({ spType, r:pivR, c:pivC, gem:hl.gem });
+    } else {
+      for(let cc=hl.c1;cc<=hl.c2;cc++) cells.add(k(hl.r, cc));
+      // 5 in a row → rainbow, 4 → rocket (row), 3 → nothing special
+      let spType = SP_NONE;
+      if (hl.len >= 5) spType = SP_RAINBOW;
+      else if (hl.len === 4) spType = SP_ROCKET;
+      if (spType !== SP_NONE) {
+        const pivC = Math.floor((hl.c1+hl.c2)/2);
+        shapes.push({ spType, r:hl.r, c:pivC, gem:hl.gem, dir:'h' });
+      }
+    }
+  });
+
+  // Vertical-only lines (not part of a cross)
+  vLines.forEach(vl => {
+    const isPartOfCross = hLines.some(hl =>
+      hl.gem === vl.gem && hl.c1 <= vl.c && vl.c <= hl.c2
+    );
+    if (!isPartOfCross) {
+      for(let rr=vl.r1;rr<=vl.r2;rr++) cells.add(k(rr, vl.c));
+      let spType = SP_NONE;
+      if (vl.len >= 5) spType = SP_RAINBOW;
+      else if (vl.len === 4) spType = SP_ROCKET;
+      if (spType !== SP_NONE) {
+        const pivR = Math.floor((vl.r1+vl.r2)/2);
+        shapes.push({ spType, r:pivR, c:vl.c, gem:vl.gem, dir:'v' });
+      }
+    }
+  });
+
+  return { cells, shapes };
+}
+
+function k(r,c) { return r*100+c; }
+function uk(key) { return { r: Math.floor(key/100), c: key%100 }; }
+
+function quickMatchAt(r,c) {
+  const g = board[r][c];
+  let h=1,v=1,i;
+  i=c-1; while(i>=0&&board[r][i]===g)  {h++;i--;}
+  i=c+1; while(i<COLS&&board[r][i]===g) {h++;i++;}
+  i=r-1; while(i>=0&&board[i]?.[c]===g) {v++;i--;}
+  i=r+1; while(i<ROWS&&board[i]?.[c]===g){v++;i++;}
+  return h>=3||v>=3;
+}
+
+// ═══════════════════════════════════════════════════
+//  SPECIAL GEM ACTIVATIONS
+// ═══════════════════════════════════════════════════
+function triggerSpecialAt(r, c, extraCells) {
+  // Called when a special gem is part of a match — add its blast cells
+  const sp = special[r][c];
+  if (sp === SP_NONE) return;
+
+  if (sp === SP_ROCKET) {
+    const dir = gemEls[r][c]?.dataset.dir || 'h';
+    if (dir === 'h' || true) { // clear entire row AND col (upgraded feel)
+      for (let cc=0;cc<COLS;cc++) extraCells.add(k(r,cc));
+      for (let rr=0;rr<ROWS;rr++) extraCells.add(k(rr,c));
+    }
+  } else if (sp === SP_BOMB) {
+    for (let dr=-2;dr<=2;dr++)
+      for (let dc=-2;dc<=2;dc++)
+        if (r+dr>=0&&r+dr<ROWS&&c+dc>=0&&c+dc<COLS) extraCells.add(k(r+dr,c+dc));
+  } else if (sp === SP_CROSS) {
+    for (let cc=0;cc<COLS;cc++) extraCells.add(k(r,cc));
+    for (let rr=0;rr<ROWS;rr++) extraCells.add(k(rr,c));
+    for (let d=-2;d<=2;d++) {
+      if(r+d>=0&&r+d<ROWS) { extraCells.add(k(r+d,c-1)); extraCells.add(k(r+d,c+1)); }
+      if(c+d>=0&&c+d<COLS) { extraCells.add(k(r-1,c+d)); extraCells.add(k(r+1,c+d)); }
+    }
+  }
+  // Rainbow handled separately
+}
+
+async function activateRainbow(r, c, targetColor) {
+  processing = true;
+  try {
+    moves--; updateUI();
+    const allCells = new Set();
+    for(let rr=0;rr<ROWS;rr++)
+      for(let cc=0;cc<COLS;cc++)
+        if(board[rr][cc] === targetColor || (rr===r && cc===c)) allCells.add(k(rr,cc));
+    showToast('🌈 Arco-íris!');
+    await popCells(allCells);
+    await gravityAndRefill([]);
+    comboCount = 0;
+    const more = findAllMatches();
+    if (more.cells.size > 0) await resolveMatches(more, null);
+    if (!levelOver) checkWinLose();
+  } catch(e) {
+    console.error('activateRainbow error:', e);
+  } finally {
+    processing = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  RESOLVE MATCHES (pop → assign specials → gravity → cascade)
+// ═══════════════════════════════════════════════════
+async function resolveMatches(matchResult, pivot) {
+  comboCount++;
+  if (comboCount > 1) showCombo(comboCount);
+
+  let { cells, shapes } = matchResult;
+
+  // Expand cells for any special gems caught in the match
+  const extraCells = new Set();
+  cells.forEach(key => {
+    const {r,c} = uk(key);
+    if (r >= 0 && r < ROWS && c >= 0 && c < COLS &&
+        special[r][c] !== SP_NONE && special[r][c] !== SP_RAINBOW) {
+      triggerSpecialAt(r, c, extraCells);
+    }
+  });
+  extraCells.forEach(key => cells.add(key));
+
+  // Score + goals (count before popping)
+  cells.forEach(key => {
+    const {r,c} = uk(key);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+    const g = board[r][c];
+    if (g < 0) return;
+    score += 60 * comboCount; totalScore += 60 * comboCount;
+    if (goalsTarget[g] !== undefined)
+      goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+  });
+  updateUI(); renderGoals();
+
+  // Pop animation clears board cells to -1
+  await popCells(cells);
+
+  // Gravity + refill
+  await gravityAndRefill(shapes || []);
+
+  // Check win mid-cascade
+  if (!levelOver) checkWinLose();
+
+  // Cascade only if level not over
+  if (!levelOver) {
+    const more = findAllMatches();
+    if (more.cells.size > 0) {
+      await resolveMatches(more, null);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  POP CELLS
+// ═══════════════════════════════════════════════════
+async function popCells(cellSet) {
+  cellSet.forEach(key => {
+    const {r,c} = uk(key);
+    const el = gemEls[r][c];
+    if (el) { el.classList.add('popping'); el.style.zIndex = 20; }
+  });
+  await delay(310);
+  cellSet.forEach(key => {
+    const {r,c} = uk(key);
+    if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
+    board[r][c]   = -1;
+    special[r][c] = SP_NONE;
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  GRAVITY + REFILL
+// ═══════════════════════════════════════════════════
+async function gravityAndRefill(shapes) {
+  shapes = shapes || [];
+  const boardEl = document.getElementById('board');
+
+  // Phase 1: update data model and DOM positions synchronously per column
+  // so the board state is always consistent before any await
+  for (let c = 0; c < COLS; c++) {
+    // Collect surviving gems top→bottom
+    const surviving = [];
+    for (let r = 0; r < ROWS; r++) {
+      if (board[r][c] >= 0 && gemEls[r][c]) {
+        surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
+      }
+    }
+
+    const missing = ROWS - surviving.length;
+    if (missing === 0) continue;
+
+    // Special gem for this column (if any)
+    const colShape = shapes.find(sh => sh.c === c);
+
+    // Build new gems — position them above the board INSTANTLY (no transition yet)
+    const newGems = [];
+    for (let i = 0; i < missing; i++) {
+      const isSpecial = colShape && i === missing - 1;
+      const type = isSpecial ? colShape.gem : Math.floor(Math.random() * cfg.gemColors);
+      const sp   = isSpecial ? colShape.spType : SP_NONE;
+      const el   = makeGemEl(type, sp, -1, c, false); // fromAbove=false, we set pos manually
+      // Disable transition temporarily so we can set start position
+      el.style.transition = 'none';
+      el.style.opacity    = '0';
+      el.style.top        = (-(missing - i) * (CELL + GAP)) + 'px';
+      el.style.left       = cLeft(c) + 'px';
+      el.style.width      = CELL + 'px';
+      el.style.height     = CELL + 'px';
+      boardEl.appendChild(el);
+      newGems.push({ type, sp, el });
+    }
+
+    // Final column: new gems on top, survivors below
+    const finalCol = [...newGems, ...surviving];
+
+    // Update data model immediately (before animation)
+    finalCol.forEach(({ type, sp, el }, idx) => {
+      board[idx][c]   = type;
+      special[idx][c] = sp;
+      gemEls[idx][c]  = el;
+      el.dataset.r    = idx;
+      el.dataset.c    = c;
+      el.dataset.type = type;
+      el.dataset.sp   = sp;
+    });
+
+    // Move survivors to their new positions instantly (no animation yet)
+    surviving.forEach(({ el }, i) => {
+      const finalRow = missing + i;
+      el.style.transition = 'none';
+      el.style.top        = cTop(finalRow) + 'px';
+    });
+  }
+
+  // Phase 2: force a single reflow, then re-enable transitions and animate all gems at once
+  // This is the KEY fix — one reflow for all columns, then one unified transition
+  void document.getElementById('board').offsetHeight;
+
+  for (let c = 0; c < COLS; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      const el = gemEls[r][c];
+      if (!el) continue;
+      // Re-enable transition
+      el.style.transition = '';
+      // Animate to final position
+      el.style.opacity = '1';
+      el.style.top     = cTop(r) + 'px';
+      el.style.left    = cLeft(c) + 'px';
+    }
+  }
+
+  // Wait for CSS transition to finish (0.36s fall + some buffer)
+  await delay(420);
+}
+
+// ═══════════════════════════════════════════════════
+//  POWER-UPS
+// ═══════════════════════════════════════════════════
+function renderPowers() {
+  const bar = document.getElementById('powersBar');
+  bar.innerHTML = '';
+  POWERUPS.forEach(p => {
+    const n = pwCounts[p.id] || 0;
+    const div = document.createElement('div');
+    div.className = 'pw' + (n > 0 ? ' has' : '');
+    div.innerHTML = `<span class="pi">${p.icon}</span><span class="pn">${p.name}</span><span class="pc">×${n}</span>`;
+    div.onclick = () => usePowerUp(p.id);
+    bar.appendChild(div);
+  });
+}
+
+async function usePowerUp(id) {
+  if (processing || (pwCounts[id]||0) <= 0) {
+    if ((pwCounts[id]||0) <= 0) showToast('Sem ' + (POWERUPS.find(p=>p.id===id)||{name:id}).name + '! 😅');
+    return;
+  }
+  pwCounts[id]--;
+  renderPowers();
+  processing = true;
+
+  try {
+    if (id === 'hammer') {
+      if (!selected) { showToast('Selecione uma gema primeiro!'); pwCounts[id]++; renderPowers(); return; }
+      const {r,c} = selected;
+      gemEls[r][c].classList.remove('selected'); selected = null;
+      showToast('🔨 Bam!');
+      moves--; updateUI();
+      await popCells(new Set([k(r,c)]));
+      await gravityAndRefill([]);
+      comboCount = 0;
+      const more = findAllMatches();
+      if (more.cells.size > 0) await resolveMatches(more, null);
+      if (!levelOver) checkWinLose();
+
+    } else if (id === 'shuffle') {
+      showToast('🔀 Embaralhando!');
+      await shuffleBoard();
+
+    } else if (id === 'bomb') {
+      moves--; updateUI();
+      const cr = 1 + Math.floor(Math.random()*(ROWS-2));
+      const cc = 1 + Math.floor(Math.random()*(COLS-2));
+      const cells = new Set();
+      for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) {
+        const rr=cr+dr, cc2=cc+dc;
+        if(rr>=0&&rr<ROWS&&cc2>=0&&cc2<COLS) cells.add(k(rr,cc2));
+      }
+      showToast('💥 BOOM!');
+      cells.forEach(key => {
+        const {r,c} = uk(key);
+        const g = board[r][c]; if(g<0) return;
+        score += 80; totalScore += 80;
+        if(goalsTarget[g] !== undefined) goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+      });
+      updateUI(); renderGoals();
+      await popCells(cells);
+      await gravityAndRefill([]);
+      comboCount = 0;
+      const more = findAllMatches();
+      if (more.cells.size > 0) await resolveMatches(more, null);
+      if (!levelOver) checkWinLose();
+    }
+  } catch(e) {
+    console.error('usePowerUp error:', e);
+  } finally {
+    processing = false;
+  }
+}
+
+async function shuffleBoard() {
+  // Flatten, shuffle, re-assign
+  const flat = [];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) flat.push(board[r][c]);
+  shuffle(flat);
+  let i=0;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++,i++) {
+    board[r][c]   = flat[i];
+    special[r][c] = SP_NONE;
+    if(gemEls[r][c]) { gemEls[r][c].remove(); }
+    gemEls[r][c] = makeGemEl(flat[i], SP_NONE, r, c, false);
+    document.getElementById('board').appendChild(gemEls[r][c]);
+  }
+  await delay(200);
+  // If new matches exist, resolve silently
+  const more = findAllMatches();
+  if(more.cells.size>0) { comboCount=0; await resolveMatches(more, null); }
+}
+
+// ═══════════════════════════════════════════════════
+//  HINT
+// ═══════════════════════════════════════════════════
+function showHint() {
+  if(processing) return;
+  document.querySelectorAll('.hint-glow').forEach(el => el.classList.remove('hint-glow'));
+  const h = findPossibleMove();
+  if(!h) { showToast('Sem movimentos disponíveis! 😅'); return; }
+  gemEls[h.r1][h.c1].classList.add('hint-glow');
+  gemEls[h.r2][h.c2].classList.add('hint-glow');
+  setTimeout(() => document.querySelectorAll('.hint-glow').forEach(el => el.classList.remove('hint-glow')), 2400);
+}
+
+function findPossibleMove() {
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+    for(const [nr,nc] of [[r,c+1],[r+1,c]]) {
+      if(nr<ROWS&&nc<COLS) {
+        dataSwap(r,c,nr,nc);
+        const m = findAllMatches();
+        dataSwap(r,c,nr,nc);
+        if(m.cells.size>0) return {r1:r,c1:c,r2:nr,c2:nc};
+      }
+    }
+  }
+  return null;
+}
+
+function checkWinLose() {
+  if (levelOver) return;
+
+  const won = Object.keys(goalsTarget).every(g => (goals[g]||0) >= goalsTarget[g]);
+  if (won) {
+    levelOver  = true;
+    processing = false;
+    splashMode = 'win';
+    setTimeout(() => showWinSplash(), 500);
+    return;
+  }
+  if (moves <= 0) {
+    levelOver  = true;
+    processing = false;
+    if (continues > 0) {
+      splashMode = 'continue';
+      setTimeout(() => showContinueSplash(), 400);
+    } else {
+      splashMode = 'lose';
+      setTimeout(() => showLoseSplash(), 400);
+    }
+  }
+}
+
+function showWinSplash() {
+  const nextCfg = getLevelConfig(level + 1);
+  document.getElementById('splashIcon').textContent  = level % 10 === 0 ? '👑' : '🎉';
+  document.getElementById('splashTitle').textContent = 'Fase Completa!';
+  document.getElementById('splashMsg').innerHTML     =
+    `Fase ${level} — ${score.toLocaleString('pt-BR')} pts<br>Próxima: Fase ${level+1} (${nextCfg.label})`;
+  // Show name input if no name yet, else just next button
+  const hasName = playerName.trim().length > 0;
+  document.getElementById('nameRow').style.display    = hasName ? 'none' : 'flex';
+  document.getElementById('splashBtn').style.display  = hasName ? 'block' : 'none';
+  document.getElementById('splashBtn').textContent    = `▶ Fase ${level+1}`;
+  document.getElementById('splashBtnRow').style.display = 'none';
+  document.getElementById('chanceDots').style.display   = 'none';
+  if (hasName) saveScore();
+  document.getElementById('splash').classList.add('show');
+}
+
+function showContinueSplash() {
+  const penalty = continues === 2 ? 2 : 4;
+  document.getElementById('splashIcon').textContent  = '😰';
+  document.getElementById('splashTitle').textContent = 'Sem Jogadas!';
+  document.getElementById('splashMsg').innerHTML     =
+    `Continuar custa <strong style="color:var(--gold)">+${penalty} jogadas a menos</strong><br>` +
+    `Chances restantes: ${continues}`;
+  document.getElementById('chanceDots').style.display   = 'flex';
+  document.getElementById('dot0').className = 'chance-dot' + (continues >= 1 ? ' active' : '');
+  document.getElementById('dot1').className = 'chance-dot' + (continues >= 2 ? ' active' : '');
+  document.getElementById('nameRow').style.display      = 'none';
+  document.getElementById('splashBtn').style.display    = 'none';
+  document.getElementById('splashBtnRow').style.display = 'flex';
+  document.getElementById('splash').classList.add('show');
+}
+
+function showLoseSplash() {
+  document.getElementById('splashIcon').textContent  = '💀';
+  document.getElementById('splashTitle').textContent = 'Game Over!';
+  document.getElementById('splashMsg').innerHTML     =
+    `Fase ${level} — ${score.toLocaleString('pt-BR')} pts<br>Sem mais chances!`;
+  document.getElementById('chanceDots').style.display   = 'flex';
+  document.getElementById('dot0').className = 'chance-dot';
+  document.getElementById('dot1').className = 'chance-dot';
+  document.getElementById('nameRow').style.display      = 'none';
+  document.getElementById('splashBtnRow').style.display = 'none';
+  document.getElementById('splashBtn').style.display    = 'block';
+  document.getElementById('splashBtn').textContent      = '🔄 Recomeçar do Zero';
+  document.getElementById('splash').classList.add('show');
+}
+
+function onContinue() {
+  const penalty = continues === 2 ? 2 : 4;
+  continues--;
+  // Give extra moves = base moves of the level minus penalty
+  const extraMoves = Math.max(3, Math.floor(cfg.moves / 2) - penalty);
+  moves = extraMoves;
+  levelOver = false;
+  document.getElementById('splash').classList.remove('show');
+  updateUI();
+}
+
+function onGiveUp() {
+  continues = 0;
+  showLoseSplash();
+}
+
+function saveAndNext() {
+  const inp = document.getElementById('nameInput').value.trim();
+  if (inp.length === 0) { document.getElementById('nameInput').focus(); return; }
+  playerName = inp;
+  localStorage.setItem('castleName', playerName);
+  saveScore();
+  document.getElementById('nameRow').style.display   = 'none';
+  document.getElementById('splashBtn').style.display = 'block';
+}
+
+function saveScore() {
+  if (!playerName) return;
+  const entry = { name: playerName, level, score, date: new Date().toLocaleDateString('pt-BR') };
+  ranking.push(entry);
+  // Keep top 50, sort by level desc then score desc
+  ranking.sort((a,b) => b.level - a.level || b.score - a.score);
+  if (ranking.length > 50) ranking.length = 50;
+  localStorage.setItem('castleRank', JSON.stringify(ranking));
+}
+
+// ── RANKING UI ──
+function openRank() {
+  renderRankList();
+  document.getElementById('rankOverlay').classList.add('show');
+}
+function closeRank() {
+  document.getElementById('rankOverlay').classList.remove('show');
+}
+function renderRankList() {
+  const ul = document.getElementById('rankList');
+  ul.innerHTML = '';
+  if (ranking.length === 0) {
+    ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Nenhum recorde ainda!</li>';
+    return;
+  }
+  ranking.forEach((e, i) => {
+    const isMe = e.name === playerName;
+    const li   = document.createElement('li');
+    li.className = 'rank-item' + (isMe ? ' me' : '');
+    const medal = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const posIcon = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+    li.innerHTML = `
+      <span class="rank-pos ${medal}">${posIcon}</span>
+      <span class="rank-name">${e.name}${isMe?' 👈':''}</span>
+      <span class="rank-info"><strong>${e.score.toLocaleString('pt-BR')} pts</strong>Fase ${e.level} · ${e.date}</span>
+    `;
+    ul.appendChild(li);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════
+function updateUI() {
+  document.getElementById('lvlNum').textContent   = level;
+  document.getElementById('movesVal').textContent = Math.max(0, moves);
+  document.getElementById('scoreVal').textContent = score.toLocaleString('pt-BR');
+
+  // Progress bar
+  const total = Object.values(goalsTarget).reduce((a,b)=>a+b, 0);
+  const done  = Object.entries(goals).reduce((a,[g,v])=> a + Math.min(v, goalsTarget[g]||0), 0);
+  const pct   = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLbl').textContent  = `Fase ${level} — ${cfg.label||'Normal'}`;
+}
+
+function renderGoals() {
+  const div = document.getElementById('goalsDiv');
+  div.innerHTML = '';
+  Object.entries(goalsTarget).forEach(([g, target]) => {
+    g = parseInt(g);
+    const count = Math.min(goals[g]||0, target);
+    const done  = count >= target;
+    const item  = document.createElement('div');
+    item.className = 'gi' + (done ? ' done' : '');
+    item.innerHTML = `<span class="g">${GEMS[g]}</span> ${count}/${target}`;
+    div.appendChild(item);
+  });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+let comboTimer;
+function showCombo(n) {
+  const el = document.getElementById('comboBadge');
+  const labels = ['','','COMBO!','DUPLO! 🔥','TRIPLO! 💥','MEGA! ⚡','ULTRA! 🌟','LENDÁRIO! 👑'];
+  el.textContent = labels[Math.min(n, labels.length-1)] || `${n}x COMBO!`;
+  el.classList.remove('show');
+  el.offsetHeight;
+  el.classList.add('show');
+  clearTimeout(comboTimer);
+  comboTimer = setTimeout(() => el.classList.remove('show'), 1200);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Safety watchdog — if processing gets stuck, unblock after 6s
+let _watchdog = null;
+function startWatchdog() {
+  clearTimeout(_watchdog);
+  _watchdog = setTimeout(() => {
+    if (processing) {
+      console.warn('Watchdog: processing stuck, resetting');
+      processing = false;
+      selected = null;
+    }
+  }, 6000);
+}
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr; }
+
+window.addEventListener('resize', () => {
+  if (!processing) {
+    computeCell();
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+      const el = gemEls[r]?.[c];
+      if(el) { el.style.width=el.style.height=CELL+'px'; el.style.top=cTop(r)+'px'; el.style.left=cLeft(c)+'px'; }
+    }
+  }
+});
+
+// ── START ──
+newGame();
+</script>
+</body>
+</html>
