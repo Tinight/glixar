@@ -2,7 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0e0628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Castle Match">
+<meta name="description" content="Jogo match-3 estilo Royal Match com níveis infinitos">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Castle Match ✨</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -79,9 +86,27 @@ body::before{
 .pw:hover{filter:brightness(1.2);transform:translateY(-2px);}
 .pw:active{transform:translateY(1px);}
 .pw.has{border-color:var(--gold);}
+.pw.active-tool{border-color:#44ffaa;box-shadow:0 0 12px #44ffaa88;animation:toolPulse .6s ease infinite alternate;}
 .pw .pi{font-size:1.2rem;display:block;}
 .pw .pc{font-size:.6rem;color:rgba(255,255,255,.55);font-weight:800;}
 .pw .pn{font-size:.75rem;font-weight:900;color:#fff;}
+.pw .pcount{font-size:.7rem;font-weight:900;color:var(--gold);}
+
+/* bomb preview overlay */
+#bombPreview{
+  display:none;position:absolute;pointer-events:none;z-index:50;
+  border-radius:9px;background:rgba(255,80,80,.25);
+  border:2px dashed rgba(255,100,100,.7);
+  transition:top .05s,left .05s;
+}
+/* hammer cursor on board */
+.board-wrap.hammer-mode{cursor:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="26" font-size="26">🔨</text></svg>') 4 28,crosshair;}
+.board-wrap.bomb-mode  {cursor:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="26" font-size="26">💣</text></svg>') 16 28,crosshair;}
+
+@keyframes toolPulse{
+  from{box-shadow:0 0 6px #44ffaa44;}
+  to  {box-shadow:0 0 16px #44ffaacc;}
+}
 
 /* ── BOARD ── */
 .board-wrap{
@@ -343,8 +368,10 @@ body::before{
   <!-- filled by JS -->
 </div>
 
-<div class="board-wrap">
-  <div id="board"></div>
+<div class="board-wrap" id="boardWrap">
+  <div id="board">
+    <div id="bombPreview"></div>
+  </div>
 </div>
 
 <div class="actions">
@@ -355,6 +382,19 @@ body::before{
 
 <div class="toast" id="toast"></div>
 <div class="combo-badge" id="comboBadge"></div>
+
+<!-- RESUME OVERLAY -->
+<div class="rank-overlay" id="resumeOverlay">
+  <div class="rank-box" style="text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🏰</div>
+    <h2 style="margin-bottom:8px;">Bem-vindo de volta!</h2>
+    <p style="color:rgba(255,255,255,.7);margin-bottom:18px;" id="resumeMsg">Você tem um jogo salvo.</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-give-up rank-close" style="flex:1;" onclick="discardSave()">🆕 Novo Jogo</button>
+      <button class="btn btn-continue rank-close" style="flex:1;" onclick="resumeGame()">▶ Continuar</button>
+    </div>
+  </div>
+</div>
 
 <!-- WIN / CONTINUE / GAME OVER SPLASH -->
 <div class="splash" id="splash">
@@ -450,6 +490,95 @@ let splashMode  = ''; // 'win' | 'lose' | 'continue'
 let continues   = 2;
 let playerName  = localStorage.getItem('castleName') || '';
 let ranking     = JSON.parse(localStorage.getItem('castleRank') || '[]');
+let activeTool  = null;  // 'hammer' | 'bomb' | null
+const PW_MAX    = 3;     // max of each power-up
+
+// ═══════════════════════════════════════════════════
+//  SAVE / LOAD
+// ═══════════════════════════════════════════════════
+const SAVE_KEY = 'castleSave';
+
+function saveGame() {
+  if (levelOver) return; // don't save mid-splash
+  const data = {
+    level, score, totalScore, moves, continues,
+    goals: {...goals},
+    goalsTarget: {...goalsTarget},
+    pwCounts: {...pwCounts},
+    board: board.map(row => [...row]),
+    special: special.map(row => [...row]),
+    cfg: {...cfg},
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function hasSave() {
+  return !!localStorage.getItem(SAVE_KEY);
+}
+
+function loadSave() {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return false;
+  try {
+    const d = JSON.parse(raw);
+    level      = d.level;
+    score      = d.score;
+    totalScore = d.totalScore;
+    moves      = d.moves;
+    continues  = d.continues;
+    goals      = d.goals;
+    goalsTarget= d.goalsTarget;
+    pwCounts   = d.pwCounts;
+    cfg        = d.cfg;
+    board      = d.board;
+    special    = d.special;
+    return true;
+  } catch(e) {
+    console.warn('Save corrupt:', e);
+    localStorage.removeItem(SAVE_KEY);
+    return false;
+  }
+}
+
+function clearSave() {
+  localStorage.removeItem(SAVE_KEY);
+}
+
+function resumeGame() {
+  document.getElementById('resumeOverlay').classList.remove('show');
+  // Rebuild DOM from loaded state
+  selected = null; processing = false; comboCount = 0; levelOver = false; activeTool = null;
+  document.getElementById('splash').classList.remove('show');
+  updateUI(); renderGoals(); renderPowers();
+  buildBoardFromState();
+}
+
+function discardSave() {
+  clearSave();
+  document.getElementById('resumeOverlay').classList.remove('show');
+  newGame();
+}
+
+// Build board DOM from existing board/special data (no random generation)
+function buildBoardFromState() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '<div id="bombPreview"></div>';
+  computeCell();
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const bg = document.createElement('div');
+      bg.className = 'grid-bg';
+      bg.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;`;
+      boardEl.appendChild(bg);
+    }
+  gemEls = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      gemEls[r][c] = makeGemEl(board[r][c], special[r][c], r, c, false);
+      boardEl.appendChild(gemEls[r][c]);
+    }
+  setupBombPreview();
+}
 
 // ═══════════════════════════════════════════════════
 //  LAYOUT HELPERS
@@ -466,7 +595,8 @@ const cTop  = r => r * (CELL + GAP);
 //  GAME INIT
 // ═══════════════════════════════════════════════════
 function newGame() {
-  level = 1; score = 0; totalScore = 0; levelOver = false;
+  level = 1; score = 0; totalScore = 0; levelOver = false; activeTool = null;
+  clearSave();
   startLevel();
 }
 
@@ -481,21 +611,30 @@ function startLevel() {
   moves = cfg.moves;
   score = 0;
   goals = {}; goalsTarget = {};
-  selected = null; processing = false; comboCount = 0; levelOver = false; continues = 2;
+  selected = null; processing = false; comboCount = 0; levelOver = false; continues = 2; activeTool = null;
+  cancelActiveTool();
 
   // Pick random goal gems
   const picks = shuffle(Array.from({length: cfg.gemColors}, (_,i) => i)).slice(0, cfg.goalCount);
   picks.forEach(g => { goalsTarget[g] = cfg.goalAmt; goals[g] = 0; });
 
-  // Power-ups
-  pwCounts = {};
-  POWERUPS.forEach(p => { pwCounts[p.id] = cfg.powerUps > 0 ? p.count : 0; });
+  // Power-ups: give 1 of each if empty, otherwise keep accumulated (max 3)
+  if (!pwCounts || Object.keys(pwCounts).length === 0) {
+    pwCounts = {};
+    POWERUPS.forEach(p => { pwCounts[p.id] = 1; });
+  }
+  // Every 5 levels completed: +1 of each (capped at PW_MAX)
+  if (level > 1 && (level - 1) % 5 === 0) {
+    POWERUPS.forEach(p => { pwCounts[p.id] = Math.min(PW_MAX, (pwCounts[p.id]||0) + 1); });
+    setTimeout(() => showToast('🎁 +1 Power-up de cada!'), 600);
+  }
 
   document.getElementById('splash').classList.remove('show');
   updateUI();
   renderGoals();
   renderPowers();
   buildBoard();
+  saveGame();
 }
 
 function onSplashBtn() {
@@ -542,6 +681,45 @@ function buildBoard() {
       gemEls[r][c] = makeGemEl(board[r][c], SP_NONE, r, c, false);
       boardEl.appendChild(gemEls[r][c]);
     }
+  setupBombPreview();
+}
+
+function setupBombPreview() {
+  const boardEl = document.getElementById('board');
+  const preview = document.getElementById('bombPreview');
+  if (!preview) return;
+  const previewSize = CELL * 5 + GAP * 4;
+  preview.style.width  = previewSize + 'px';
+  preview.style.height = previewSize + 'px';
+
+  boardEl.addEventListener('mousemove', onBoardPointerMove);
+  boardEl.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    const rect = boardEl.getBoundingClientRect();
+    onBoardPointerMoveXY(t.clientX - rect.left, t.clientY - rect.top);
+    e.preventDefault();
+  }, {passive:false});
+}
+
+function onBoardPointerMove(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  onBoardPointerMoveXY(e.clientX - rect.left, e.clientY - rect.top);
+}
+
+function onBoardPointerMoveXY(x, y) {
+  if (activeTool !== 'bomb') return;
+  const c = Math.round(x / (CELL + GAP));
+  const r = Math.round(y / (CELL + GAP));
+  const cc = Math.max(2, Math.min(COLS-3, c));
+  const rr = Math.max(2, Math.min(ROWS-3, r));
+  const preview = document.getElementById('bombPreview');
+  if (preview) {
+    preview.style.display = 'block';
+    preview.style.left    = cLeft(cc-2) + 'px';
+    preview.style.top     = cTop(rr-2)  + 'px';
+    preview.dataset.r     = rr;
+    preview.dataset.c     = cc;
+  }
 }
 
 function safeGem(r, c) {
@@ -610,6 +788,15 @@ function refreshGemEl(r, c) {
 function onCellClick(r, c) {
   if (processing) return;
 
+  // Intercept active tool clicks
+  if (activeTool === 'hammer') { executeHammer(r, c); return; }
+  if (activeTool === 'bomb') {
+    const preview = document.getElementById('bombPreview');
+    const cr = preview ? (+preview.dataset.r || r) : r;
+    const cc = preview ? (+preview.dataset.c || c) : c;
+    executeBomb(cr, cc); return;
+  }
+
   // If clicking a rainbow gem while another is selected, activate rainbow
   if (selected && special[r][c] === SP_RAINBOW) {
     const {r:sr, c:sc} = selected;
@@ -662,7 +849,7 @@ async function trySwap(r1,c1,r2,c2) {
     moves--; updateUI();
     comboCount = 0;
     await resolveMatches(matches, null);
-    if (!levelOver) checkWinLose();
+    if (!levelOver) { saveGame(); checkWinLose(); }
   } catch(e) {
     console.error('trySwap error:', e);
   } finally {
@@ -826,18 +1013,26 @@ function triggerSpecialAt(r, c, extraCells) {
 async function activateRainbow(r, c, targetColor) {
   processing = true;
   try {
-    moves--; updateUI();
     const allCells = new Set();
     for(let rr=0;rr<ROWS;rr++)
       for(let cc=0;cc<COLS;cc++)
         if(board[rr][cc] === targetColor || (rr===r && cc===c)) allCells.add(k(rr,cc));
     showToast('🌈 Arco-íris!');
+    // Count score and goals BEFORE popping
+    allCells.forEach(key => {
+      const {r:rr,c:cc} = uk(key);
+      const g = board[rr][cc]; if(g<0) return;
+      score += 100; totalScore += 100;
+      if(goalsTarget[g] !== undefined)
+        goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+    });
+    updateUI(); renderGoals();
     await popCells(allCells);
     await gravityAndRefill([]);
     comboCount = 0;
     const more = findAllMatches();
     if (more.cells.size > 0) await resolveMatches(more, null);
-    if (!levelOver) checkWinLose();
+    if (!levelOver) { saveGame(); checkWinLose(); }
   } catch(e) {
     console.error('activateRainbow error:', e);
   } finally {
@@ -1006,70 +1201,109 @@ function renderPowers() {
   bar.innerHTML = '';
   POWERUPS.forEach(p => {
     const n = pwCounts[p.id] || 0;
+    const isActive = activeTool === p.id;
     const div = document.createElement('div');
-    div.className = 'pw' + (n > 0 ? ' has' : '');
-    div.innerHTML = `<span class="pi">${p.icon}</span><span class="pn">${p.name}</span><span class="pc">×${n}</span>`;
+    div.className = 'pw' + (n > 0 ? ' has' : '') + (isActive ? ' active-tool' : '');
+    // Show dots for count (max 3)
+    const dots = Array.from({length: PW_MAX}, (_,i) =>
+      `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 1px;background:${i<n?'var(--gold)':'rgba(255,255,255,.2)'}"></span>`
+    ).join('');
+    div.innerHTML = `<span class="pi">${p.icon}</span><span class="pn">${p.name}</span><div style="margin-top:2px;">${dots}</div>`;
     div.onclick = () => usePowerUp(p.id);
     bar.appendChild(div);
   });
 }
 
-async function usePowerUp(id) {
-  if (processing || (pwCounts[id]||0) <= 0) {
-    if ((pwCounts[id]||0) <= 0) showToast('Sem ' + (POWERUPS.find(p=>p.id===id)||{name:id}).name + '! 😅');
+// Called when user taps a power-up button
+function usePowerUp(id) {
+  if (processing) return;
+  if ((pwCounts[id]||0) <= 0) {
+    showToast('Sem ' + (POWERUPS.find(p=>p.id===id)||{name:id}).name + '! 😅');
     return;
   }
-  pwCounts[id]--;
+  // Toggle off if already active
+  if (activeTool === id) { cancelActiveTool(); return; }
+  cancelActiveTool();
+
+  if (id === 'shuffle') {
+    // Shuffle is instant — no aim needed
+    pwCounts.shuffle--;
+    renderPowers();
+    processing = true;
+    showToast('🔀 Embaralhando!');
+    shuffleBoard().then(() => { processing = false; saveGame(); });
+    return;
+  }
+
+  // Hammer or Bomb — enter aiming mode
+  activeTool = id;
+  renderPowers(); // highlights active button
+  const boardWrap = document.getElementById('boardWrap');
+  if (id === 'hammer') {
+    boardWrap.classList.add('hammer-mode');
+    showToast('🔨 Toque na gema para destruir');
+  } else if (id === 'bomb') {
+    boardWrap.classList.add('bomb-mode');
+    showToast('💣 Toque onde explodir');
+    const preview = document.getElementById('bombPreview');
+    if (preview) preview.style.display = 'block';
+  }
+}
+
+function cancelActiveTool() {
+  activeTool = null;
+  const bw = document.getElementById('boardWrap');
+  if (bw) { bw.classList.remove('hammer-mode','bomb-mode'); }
+  const preview = document.getElementById('bombPreview');
+  if (preview) preview.style.display = 'none';
+  renderPowers();
+}
+
+// Called from onCellClick when activeTool is set
+async function executeHammer(r, c) {
+  cancelActiveTool();
+  pwCounts.hammer--;
   renderPowers();
   processing = true;
-
   try {
-    if (id === 'hammer') {
-      if (!selected) { showToast('Selecione uma gema primeiro!'); pwCounts[id]++; renderPowers(); return; }
-      const {r,c} = selected;
-      gemEls[r][c].classList.remove('selected'); selected = null;
-      showToast('🔨 Bam!');
-      moves--; updateUI();
-      await popCells(new Set([k(r,c)]));
-      await gravityAndRefill([]);
-      comboCount = 0;
-      const more = findAllMatches();
-      if (more.cells.size > 0) await resolveMatches(more, null);
-      if (!levelOver) checkWinLose();
+    showToast('🔨 Bam!');
+    await popCells(new Set([k(r,c)]));
+    await gravityAndRefill([]);
+    comboCount = 0;
+    const more = findAllMatches();
+    if (more.cells.size > 0) await resolveMatches(more, null);
+    if (!levelOver) { saveGame(); checkWinLose(); }
+  } catch(e) { console.error('hammer error:', e); }
+  finally { processing = false; }
+}
 
-    } else if (id === 'shuffle') {
-      showToast('🔀 Embaralhando!');
-      await shuffleBoard();
-
-    } else if (id === 'bomb') {
-      moves--; updateUI();
-      const cr = 1 + Math.floor(Math.random()*(ROWS-2));
-      const cc = 1 + Math.floor(Math.random()*(COLS-2));
-      const cells = new Set();
-      for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) {
-        const rr=cr+dr, cc2=cc+dc;
-        if(rr>=0&&rr<ROWS&&cc2>=0&&cc2<COLS) cells.add(k(rr,cc2));
-      }
-      showToast('💥 BOOM!');
-      cells.forEach(key => {
-        const {r,c} = uk(key);
-        const g = board[r][c]; if(g<0) return;
-        score += 80; totalScore += 80;
-        if(goalsTarget[g] !== undefined) goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
-      });
-      updateUI(); renderGoals();
-      await popCells(cells);
-      await gravityAndRefill([]);
-      comboCount = 0;
-      const more = findAllMatches();
-      if (more.cells.size > 0) await resolveMatches(more, null);
-      if (!levelOver) checkWinLose();
+async function executeBomb(cr, cc) {
+  cancelActiveTool();
+  pwCounts.bomb--;
+  renderPowers();
+  processing = true;
+  try {
+    const cells = new Set();
+    for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) {
+      const rr=cr+dr, cc2=cc+dc;
+      if(rr>=0&&rr<ROWS&&cc2>=0&&cc2<COLS) cells.add(k(rr,cc2));
     }
-  } catch(e) {
-    console.error('usePowerUp error:', e);
-  } finally {
-    processing = false;
-  }
+    showToast('💥 BOOM!');
+    cells.forEach(key => {
+      const {r,c} = uk(key);
+      const g = board[r][c]; if(g<0) return;
+      score += 80; totalScore += 80;
+      if(goalsTarget[g] !== undefined) goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+    });
+    updateUI(); renderGoals();
+    await popCells(cells);
+    await gravityAndRefill([]);
+    comboCount = 0;
+    const more = findAllMatches();
+    if (more.cells.size > 0) await resolveMatches(more, null);
+    if (!levelOver) { saveGame(); checkWinLose(); }
+  } catch(e) { console.error('bomb error:', e); }
+  finally { processing = false; }
 }
 
 async function shuffleBoard() {
@@ -1334,7 +1568,28 @@ window.addEventListener('resize', () => {
 });
 
 // ── START ──
-newGame();
+(function boot() {
+  if (hasSave()) {
+    const ok = loadSave();
+    if (ok) {
+      const el = document.getElementById('resumeOverlay');
+      const msg = document.getElementById('resumeMsg');
+      if (msg) msg.textContent = `Fase ${level} — ${moves} jogadas restantes`;
+      el.classList.add('show');
+      return;
+    }
+  }
+  newGame();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registered'))
+      .catch(e => console.log('SW error:', e));
+  });
+}
 </script>
 </body>
 </html>
