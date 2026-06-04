@@ -115,7 +115,7 @@ body::before{
 /* ── HEADER ── */
 .hdr{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;
   margin-bottom:6px;position:relative;z-index:2;}
-.logo{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:var(--gold);
+.logo{font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--gold);
   text-shadow:0 2px 0 var(--gold-dark),0 4px 10px rgba(0,0,0,.6);letter-spacing:2px;}
 .level-badge{
   background:linear-gradient(135deg,#4a1a8e,#2a0860);
@@ -125,7 +125,7 @@ body::before{
 .level-num{font-size:1.3rem;font-weight:900;color:var(--gold);line-height:1;}
 
 /* ── INFO BAR ── */
-.info-bar{width:100%;max-width:440px;display:flex;align-items:stretch;gap:8px;
+.info-bar{width:100%;max-width:440px;display:flex;align-items:stretch;gap:6px;
   margin-bottom:6px;position:relative;z-index:2;}
 .box{background:linear-gradient(135deg,#35108a,#180550);border:2px solid var(--gold);
   border-radius:13px;padding:7px 12px;text-align:center;
@@ -150,18 +150,19 @@ body::before{
 .powers{width:100%;max-width:440px;display:flex;gap:5px;margin-bottom:6px;
   position:relative;z-index:2;}
 .pw{flex:1;background:linear-gradient(135deg,#2a0a6e,#12043a);
-  border:2px solid rgba(255,255,255,.15);border-radius:13px;
-  padding:5px 3px;text-align:center;cursor:pointer;
+  border:2px solid rgba(255,255,255,.15);border-radius:10px;
+  padding:4px 6px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px;
   transition:filter .15s,transform .1s,border-color .2s;
   box-shadow:0 3px 10px rgba(0,0,0,.4);}
 .pw:hover{filter:brightness(1.2);transform:translateY(-2px);}
 .pw:active{transform:translateY(1px);}
 .pw.has{border-color:var(--gold);}
 .pw.active-tool{border-color:#44ffaa;box-shadow:0 0 12px #44ffaa88;animation:toolPulse .6s ease infinite alternate;}
-.pw .pi{font-size:1.2rem;display:block;}
-.pw .pc{font-size:.6rem;color:rgba(255,255,255,.55);font-weight:800;}
-.pw .pn{font-size:.75rem;font-weight:900;color:#fff;}
-.pw .pcount{font-size:.7rem;font-weight:900;color:var(--gold);}
+.pw .pi{font-size:1rem;flex-shrink:0;}
+.pw .pw-info{display:flex;flex-direction:column;align-items:flex-start;}
+.pw .pn{font-size:.6rem;font-weight:900;color:#fff;line-height:1.2;}
+.pw .pcount{font-size:.55rem;font-weight:900;color:var(--gold);}
 
 /* bomb preview overlay */
 #bombPreview{
@@ -183,12 +184,11 @@ body::before{
 .board-wrap{
   position:relative;z-index:1;
   background:linear-gradient(135deg,#2e0e78 0%,#190558 100%);
-  border:3px solid var(--gold);border-radius:18px;padding:6px;
-  box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05),
-             inset 0 1px 0 rgba(255,255,255,.1);
+  border:3px solid var(--gold);border-radius:18px;padding:0;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
   max-width:440px;width:100%;
 }
-#board{position:relative;width:100%;overflow:visible;}
+#board{position:relative;width:100%;overflow:visible;padding:6px;}
 
 .grid-bg{position:absolute;border-radius:9px;
   background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.05);}
@@ -331,6 +331,63 @@ body::before{
   100%{transform:translateY(110vh) rotate(720deg) translateX(var(--sway));opacity:0;}
 }
 
+/* ── GOALS STRIP (inside board top) ── */
+.goals-strip{
+  background:rgba(0,0,0,.45);
+  border-bottom:1px solid rgba(255,215,0,.18);
+  padding:5px 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  border-radius:0;
+}
+.goals-lbl{font-size:.55rem;color:rgba(255,255,255,.35);text-transform:uppercase;
+  letter-spacing:1.5px;flex-shrink:0;font-family:'Luckiest Guy',cursive;}
+.gi{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.08);
+  border-radius:7px;padding:3px 7px;font-size:.7rem;font-weight:800;color:#fff;transition:all .3s;}
+.gi.done{opacity:.35;text-decoration:line-through;}
+.gi .g{font-size:.85rem;}
+.gi.goal-rock{background:rgba(120,120,120,.2);border:1px solid rgba(150,150,150,.3);}
+.gi.goal-ice {background:rgba(100,180,255,.15);border:1px solid rgba(150,200,255,.3);}
+.gi.goal-combo{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.3);}
+
+/* ── SETTINGS OVERLAY ── */
+.settings-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  z-index:250;align-items:flex-end;justify-content:center;padding:0;
+}
+.settings-overlay.show{display:flex;}
+.settings-box{
+  background:linear-gradient(180deg,#1a0550,#0d0330);
+  border:2px solid rgba(255,215,0,.3);
+  border-radius:24px 24px 0 0;
+  padding:20px 16px 32px;width:100%;max-width:440px;
+  animation:slideUp .3s cubic-bezier(.34,1.2,.64,1) both;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.settings-handle{width:36px;height:4px;background:rgba(255,255,255,.2);
+  border-radius:2px;margin:0 auto 16px;}
+.settings-title{font-family:'Luckiest Guy',cursive;font-size:1.3rem;
+  color:var(--gold);margin-bottom:14px;text-align:center;}
+.settings-section{margin-bottom:10px;}
+.settings-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;border-radius:12px;
+  background:rgba(255,255,255,.05);margin-bottom:4px;cursor:pointer;
+  transition:background .15s;
+}
+.settings-item:hover{background:rgba(255,255,255,.09);}
+.settings-item .si-icon{font-size:1.1rem;flex-shrink:0;}
+.settings-item .si-label{flex:1;font-weight:700;color:#fff;font-size:.85rem;}
+.settings-item .si-label.danger{color:#ff6666;}
+.settings-item .si-label.muted{color:rgba(255,255,255,.5);}
+.si-toggle{width:38px;height:22px;border-radius:11px;position:relative;
+  transition:background .2s;flex-shrink:0;}
+.si-toggle.on{background:var(--gold);}
+.si-toggle.off{background:rgba(255,255,255,.15);}
+.si-toggle::after{content:'';position:absolute;top:3px;width:16px;height:16px;
+  border-radius:50%;background:#fff;transition:left .2s;}
+.si-toggle.on::after{left:19px;}
+.si-toggle.off::after{left:3px;}
+.settings-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 0;}
+
 /* ── SCREEN SHAKE ── */
 @keyframes screenShake{
   0%,100%{transform:translate(0,0);}
@@ -392,8 +449,9 @@ body::before{
 }
 
 /* ── BOTTOM BUTTONS ── */
-.actions{width:100%;max-width:440px;display:flex;gap:8px;margin-top:8px;
+.actions{width:100%;max-width:440px;margin-top:8px;
   position:relative;z-index:2;}
+.actions .btn{width:100%;}
 .btn{
   flex:1;font-family:'Luckiest Guy',cursive;font-size:.95rem;letter-spacing:1px;
   border:none;outline:none;cursor:pointer;border-radius:13px;padding:11px 6px;
@@ -701,38 +759,26 @@ body::before{
 </head>
 <body>
 
+<!-- ══ HEADER ══ -->
 <div class="hdr">
   <div class="logo">✨ Glixar</div>
   <div class="hdr-btns">
-    <button class="hdr-btn" onclick="openMap()" title="Mapa">🗺️</button>
-    <button class="hdr-btn" onclick="openDaily()" title="Missões" id="dailyBtn">📋<span class="badge" id="dailyBadge" style="display:none">!</span></button>
-    <button class="hdr-btn" onclick="openRank()" title="Ranking">🏆</button>
     <div class="lives-bar" id="livesBar">
       <span class="life-heart" id="lh0">❤️</span>
       <span class="life-heart" id="lh1">❤️</span>
       <span class="life-heart" id="lh2">❤️</span>
       <span class="life-timer" id="lifeTimer" style="display:none;"></span>
     </div>
-    <div class="level-badge">
-      <div class="level-lbl">Fase</div>
-      <div class="level-num" id="lvlNum">1</div>
-    </div>
+    <button class="hdr-btn gear-btn" onclick="openSettings()" title="Configurações">⚙️</button>
   </div>
 </div>
 
-<!-- LIVES BAR -->
-<div class="lives-bar" id="livesBar">
-  <div class="lives-left">
-    <span id="h0" class="life-heart">❤️</span>
-    <span id="h1" class="life-heart">❤️</span>
-    <span id="h2" class="life-heart">❤️</span>
-  </div>
-  <div class="lives-timer" id="livesTimer" style="display:none;">
-    Próxima vida em<strong id="livesCountdown">30:00</strong>
-  </div>
-</div>
-
+<!-- ══ INFO ROW: fase + jogadas + timer + pontos ══ -->
 <div class="info-bar">
+  <div class="box">
+    <div class="lbl">Fase</div>
+    <div class="num" id="lvlNum">1</div>
+  </div>
   <div class="box">
     <div class="icon">⚡</div>
     <div class="num" id="movesVal">20</div>
@@ -747,31 +793,26 @@ body::before{
     <div class="lbl">Pontos</div>
     <div class="num" id="scoreVal">0</div>
   </div>
-  <div class="goal-wrap">
-    <div class="goal-ttl">Objetivos</div>
+</div>
+
+<!-- ══ POWER-UPS ══ -->
+<div class="powers" id="powersBar"></div>
+
+<!-- ══ BOARD (objectives inside) ══ -->
+<div class="board-wrap" id="boardWrap">
+  <!-- Objectives strip pinned to top of board -->
+  <div class="goals-strip">
+    <span class="goals-lbl">Meta:</span>
     <div class="goals" id="goalsDiv"></div>
   </div>
-</div>
-
-<div class="prog-wrap">
-  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-  <div class="prog-lbl" id="progLbl">Fase 1 — Normal</div>
-</div>
-
-<div class="powers" id="powersBar">
-  <!-- filled by JS -->
-</div>
-
-<div class="board-wrap" id="boardWrap">
   <div id="board">
     <div id="bombPreview"></div>
   </div>
 </div>
 
+<!-- ══ BOTTOM ACTION ══ -->
 <div class="actions">
-  <button class="btn btn-restart" onclick="restartLevel()">🔁 Fase</button>
-  <button class="btn btn-hint" onclick="showHint()">💡 Dica</button>
-  <button class="btn btn-new" onclick="openMenuConfirm()">🏠 Menu</button>
+  <button class="btn btn-restart" onclick="restartLevel()">🔁 Reiniciar Fase</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2034,11 +2075,15 @@ function renderPowers() {
     const isActive = activeTool === p.id;
     const div = document.createElement('div');
     div.className = 'pw' + (n > 0 ? ' has' : '') + (isActive ? ' active-tool' : '');
-    // Show dots for count (max 3)
     const dots = Array.from({length: PW_MAX}, (_,i) =>
-      `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;margin:0 1px;background:${i<n?'var(--gold)':'rgba(255,255,255,.2)'}"></span>`
+      `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;margin:0 1px;background:${i<n?'var(--gold)':'rgba(255,255,255,.2)'}"></span>`
     ).join('');
-    div.innerHTML = `<span class="pi">${p.icon}</span><span class="pn">${p.name}</span><div style="margin-top:2px;">${dots}</div>`;
+    div.innerHTML = `
+      <span class="pi">${p.icon}</span>
+      <div class="pw-info">
+        <span class="pn">${p.name}</span>
+        <div>${dots}</div>
+      </div>`;
     div.onclick = () => usePowerUp(p.id);
     bar.appendChild(div);
   });
@@ -2195,6 +2240,7 @@ function getAudio() {
   return _audioCtx;
 }
 function playTone(freq, dur=0.08, type='sine', vol=0.18) {
+  if (!soundEnabled) return;
   try {
     const ctx = getAudio(), o = ctx.createOscillator(), g = ctx.createGain();
     o.connect(g); g.connect(ctx.destination);
@@ -2226,7 +2272,7 @@ function playCombo()   {
 }
 function playPowerUp() { [600,800,1000].forEach((f,i)=>setTimeout(()=>playTone(f,.1,'sine',.12),i*50)); }
 function playRock()    { playTone(180,.12,'sawtooth',.15); playTone(220,.08,'square',.1); }
-function vibrate(p)    { try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){} }
+function vibrate(p)    { if(!vibrateEnabled) return; try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){} }
 
 function shakeScreen() {
   const el = document.querySelector('.board-wrap');
@@ -2841,6 +2887,85 @@ function switchRankTab(tab) {
 }
 
 // ── RANKING UI ──
+// ── SETTINGS ──
+let soundEnabled    = localStorage.getItem('glixarSound')    !== 'off';
+let vibrateEnabled  = localStorage.getItem('glixarVibrate')  !== 'off';
+
+function openSettings() {
+  // Build settings overlay dynamically
+  let overlay = document.getElementById('settingsOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'settings-overlay';
+    overlay.id = 'settingsOverlay';
+    overlay.innerHTML = `
+      <div class="settings-box" onclick="event.stopPropagation()">
+        <div class="settings-handle"></div>
+        <div class="settings-title">⚙️ Configurações</div>
+        <div class="settings-section">
+          <div class="settings-item" onclick="openMap();closeSettings()">
+            <span class="si-icon">🗺️</span><span class="si-label">Mapa de Fases</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
+          </div>
+          <div class="settings-item" onclick="openDaily();closeSettings()">
+            <span class="si-icon">📋</span><span class="si-label">Missões Diárias</span>
+            <span id="settingsDailyBadge" style="background:#ff4444;color:#fff;border-radius:8px;padding:1px 6px;font-size:.6rem;font-weight:900;display:none;">!</span>
+            <span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
+          </div>
+          <div class="settings-item" onclick="openRank();closeSettings()">
+            <span class="si-icon">🏆</span><span class="si-label">Ranking</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
+          </div>
+        </div>
+        <div class="settings-divider"></div>
+        <div class="settings-section">
+          <div class="settings-item" onclick="toggleSound()">
+            <span class="si-icon">🔊</span><span class="si-label">Som</span>
+            <div class="si-toggle ${soundEnabled?'on':'off'}" id="soundToggle"></div>
+          </div>
+          <div class="settings-item" onclick="toggleVibrate()">
+            <span class="si-icon">📳</span><span class="si-label">Vibração</span>
+            <div class="si-toggle ${vibrateEnabled?'on':'off'}" id="vibrateToggle"></div>
+          </div>
+        </div>
+        <div class="settings-divider"></div>
+        <div class="settings-section">
+          <div class="settings-item" onclick="closeSettings();restartLevel()">
+            <span class="si-icon">🔁</span><span class="si-label danger">Reiniciar Fase</span>
+          </div>
+          <div class="settings-item" onclick="closeSettings();openMenuConfirm()">
+            <span class="si-icon">🏠</span><span class="si-label muted">Sair ao Menu</span>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:.55rem;color:rgba(255,255,255,.2);margin-top:8px;font-family:monospace;">v1.0.0 · Glixar · Breitner Tinight</div>
+      </div>`;
+    overlay.onclick = closeSettings;
+    document.body.appendChild(overlay);
+  }
+  // Sync daily badge
+  const db = document.getElementById('settingsDailyBadge');
+  const mb = document.getElementById('dailyBadge');
+  if (db && mb) db.style.display = mb.style.display;
+  overlay.classList.add('show');
+}
+
+function closeSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  if (overlay) overlay.classList.remove('show');
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('glixarSound', soundEnabled ? 'on' : 'off');
+  const t = document.getElementById('soundToggle');
+  if (t) { t.className = 'si-toggle ' + (soundEnabled?'on':'off'); }
+}
+
+function toggleVibrate() {
+  vibrateEnabled = !vibrateEnabled;
+  localStorage.setItem('glixarVibrate', vibrateEnabled ? 'on' : 'off');
+  const t = document.getElementById('vibrateToggle');
+  if (t) { t.className = 'si-toggle ' + (vibrateEnabled?'on':'off'); }
+}
+
 function openRank() {
   _rankTab = 'global';
   switchRankTab('global');
@@ -2926,13 +3051,6 @@ function updateUI() {
     movBox.style.animation   = moves <= 5 ? 'timerPulse .6s ease infinite alternate' : '';
   }
   document.getElementById('scoreVal').textContent = score.toLocaleString('pt-BR');
-
-  // Progress bar
-  const total = Object.values(goalsTarget).reduce((a,b)=>a+b, 0);
-  const done  = Object.entries(goals).reduce((a,[k,v])=> a + Math.min(v, goalsTarget[k]||0), 0);
-  const pct   = total ? Math.round(done/total*100) : 0;
-  document.getElementById('progFill').style.width = pct + '%';
-  document.getElementById('progLbl').textContent  = `Fase ${level} — ${cfg.label||'Normal'}`;
 }
 
 function renderGoals() {
