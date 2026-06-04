@@ -482,7 +482,8 @@ body::before{
   border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:900;}
 
 /* name input inside splash */
-.name-row{display:flex;gap:8px;margin-bottom:14px;}
+.name-row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;align-items:stretch;}
+.name-row .btn{width:100%;padding:12px;}
 .name-input{
   flex:1;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);
   border-radius:10px;padding:10px 12px;color:#fff;font-family:'Nunito',sans-serif;
@@ -515,6 +516,47 @@ body::before{
 .splash-btn-row .btn{flex:1;font-size:.9rem;padding:11px 6px;}
 .btn-continue{background:linear-gradient(180deg,#44dd44,#229900);}
 .btn-give-up {background:linear-gradient(180deg,#ff4444,#cc0000);}
+
+/* ── LIVES ── */
+.lives-bar{
+  display:flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#3a1080,#1a0550);
+  border:2px solid var(--gold);border-radius:13px;
+  padding:6px 12px;flex-shrink:0;
+}
+.life-heart{font-size:1.1rem;transition:transform .3s,filter .3s;}
+.life-heart.empty{filter:grayscale(1) opacity(.3);transform:scale(.85);}
+.life-timer{font-size:.6rem;color:var(--gold);font-weight:800;white-space:nowrap;}
+
+/* lives splash */
+.lives-splash-hearts{display:flex;justify-content:center;gap:10px;margin:10px 0 16px;}
+.lives-splash-hearts span{font-size:1.8rem;transition:filter .3s;}
+.lives-splash-hearts span.empty{filter:grayscale(1) opacity(.3);}
+.timer-countdown{
+  font-family:'Luckiest Guy',cursive;font-size:1.1rem;
+  color:var(--gold);text-align:center;margin-bottom:14px;
+}
+
+/* fix name-row layout */
+.name-row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;width:100%;}
+.name-row .btn{width:100%;padding:12px;}
+
+/* menu confirm overlay */
+.menu-confirm{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:350;align-items:center;justify-content:center;padding:20px;
+}
+.menu-confirm.show{display:flex;}
+.menu-confirm-box{
+  background:linear-gradient(135deg,#3a1080,#1e0660);
+  border:3px solid var(--gold);border-radius:20px;
+  padding:28px 24px;text-align:center;width:100%;max-width:300px;
+  animation:splashIn .35s cubic-bezier(.34,1.4,.64,1) both;
+}
+.menu-confirm-box h3{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:var(--gold);margin-bottom:8px;}
+.menu-confirm-box p{color:rgba(255,255,255,.7);font-size:.88rem;margin-bottom:18px;line-height:1.5;}
+.menu-confirm-btns{display:flex;gap:8px;}
+.menu-confirm-btns .btn{flex:1;font-size:.88rem;padding:11px 6px;}
 
 /* ── MAP SCREEN ── */
 .map-overlay{display:none;position:fixed;inset:0;background:linear-gradient(160deg,#0e0628,#2a0a5e);
@@ -569,6 +611,57 @@ body::before{
 .dm-progress{font-size:.65rem;color:rgba(255,255,255,.4);margin-top:3px;text-align:right;}
 .dm-done-badge{font-size:.75rem;color:#44dd44;font-weight:800;margin-top:4px;}
 
+/* ── LIVES ── */
+.lives-bar{
+  width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;position:relative;z-index:2;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:7px 14px;
+}
+.lives-left{display:flex;align-items:center;gap:6px;}
+.life-heart{font-size:1.2rem;transition:all .3s;}
+.life-heart.empty{filter:grayscale(1);opacity:.3;}
+.lives-timer{font-family:'Space Mono',monospace;font-size:.65rem;color:rgba(255,255,255,.4);text-align:right;}
+.lives-timer strong{color:#ff6666;display:block;font-size:.75rem;}
+
+/* lives overlay */
+.lives-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:250;align-items:center;justify-content:center;padding:16px;
+}
+.lives-overlay.show{display:flex;}
+.lives-modal{
+  background:linear-gradient(135deg,#2a0860,#0e0330);
+  border:3px solid var(--gold);border-radius:22px;
+  padding:28px 24px;text-align:center;width:100%;max-width:320px;
+  animation:splashIn .4s cubic-bezier(.34,1.4,.64,1) both;
+}
+.lives-modal h2{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:#ff4444;margin-bottom:8px;}
+.lives-modal .big{font-size:3rem;margin-bottom:10px;}
+.lives-modal p{color:rgba(255,255,255,.7);font-size:.9rem;line-height:1.5;margin-bottom:16px;}
+.lives-modal .timer-big{
+  font-family:'Space Mono',monospace;font-size:1.6rem;
+  color:var(--gold);margin-bottom:16px;letter-spacing:2px;
+}
+.lives-btn-row{display:flex;flex-direction:column;gap:8px;}
+
+/* menu confirm overlay */
+.menu-confirm{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:250;align-items:center;justify-content:center;padding:16px;
+}
+.menu-confirm.show{display:flex;}
+.menu-confirm-box{
+  background:linear-gradient(135deg,#2a0860,#0e0330);
+  border:3px solid var(--gold);border-radius:18px;
+  padding:24px 20px;text-align:center;width:100%;max-width:300px;
+  animation:splashIn .3s ease both;
+}
+.menu-confirm-box h3{font-family:'Luckiest Guy',cursive;font-size:1.4rem;color:var(--gold);margin-bottom:8px;}
+.menu-confirm-box p{color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:16px;}
+.menu-confirm-btns{display:flex;gap:8px;}
+.menu-confirm-btns .btn{flex:1;font-size:.85rem;padding:11px 6px;}
+
 /* ── TIMER ── */
 .timer-box{background:linear-gradient(135deg,#8b0000,#4a0000);border:2px solid #ff4444;
   border-radius:13px;padding:7px 12px;text-align:center;min-width:70px;flex-shrink:0;}
@@ -621,6 +714,18 @@ body::before{
   </div>
 </div>
 
+<!-- LIVES BAR -->
+<div class="lives-bar" id="livesBar">
+  <div class="lives-left">
+    <span id="h0" class="life-heart">❤️</span>
+    <span id="h1" class="life-heart">❤️</span>
+    <span id="h2" class="life-heart">❤️</span>
+  </div>
+  <div class="lives-timer" id="livesTimer" style="display:none;">
+    Próxima vida em<strong id="livesCountdown">30:00</strong>
+  </div>
+</div>
+
 <div class="info-bar">
   <div class="box">
     <div class="icon">⚡</div>
@@ -635,6 +740,12 @@ body::before{
   <div class="box score-box">
     <div class="lbl">Pontos</div>
     <div class="num" id="scoreVal">0</div>
+  </div>
+  <div class="lives-bar" id="livesBar">
+    <span class="life-heart" id="lh0">❤️</span>
+    <span class="life-heart" id="lh1">❤️</span>
+    <span class="life-heart" id="lh2">❤️</span>
+    <span class="life-timer" id="lifeTimer" style="display:none;"></span>
   </div>
   <div class="goal-wrap">
     <div class="goal-ttl">Objetivos</div>
@@ -660,7 +771,7 @@ body::before{
 <div class="actions">
   <button class="btn btn-restart" onclick="restartLevel()">🔁 Fase</button>
   <button class="btn btn-hint" onclick="showHint()">💡 Dica</button>
-  <button class="btn btn-new" onclick="newGame()">🏠 Menu</button>
+  <button class="btn btn-new" onclick="openMenuConfirm()">🏠 Menu</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -706,14 +817,33 @@ body::before{
     <!-- name row (shown on win to save score) -->
     <div class="name-row" id="nameRow" style="display:none;">
       <input class="name-input" id="nameInput" type="text" maxlength="18" placeholder="Seu nome para o ranking...">
-      <button class="btn btn-hint" style="flex:0 0 auto;padding:10px 14px;" onclick="saveAndNext()">✔</button>
+      <button class="btn btn-hint" style="width:100%;" onclick="saveAndNext()">✔ Confirmar</button>
     </div>
     <!-- single button (win/give-up screens) -->
     <button class="btn btn-new" id="splashBtn" onclick="onSplashBtn()" style="width:100%;">▶ Próxima Fase</button>
+    <!-- lives display (shown on lose) -->
+    <div class="lives-splash-hearts" id="livesSplashHearts" style="display:none;">
+      <span id="slh0">❤️</span>
+      <span id="slh1">❤️</span>
+      <span id="slh2">❤️</span>
+    </div>
+    <div class="timer-countdown" id="splashTimer" style="display:none;"></div>
     <!-- two-button row (continue screen) -->
     <div class="splash-btn-row" id="splashBtnRow" style="display:none;">
-      <button class="btn btn-give-up" onclick="onGiveUp()">❌ Desistir</button>
-      <button class="btn btn-continue" onclick="onContinue()">▶ Continuar</button>
+      <button class="btn btn-give-up" onclick="onGiveUp()">🏠 Menu</button>
+      <button class="btn btn-continue" onclick="onContinue()">❤️ Usar Vida</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU CONFIRM -->
+<div class="menu-confirm" id="menuConfirm">
+  <div class="menu-confirm-box">
+    <h3>🏠 Sair?</h3>
+    <p>Seu progresso está salvo.<br>Pode continuar depois!</p>
+    <div class="menu-confirm-btns">
+      <button class="btn btn-give-up" onclick="closeMenuConfirm()">Cancelar</button>
+      <button class="btn btn-new" onclick="goToMenu()">Sair</button>
     </div>
   </div>
 </div>
@@ -862,6 +992,13 @@ let playerName  = localStorage.getItem('glixarName') || '';
 let ranking     = JSON.parse(localStorage.getItem('glixarRank') || '[]');
 let activeTool    = null;
 const PW_MAX      = 3;
+
+// ── LIVES SYSTEM ──
+const MAX_LIVES        = 3;
+const LIFE_REGEN_MS    = 30 * 60 * 1000; // 30 minutes per life
+let lives              = MAX_LIVES;
+let lifeRegenTimestamp = 0; // when next life regenerates
+let lifeTimerInterval  = null;
 let obstacleBoard = []; // obstacleBoard[r][c] = OB_* 
 let obstacleHp    = []; // hp for rocks (2=full, 1=cracked)
 let obstacleEls   = []; // DOM elements for obstacles
@@ -1044,6 +1181,9 @@ const cTop  = r => r * (CELL + GAP);
 function newGame() {
   level = 1; score = 0; totalScore = 0; levelOver = false; activeTool = null;
   clearSave();
+  // Restore full lives when starting fresh
+  lives = MAX_LIVES; lifeRegenTimestamp = 0;
+  saveLives();
   startLevel();
 }
 
@@ -1058,8 +1198,11 @@ function startLevel() {
   moves = cfg.moves;
   score = 0;
   goals = {}; goalsTarget = {};
-  selected = null; processing = false; comboCount = 0; levelOver = false; continues = 2; activeTool = null;
+  selected = null; processing = false; comboCount = 0; levelOver = false; activeTool = null;
   cancelActiveTool();
+  loadLives();
+  updateLivesUI();
+  startLifeTimer();
 
   // Build goals from goalTypes config
   goals = {}; goalsTarget = {};
@@ -1129,8 +1272,14 @@ function startLevel() {
 
 function onSplashBtn() {
   document.getElementById('splash').classList.remove('show');
-  if (splashMode === 'win') { level++; continues = 2; startLevel(); }
-  else { level = 1; totalScore = 0; continues = 2; newGame(); }
+  if (splashMode === 'win')   { level++; startLevel(); }
+  else if (splashMode === 'pause') {
+    // Just unpause — save is intact, board is still there
+    levelOver = false;
+    processing = false;
+    if (timerPhase && timerSeconds > 0) startTimer();
+  }
+  else { level = 1; totalScore = 0; newGame(); }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1752,58 +1901,83 @@ async function gravityAndRefill(shapes) {
   // Phase 1: update data model and DOM positions synchronously per column
   // so the board state is always consistent before any await
   for (let c = 0; c < COLS; c++) {
-    // Collect surviving gems top→bottom
-    const surviving = [];
-    for (let r = 0; r < ROWS; r++) {
-      if (board[r][c] >= 0 && gemEls[r][c]) {
-        surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
+    // Process column segment by segment — obstacles act as floors
+    // Gems can only fall within their segment (between obstacles)
+    
+    // Build list of segments: each segment is a range of rows with no obstacle
+    const segments = [];
+    let segStart = 0;
+    for (let r = 0; r <= ROWS; r++) {
+      const hasObs = r < ROWS && obstacleBoard[r][c] !== OB_NONE;
+      if (hasObs || r === ROWS) {
+        if (r > segStart) segments.push({ r1: segStart, r2: r - 1 });
+        segStart = r + 1; // skip the obstacle row
       }
     }
 
-    const missing = ROWS - surviving.length;
-    if (missing === 0) continue;
+    for (const seg of segments) {
+      const { r1, r2 } = seg;
+      const segLen = r2 - r1 + 1;
 
-    // Special gem for this column (if any)
-    const colShape = shapes.find(sh => sh.c === c);
+      // Collect surviving gems in this segment (skip obstacle cells — they're fixed)
+      const surviving = [];
+      for (let r = r1; r <= r2; r++) {
+        if (board[r][c] >= 0 && gemEls[r][c] && obstacleBoard[r][c] === OB_NONE) {
+          surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
+        }
+      }
 
-    // Build new gems — position them above the board INSTANTLY (no transition yet)
-    const newGems = [];
-    for (let i = 0; i < missing; i++) {
-      const isSpecial = colShape && i === missing - 1;
-      const type = isSpecial ? colShape.gem : Math.floor(Math.random() * cfg.gemColors);
-      const sp   = isSpecial ? colShape.spType : SP_NONE;
-      const el   = makeGemEl(type, sp, -1, c, false); // fromAbove=false, we set pos manually
-      // Disable transition temporarily so we can set start position
-      el.style.transition = 'none';
-      el.style.opacity    = '0';
-      el.style.top        = (-(missing - i) * (CELL + GAP)) + 'px';
-      el.style.left       = cLeft(c) + 'px';
-      el.style.width      = CELL + 'px';
-      el.style.height     = CELL + 'px';
-      boardEl.appendChild(el);
-      newGems.push({ type, sp, el });
+      const missing = segLen - surviving.length;
+      if (missing === 0) continue;
+
+      const colShape = shapes.find(sh => sh.c === c);
+
+      // New gems fall into top of segment
+      const newGems = [];
+      for (let i = 0; i < missing; i++) {
+        const isSpecial = colShape && i === missing - 1;
+        const type = isSpecial ? colShape.gem : Math.floor(Math.random() * cfg.gemColors);
+        const sp   = isSpecial ? colShape.spType : SP_NONE;
+        const el   = makeGemEl(type, sp, -1, c, false);
+        el.style.transition = 'none';
+        el.style.opacity    = '0';
+        // Start above the segment (not above whole board if obstacle blocks)
+        el.style.top  = cTop(r1 - missing + i) + 'px';
+        el.style.left = cLeft(c) + 'px';
+        el.style.width  = CELL + 'px';
+        el.style.height = CELL + 'px';
+        boardEl.appendChild(el);
+        newGems.push({ type, sp, el });
+      }
+
+      // Final order: new gems at top of segment, survivors below
+      const finalCol = [...newGems, ...surviving];
+
+      // Map to non-obstacle rows only within segment
+      const freeRows = [];
+      for (let r = r1; r <= r2; r++) {
+        if (obstacleBoard[r][c] === OB_NONE) freeRows.push(r);
+      }
+
+      finalCol.forEach(({ type, sp, el }, idx) => {
+        if (idx >= freeRows.length) return;
+        const targetRow = freeRows[idx];
+        board[targetRow][c]   = type;
+        special[targetRow][c] = sp;
+        gemEls[targetRow][c]  = el;
+        el.dataset.r    = targetRow;
+        el.dataset.c    = c;
+        el.dataset.type = type;
+        el.dataset.sp   = sp;
+      });
+
+      // Move survivors instantly to new position
+      surviving.forEach(({ el }, i) => {
+        el.style.transition = 'none';
+        const destRow = freeRows[missing + i] ?? r1 + missing + i;
+        el.style.top = cTop(destRow) + 'px';
+      });
     }
-
-    // Final column: new gems on top, survivors below
-    const finalCol = [...newGems, ...surviving];
-
-    // Update data model immediately (before animation)
-    finalCol.forEach(({ type, sp, el }, idx) => {
-      board[idx][c]   = type;
-      special[idx][c] = sp;
-      gemEls[idx][c]  = el;
-      el.dataset.r    = idx;
-      el.dataset.c    = c;
-      el.dataset.type = type;
-      el.dataset.sp   = sp;
-    });
-
-    // Move survivors to their new positions instantly (no animation yet)
-    surviving.forEach(({ el }, i) => {
-      const finalRow = missing + i;
-      el.style.transition = 'none';
-      el.style.top        = cTop(finalRow) + 'px';
-    });
   }
 
   // Phase 2: force a single reflow, then re-enable transitions and animate all gems at once
@@ -2302,6 +2476,144 @@ function nextTutStep(li){tutStep++;showTutStep(li,tutStep);}
 function endTutorial(){tutStep=-1;document.getElementById('tutorialOverlay').classList.remove('show');}
 
 // ═══════════════════════════════════════════════════
+//  LIVES SYSTEM
+// ═══════════════════════════════════════════════════
+function saveLives() {
+  localStorage.setItem('glixarLives', JSON.stringify({ lives, lifeRegenTimestamp }));
+}
+
+function loadLives() {
+  const raw = localStorage.getItem('glixarLives');
+  if (!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    lives              = d.lives ?? MAX_LIVES;
+    lifeRegenTimestamp = d.lifeRegenTimestamp ?? 0;
+    // Recalculate lives regenerated while offline
+    if (lives < MAX_LIVES && lifeRegenTimestamp > 0) {
+      const now      = Date.now();
+      const elapsed  = now - lifeRegenTimestamp;
+      const regained = Math.floor(elapsed / LIFE_REGEN_MS);
+      if (regained > 0) {
+        lives = Math.min(MAX_LIVES, lives + regained);
+        // Advance timestamp by the amount consumed
+        lifeRegenTimestamp += regained * LIFE_REGEN_MS;
+        if (lives >= MAX_LIVES) lifeRegenTimestamp = 0;
+        saveLives();
+      }
+    }
+  } catch(e) {}
+}
+
+function spendLife() {
+  if (lives <= 0) return false;
+  lives--;
+  if (lives < MAX_LIVES && lifeRegenTimestamp === 0) {
+    lifeRegenTimestamp = Date.now() + LIFE_REGEN_MS;
+  }
+  saveLives();
+  updateLivesUI();
+  startLifeTimer();
+  return true;
+}
+
+function startLifeTimer() {
+  clearInterval(lifeTimerInterval);
+  if (lives >= MAX_LIVES) {
+    updateLivesUI();
+    return;
+  }
+  lifeTimerInterval = setInterval(() => {
+    const now  = Date.now();
+    const left = lifeRegenTimestamp - now;
+    if (left <= 0) {
+      lives = Math.min(MAX_LIVES, lives + 1);
+      if (lives >= MAX_LIVES) {
+        lifeRegenTimestamp = 0;
+        clearInterval(lifeTimerInterval);
+      } else {
+        lifeRegenTimestamp = Date.now() + LIFE_REGEN_MS;
+      }
+      saveLives();
+    }
+    updateLivesUI();
+    updateSplashTimer();
+  }, 1000);
+}
+
+function updateLivesUI() {
+  for (let i = 0; i < MAX_LIVES; i++) {
+    const el = document.getElementById('lh'+i);
+    if (el) el.className = 'life-heart' + (i < lives ? '' : ' empty');
+  }
+  const timerEl = document.getElementById('lifeTimer');
+  if (timerEl) {
+    if (lives < MAX_LIVES && lifeRegenTimestamp > 0) {
+      timerEl.style.display = 'block';
+      timerEl.textContent   = formatTimeLeft(lifeRegenTimestamp - Date.now());
+    } else {
+      timerEl.style.display = 'none';
+    }
+  }
+}
+
+function updateSplashTimer() {
+  const el = document.getElementById('splashTimer');
+  if (!el || el.style.display === 'none') return;
+  if (lives >= MAX_LIVES) {
+    el.style.display = 'none';
+    return;
+  }
+  el.textContent = '❤️ em ' + formatTimeLeft(lifeRegenTimestamp - Date.now());
+}
+
+function formatTimeLeft(ms) {
+  if (ms <= 0) return '0:00';
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+function updateSplashLivesHearts() {
+  for (let i = 0; i < MAX_LIVES; i++) {
+    const el = document.getElementById('slh'+i);
+    if (el) el.className = i < lives ? '' : 'empty';
+  }
+}
+
+// ── MENU CONFIRM ──
+function openMenuConfirm() {
+  document.getElementById('menuConfirm').classList.add('show');
+}
+function closeMenuConfirm() {
+  document.getElementById('menuConfirm').classList.remove('show');
+}
+function goToMenu() {
+  closeMenuConfirm();
+  // Show a simple menu screen — just reload to boot (save is intact)
+  stopTimer();
+  cancelActiveTool();
+  levelOver = true;
+  processing = false;
+  selected = null;
+  // Show a mini "menu" splash
+  document.getElementById('splashIcon').textContent  = '🏠';
+  document.getElementById('splashTitle').textContent = 'Pausado';
+  document.getElementById('splashMsg').innerHTML     = `Fase ${level} salva!<br>Continue quando quiser.`;
+  document.getElementById('splashStars').style.display      = 'none';
+  document.getElementById('chanceDots').style.display       = 'none';
+  document.getElementById('nameRow').style.display          = 'none';
+  document.getElementById('splashBtnRow').style.display     = 'none';
+  document.getElementById('livesSplashHearts').style.display= 'none';
+  document.getElementById('splashTimer').style.display      = 'none';
+  document.getElementById('splashBtn').style.display        = 'block';
+  document.getElementById('splashBtn').textContent          = '▶ Continuar Jogando';
+  splashMode = 'pause';
+  document.getElementById('splash').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════
 //  WIN / LOSE
 // ═══════════════════════════════════════════════════
 function checkWinLose() {
@@ -2318,13 +2630,8 @@ function checkWinLose() {
   if (moves <= 0) {
     levelOver  = true;
     processing = false;
-    if (continues > 0) {
-      splashMode = 'continue';
-      setTimeout(() => showContinueSplash(), 400);
-    } else {
-      splashMode = 'lose';
-      setTimeout(() => showLoseSplash(), 400);
-    }
+    splashMode = 'continue';
+    setTimeout(() => showContinueSplash(), 400);
   }
 }
 
@@ -2373,18 +2680,35 @@ function showWinSplash() {
 }
 
 function showContinueSplash() {
-  const penalty = continues === 2 ? 2 : 4;
-  document.getElementById('splashIcon').textContent  = '😰';
+  // Lives-based continue
+  document.getElementById('splashIcon').textContent  = lives > 0 ? '😰' : '😵';
   document.getElementById('splashTitle').textContent = 'Sem Jogadas!';
-  document.getElementById('splashMsg').innerHTML     =
-    `Continuar custa <strong style="color:var(--gold)">+${penalty} jogadas a menos</strong><br>` +
-    `Chances restantes: ${continues}`;
-  document.getElementById('chanceDots').style.display   = 'flex';
-  document.getElementById('dot0').className = 'chance-dot' + (continues >= 1 ? ' active' : '');
-  document.getElementById('dot1').className = 'chance-dot' + (continues >= 2 ? ' active' : '');
-  document.getElementById('nameRow').style.display      = 'none';
-  document.getElementById('splashBtn').style.display    = 'none';
-  document.getElementById('splashBtnRow').style.display = 'flex';
+  document.getElementById('splashStars').style.display       = 'none';
+  document.getElementById('chanceDots').style.display        = 'none';
+  document.getElementById('nameRow').style.display           = 'none';
+
+  if (lives > 0) {
+    document.getElementById('splashMsg').innerHTML =
+      `Você tem <strong style="color:#ff6666">${lives} vida${lives>1?'s':''}</strong> restante${lives>1?'s':''}<br>Quer usar uma para continuar?`;
+    document.getElementById('splashBtnRow').style.display      = 'flex';
+    document.getElementById('splashBtn').style.display         = 'none';
+    document.getElementById('splashTimer').style.display       = 'none';
+  } else {
+    // No lives left — show timer
+    document.getElementById('splashMsg').innerHTML =
+      'Sem vidas! Aguarde ou recomeça do zero.';
+    document.getElementById('splashBtnRow').style.display      = 'none';
+    document.getElementById('splashBtn').style.display         = 'block';
+    document.getElementById('splashBtn').textContent           = '🔄 Recomeçar do Zero';
+    document.getElementById('splashTimer').style.display       = 'block';
+    updateSplashTimer();
+    splashMode = 'lose';
+  }
+
+  // Hearts display
+  document.getElementById('livesSplashHearts').style.display = 'flex';
+  updateSplashLivesHearts();
+
   document.getElementById('splash').classList.add('show');
 }
 
@@ -2394,25 +2718,25 @@ function showLoseSplash() {
   document.getElementById('splashIcon').textContent  = '💀';
   document.getElementById('splashTitle').textContent = 'Game Over!';
   document.getElementById('splashMsg').innerHTML     =
-    `Fase ${level} — ${score.toLocaleString('pt-BR')} pts<br>Sem mais chances!`;
-  document.getElementById('chanceDots').style.display   = 'flex';
-  document.getElementById('dot0').className = 'chance-dot';
-  document.getElementById('dot1').className = 'chance-dot';
-  document.getElementById('nameRow').style.display      = 'none';
-  document.getElementById('splashBtnRow').style.display = 'none';
-  document.getElementById('splashBtn').style.display    = 'block';
-  document.getElementById('splashBtn').textContent      = '🔄 Recomeçar do Zero';
+    `Fase ${level} — ${score.toLocaleString('pt-BR')} pts`;
+  document.getElementById('chanceDots').style.display        = 'none';
+  document.getElementById('nameRow').style.display           = 'none';
+  document.getElementById('splashStars').style.display       = 'none';
+  document.getElementById('splashBtnRow').style.display      = 'none';
+  document.getElementById('splashBtn').style.display         = 'block';
+  document.getElementById('splashBtn').textContent           = '🔄 Recomeçar do Zero';
+  document.getElementById('livesSplashHearts').style.display = 'none';
+  document.getElementById('splashTimer').style.display       = 'none';
   document.getElementById('splash').classList.add('show');
 }
 
 function onContinue() {
-  const penalty = continues === 2 ? 2 : 4;
-  continues--;
-  const extraMoves = Math.max(3, Math.floor(cfg.moves / 2) - penalty);
-  moves = extraMoves;
+  if (lives <= 0) return;
+  spendLife();
+  // Give half the original moves back
+  moves = Math.max(5, Math.floor(cfg.moves / 2));
   levelOver = false;
   document.getElementById('splash').classList.remove('show');
-  // Restore timer if this was a timer phase
   if (timerPhase) {
     timerSeconds = Math.max(20, Math.floor((cfg.timerSecs||60) * 0.4));
     updateTimerUI();
@@ -2422,9 +2746,12 @@ function onContinue() {
 }
 
 function onGiveUp() {
-  continues = 0;
+  document.getElementById('splash').classList.remove('show');
+  splashMode = 'lose';
   showLoseSplash();
 }
+
+
 
 function saveAndNext() {
   const inp = document.getElementById('nameInput').value.trim();
@@ -2677,6 +3004,9 @@ window.addEventListener('resize', () => {
 
 // ── START ──
 (function boot() {
+  loadLives();
+  updateLivesUI();
+  startLifeTimer();
   if (hasSave()) {
     const ok = loadSave();
     if (ok) {
@@ -2690,6 +3020,31 @@ window.addEventListener('resize', () => {
   newGame();
 })();
 </script>
+<!-- LIVES OVERLAY -->
+<div class="lives-overlay" id="livesOverlay">
+  <div class="lives-modal">
+    <div class="big">💔</div>
+    <h2>Sem Vidas!</h2>
+    <p>Você ficou sem vidas. Aguarde o timer ou volte mais tarde.</p>
+    <div class="timer-big" id="livesModalCountdown">30:00</div>
+    <div class="lives-btn-row">
+      <button class="btn btn-new" onclick="closeLivesOverlay()">✕ Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU CONFIRM -->
+<div class="menu-confirm" id="menuConfirm">
+  <div class="menu-confirm-box">
+    <h3>⚠️ Sair da Fase?</h3>
+    <p>Seu progresso será salvo. Você pode continuar de onde parou.</p>
+    <div class="menu-confirm-btns">
+      <button class="btn btn-hint" onclick="closeMenuConfirm()">Cancelar</button>
+      <button class="btn btn-new" onclick="goToMenu()">🏠 Sair</button>
+    </div>
+  </div>
+</div>
+
 <script>
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
