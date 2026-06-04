@@ -1,9 +1,9 @@
 {
-  "name": "Castle Match",
-  "short_name": "Castle Match",
+  "name": "Glixar",
+  "short_name": "Glixar",
   "description": "Jogo match-3 com níveis infinitos, gemas especiais e ranking",
-  "start_url": "/castle-match/",
-  "scope": "/castle-match/",
+  "start_url": "/glixar/",
+  "scope": "/glixar/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0e0628",
