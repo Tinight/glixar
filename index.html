@@ -183,6 +183,110 @@ body::before{
 .gc-4{background:radial-gradient(circle at 35% 28%,#cc66ff,#7200cc);}
 .gc-5{background:radial-gradient(circle at 35% 28%,#ff9040,#cc3c00);}
 
+/* ── OBSTACLES ── */
+.obs-el{
+  position:absolute;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1rem,3.5vw,1.3rem);
+  pointer-events:none;z-index:3;
+  transition:top .36s cubic-bezier(.3,0,.2,1.55),left .2s ease;
+}
+/* Rock obstacle */
+.obs-rock{
+  background:radial-gradient(circle at 35% 28%,#8a8a8a,#3a3a3a);
+  border:2px solid #555;box-shadow:inset 0 -3px 6px rgba(0,0,0,.5);
+}
+.obs-rock.hp2{background:radial-gradient(circle at 35% 28%,#aaa,#555);border-color:#888;}
+.obs-rock.crack::after{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><path d='M20 5 L15 20 L25 20 L18 35' stroke='rgba(0,0,0,.6)' stroke-width='2' fill='none'/></svg>") center/70% no-repeat;
+  border-radius:9px;
+}
+/* Ice obstacle */
+.obs-ice{
+  background:radial-gradient(circle at 35% 28%,rgba(150,220,255,.7),rgba(60,140,200,.5));
+  border:2px solid rgba(180,230,255,.8);
+  box-shadow:inset 0 0 12px rgba(255,255,255,.4),0 0 8px rgba(100,200,255,.4);
+  backdrop-filter:blur(2px);
+}
+.obs-ice::before{
+  content:'❄️';position:absolute;font-size:.7em;top:2px;right:3px;opacity:.7;
+}
+/* crack animation */
+@keyframes rockCrack{
+  0%{transform:scale(1);}20%{transform:scale(1.15) rotate(-3deg);}
+  40%{transform:scale(.95) rotate(2deg);}100%{transform:scale(1);}
+}
+.obs-crack-anim{animation:rockCrack .25s ease;}
+
+/* ── PARTICLES ── */
+.particle{
+  position:fixed;pointer-events:none;z-index:400;
+  border-radius:50%;will-change:transform,opacity;
+}
+@keyframes particleFly{
+  0%  {transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
+}
+
+/* ── CONFETTI ── */
+.confetti-piece{
+  position:fixed;top:-10px;pointer-events:none;z-index:400;
+  width:8px;height:12px;border-radius:2px;
+  animation:confettiFall var(--dur) ease-in var(--delay) forwards;
+}
+@keyframes confettiFall{
+  0%  {transform:translateY(0) rotate(0deg) translateX(0);opacity:1;}
+  100%{transform:translateY(110vh) rotate(720deg) translateX(var(--sway));opacity:0;}
+}
+
+/* ── SCREEN SHAKE ── */
+@keyframes screenShake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-6px,3px);}
+  40%{transform:translate(6px,-3px);}
+  60%{transform:translate(-4px,4px);}
+  80%{transform:translate(4px,-2px);}
+}
+.shake{animation:screenShake .35s ease;}
+
+/* ── STARS DISPLAY ── */
+.stars-row{display:flex;justify-content:center;gap:6px;margin:6px 0 12px;}
+.star-icon{font-size:1.8rem;filter:grayscale(1);transition:filter .3s,transform .3s;}
+.star-icon.lit{filter:none;transform:scale(1.15);}
+
+/* ── TUTORIAL OVERLAY ── */
+.tutorial-overlay{
+  display:none;position:fixed;inset:0;z-index:350;pointer-events:none;
+}
+.tutorial-overlay.show{display:block;}
+.tutorial-bubble{
+  position:absolute;background:rgba(20,0,60,.95);
+  border:2px solid var(--gold);border-radius:16px;
+  padding:12px 16px;max-width:220px;color:#fff;
+  font-size:.85rem;font-weight:700;line-height:1.4;
+  box-shadow:0 8px 24px rgba(0,0,0,.6);pointer-events:all;
+}
+.tutorial-bubble::after{
+  content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+  border:8px solid transparent;border-top-color:var(--gold);
+}
+.tutorial-highlight{
+  position:absolute;border-radius:12px;
+  box-shadow:0 0 0 4px var(--gold),0 0 0 9999px rgba(0,0,0,.65);
+  pointer-events:none;
+}
+.tutorial-btn{
+  margin-top:8px;background:var(--gold);color:#3a1800;border:none;
+  border-radius:8px;padding:6px 16px;font-family:'Luckiest Guy',cursive;
+  font-size:.85rem;cursor:pointer;pointer-events:all;
+}
+
+/* ── STARS IN HEADER ── */
+.phase-stars{display:flex;gap:2px;align-items:center;}
+.phase-stars span{font-size:.9rem;filter:grayscale(1);transition:filter .3s;}
+.phase-stars span.lit{filter:none;}
+
 /* Special gem glow rings */
 .sp-rocket{box-shadow:0 0 0 2.5px #ffe36a,0 0 10px #ffc200;}
 .sp-bomb  {box-shadow:0 0 0 2.5px #ff4444,0 0 10px #ff0000;}
@@ -382,6 +486,14 @@ body::before{
 
 <div class="toast" id="toast"></div>
 <div class="combo-badge" id="comboBadge"></div>
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:399;display:none;"></canvas>
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div class="tutorial-highlight" id="tutHighlight"></div>
+  <div class="tutorial-bubble" id="tutBubble">
+    <span id="tutText">Troque gemas adjacentes para combinar 3 ou mais iguais!</span>
+    <br><button class="tutorial-btn" onclick="nextTutStep()">Entendi! ➡️</button>
+  </div>
+</div>
 
 <!-- RESUME OVERLAY -->
 <div class="rank-overlay" id="resumeOverlay">
@@ -402,6 +514,11 @@ body::before{
     <div class="big" id="splashIcon">🎉</div>
     <h2 id="splashTitle">Fase Completa!</h2>
     <p id="splashMsg">Parabéns!</p>
+    <div class="stars-row" id="splashStars" style="display:none;">
+      <span class="star-icon" id="s0">⭐</span>
+      <span class="star-icon" id="s1">⭐</span>
+      <span class="star-icon" id="s2">⭐</span>
+    </div>
     <!-- chances dots (shown on lose) -->
     <div class="continue-chances" id="chanceDots" style="display:none;">
       <div class="chance-dot" id="dot0"></div>
@@ -439,12 +556,22 @@ const ROWS = 8, COLS = 8;
 const GEMS  = ['❤️','💙','💛','💚','💜','🧡'];
 const GAP   = 3;
 
-// Special gem types (stored as type + 100*special_id)
+// Special gem types
 const SP_NONE    = 0;
-const SP_ROCKET  = 1; // match 4 in line → clears row or col
-const SP_BOMB    = 2; // match L or T (5?) → 3×3 blast
-const SP_CROSS   = 3; // match T/cross → cross blast
-const SP_RAINBOW = 4; // match 5 in line → clears all of that color
+const SP_ROCKET  = 1;
+const SP_BOMB    = 2;
+const SP_CROSS   = 3;
+const SP_RAINBOW = 4;
+
+// Obstacle types — stored in obstacleBoard[r][c]
+const OB_NONE = 0;
+const OB_ROCK = 1; // rock: needs 2 adjacent matches to break
+const OB_ICE  = 2; // ice: traps gem underneath, 1 adjacent match frees it
+
+// Stars thresholds (fraction of moves remaining)
+const STAR3 = 0.6; // 60%+ moves left → 3 stars
+const STAR2 = 0.3; // 30%+ moves left → 2 stars
+// else 1 star
 
 // Level difficulty table (infinite: extrapolates)
 function getLevelConfig(lvl) {
@@ -458,7 +585,10 @@ function getLevelConfig(lvl) {
                     lvl <= 15 ? 'Difícil' :
                     lvl <= 25 ? 'Épico'   : 'Lendário';
   const powerUps  = lvl <= 10 ? 1 : 0;
-  return { moves, gemColors, goalCount, goalAmt, label, powerUps };
+  // Obstacles start appearing from level 3
+  const rocks = lvl < 3 ? 0 : Math.min(6, Math.floor((lvl - 2) * 0.8));
+  const ices  = lvl < 5 ? 0 : Math.min(4, Math.floor((lvl - 4) * 0.6));
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks, ices };
 }
 
 // Power-up definitions
@@ -490,8 +620,14 @@ let splashMode  = ''; // 'win' | 'lose' | 'continue'
 let continues   = 2;
 let playerName  = localStorage.getItem('glixarName') || '';
 let ranking     = JSON.parse(localStorage.getItem('glixarRank') || '[]');
-let activeTool  = null;  // 'hammer' | 'bomb' | null
-const PW_MAX    = 3;     // max of each power-up
+let activeTool    = null;
+const PW_MAX      = 3;
+let obstacleBoard = []; // obstacleBoard[r][c] = OB_* 
+let obstacleHp    = []; // hp for rocks (2=full, 1=cracked)
+let obstacleEls   = []; // DOM elements for obstacles
+let levelStars    = 0;  // stars earned this level (1-3)
+let totalStars    = parseInt(localStorage.getItem('glixarStars')||'0');
+let tutStep       = -1; // -1 = not active
 
 // ═══════════════════════════════════════════════════
 //  SAVE / LOAD
@@ -499,7 +635,7 @@ const PW_MAX    = 3;     // max of each power-up
 const SAVE_KEY = 'glixarSave';
 
 function saveGame() {
-  if (levelOver) return; // don't save mid-splash
+  if (levelOver) return;
   const data = {
     level, score, totalScore, moves, continues,
     goals: {...goals},
@@ -507,6 +643,8 @@ function saveGame() {
     pwCounts: {...pwCounts},
     board: board.map(row => [...row]),
     special: special.map(row => [...row]),
+    obstacleBoard: obstacleBoard.map(row => [...row]),
+    obstacleHp: obstacleHp.map(row => [...row]),
     cfg: {...cfg},
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -521,17 +659,19 @@ function loadSave() {
   if (!raw) return false;
   try {
     const d = JSON.parse(raw);
-    level      = d.level;
-    score      = d.score;
-    totalScore = d.totalScore;
-    moves      = d.moves;
-    continues  = d.continues;
-    goals      = d.goals;
-    goalsTarget= d.goalsTarget;
-    pwCounts   = d.pwCounts;
-    cfg        = d.cfg;
-    board      = d.board;
-    special    = d.special;
+    level         = d.level;
+    score         = d.score;
+    totalScore    = d.totalScore;
+    moves         = d.moves;
+    continues     = d.continues;
+    goals         = d.goals;
+    goalsTarget   = d.goalsTarget;
+    pwCounts      = d.pwCounts;
+    cfg           = d.cfg;
+    board         = d.board;
+    special       = d.special;
+    obstacleBoard = d.obstacleBoard || Array.from({length:ROWS},()=>new Array(COLS).fill(OB_NONE));
+    obstacleHp    = d.obstacleHp    || Array.from({length:ROWS},()=>new Array(COLS).fill(0));
     return true;
   } catch(e) {
     console.warn('Save corrupt:', e);
@@ -578,6 +718,47 @@ function buildBoardFromState() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
+  placeObstacles();
+}
+
+function placeObstacles() {
+  const boardEl = document.getElementById('board');
+  const total = (cfg.rocks||0) + (cfg.ices||0);
+  if (total === 0) return;
+
+  // Pick random positions (avoid top 2 rows so gems can still fall in)
+  const positions = [];
+  for (let r = 2; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      positions.push({r, c});
+  shuffle(positions);
+
+  let placed = 0;
+  for (const {r, c} of positions) {
+    if (placed >= total) break;
+    const isRock = placed < (cfg.rocks||0);
+    obstacleBoard[r][c] = isRock ? OB_ROCK : OB_ICE;
+    obstacleHp[r][c]    = isRock ? 2 : 1;
+    obstacleEls[r][c]   = createObstacleEl(r, c);
+    boardEl.appendChild(obstacleEls[r][c]);
+    placed++;
+  }
+}
+
+function createObstacleEl(r, c) {
+  const el = document.createElement('div');
+  const type = obstacleBoard[r][c];
+  const hp   = obstacleHp[r][c];
+  el.className = type === OB_ROCK
+    ? `obs-el obs-rock${hp < 2 ? ' crack' : ' hp2'}`
+    : 'obs-el obs-ice';
+  el.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;`;
+  el.dataset.r = r; el.dataset.c = c;
+  if (type === OB_ICE) {
+    // Freeze the gem below with visual overlay
+    if (gemEls[r][c]) gemEls[r][c].style.filter = 'brightness(.5) saturate(.3)';
+  }
+  return el;
 }
 
 // ═══════════════════════════════════════════════════
@@ -629,11 +810,19 @@ function startLevel() {
     setTimeout(() => showToast('🎁 +1 Power-up de cada!'), 600);
   }
 
+  obstacleBoard = Array.from({length:ROWS}, () => new Array(COLS).fill(OB_NONE));
+  obstacleHp    = Array.from({length:ROWS}, () => new Array(COLS).fill(0));
+  obstacleEls   = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
+
   document.getElementById('splash').classList.remove('show');
   updateUI();
   renderGoals();
   renderPowers();
   buildBoard();
+
+  // Tutorial for first 3 levels
+  if (level <= 3) startTutorial(level);
+
   saveGame();
 }
 
@@ -682,6 +871,57 @@ function buildBoard() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
+  placeObstacles();
+}
+
+function placeObstacles() {
+  const boardEl = document.getElementById('board');
+  const total = (cfg.rocks||0) + (cfg.ices||0);
+  if (total === 0) return;
+
+  // Pick random positions (avoid top 2 rows so gems can still fall in)
+  const positions = [];
+  for (let r = 2; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      positions.push({r, c});
+  shuffle(positions);
+
+  let placed = 0;
+  for (const {r, c} of positions) {
+    if (placed >= total) break;
+    const isRock = placed < (cfg.rocks||0);
+    obstacleBoard[r][c] = isRock ? OB_ROCK : OB_ICE;
+    obstacleHp[r][c]    = isRock ? 2 : 1;
+    obstacleEls[r][c]   = createObstacleEl(r, c);
+    boardEl.appendChild(obstacleEls[r][c]);
+    placed++;
+  }
+}
+
+function createObstacleEl(r, c) {
+  const el = document.createElement('div');
+  const type = obstacleBoard[r][c];
+  const hp   = obstacleHp[r][c];
+  el.className = type === OB_ROCK
+    ? `obs-el obs-rock${hp < 2 ? ' crack' : ' hp2'}`
+    : 'obs-el obs-ice';
+  el.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;`;
+  el.dataset.r = r; el.dataset.c = c;
+  if (type === OB_ICE) {
+    // Freeze the gem below with visual overlay
+    if (gemEls[r][c]) gemEls[r][c].style.filter = 'brightness(.5) saturate(.3)';
+  }
+  return el;
+}
+
+function restoreObstaclesFromState(boardEl) {
+  obstacleEls = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
+  for (let r2 = 0; r2 < ROWS; r2++)
+    for (let c2 = 0; c2 < COLS; c2++)
+      if (obstacleBoard[r2][c2] !== OB_NONE) {
+        obstacleEls[r2][c2] = createObstacleEl(r2, c2);
+        boardEl.appendChild(obstacleEls[r2][c2]);
+      }
 }
 
 function setupBombPreview() {
@@ -1060,7 +1300,7 @@ async function resolveMatches(matchResult, pivot) {
   });
   extraCells.forEach(key => cells.add(key));
 
-  // Score + goals (count before popping)
+  // Score + goals + particles
   cells.forEach(key => {
     const {r,c} = uk(key);
     if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
@@ -1069,8 +1309,12 @@ async function resolveMatches(matchResult, pivot) {
     score += 60 * comboCount; totalScore += 60 * comboCount;
     if (goalsTarget[g] !== undefined)
       goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+    spawnGemParticles(r, c, g);
   });
   updateUI(); renderGoals();
+  playMatch();
+  vibrate([15]);
+  if (comboCount > 1) { playCombo(); vibrate([20,10,20]); }
 
   // Pop animation clears board cells to -1
   await popCells(cells);
@@ -1094,12 +1338,54 @@ async function resolveMatches(matchResult, pivot) {
 //  POP CELLS
 // ═══════════════════════════════════════════════════
 async function popCells(cellSet) {
+  // Collect adjacent obstacle cells to damage
+  const obstacleDamage = new Set();
+  cellSet.forEach(key => {
+    const {r,c} = uk(key);
+    // Also damage obstacles that are in the matched set itself (ice over gem)
+    if (obstacleBoard[r][c] !== OB_NONE) obstacleDamage.add(key);
+    // Damage adjacent obstacles
+    for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&obstacleBoard[nr][nc]!==OB_NONE)
+        obstacleDamage.add(k(nr,nc));
+    }
+  });
+
+  // Animate pop
   cellSet.forEach(key => {
     const {r,c} = uk(key);
     const el = gemEls[r][c];
     if (el) { el.classList.add('popping'); el.style.zIndex = 20; }
   });
-  await delay(310);
+
+  // Damage obstacles
+  obstacleDamage.forEach(key => {
+    const {r,c} = uk(key);
+    if (obstacleBoard[r][c] === OB_NONE) return;
+    obstacleHp[r][c]--;
+    const el = obstacleEls[r][c];
+    if (el) { el.classList.add('obs-crack-anim'); setTimeout(()=>el.classList.remove('obs-crack-anim'),300); }
+    if (obstacleHp[r][c] <= 0) {
+      // Destroy obstacle
+      if (el) { el.classList.add('popping'); }
+      setTimeout(() => {
+        if (obstacleEls[r][c]) { obstacleEls[r][c].remove(); obstacleEls[r][c] = null; }
+        obstacleBoard[r][c] = OB_NONE;
+        // Unfreeze gem if was ice
+        if (gemEls[r][c]) gemEls[r][c].style.filter = '';
+      }, 310);
+      spawnParticles(r, c, '#aaaaaa');
+      vibrate([30]);
+    } else {
+      // Rock cracked — update visual
+      if (el && obstacleBoard[r][c] === OB_ROCK) {
+        el.className = 'obs-el obs-rock crack';
+      }
+    }
+  });
+
+  await delay(320);
   cellSet.forEach(key => {
     const {r,c} = uk(key);
     if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
@@ -1189,7 +1475,20 @@ async function gravityAndRefill(shapes) {
     }
   }
 
-  // Wait for CSS transition to finish (0.36s fall + some buffer)
+  // Move obstacle elements to match new gem positions
+  // (obstacles don't fall, they stay fixed — just reposition their DOM)
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const el = obstacleEls[r][c];
+      if (el) {
+        el.style.width  = CELL + 'px';
+        el.style.height = CELL + 'px';
+        el.style.top    = cTop(r) + 'px';
+        el.style.left   = cLeft(c) + 'px';
+      }
+    }
+
+  // Wait for CSS transition to finish
   await delay(420);
 }
 
@@ -1289,6 +1588,9 @@ async function executeBomb(cr, cc) {
       if(rr>=0&&rr<ROWS&&cc2>=0&&cc2<COLS) cells.add(k(rr,cc2));
     }
     showToast('💥 BOOM!');
+    shakeScreen();
+    vibrate([80,30,80]);
+    playSpecial();
     cells.forEach(key => {
       const {r,c} = uk(key);
       const g = board[r][c]; if(g<0) return;
@@ -1352,6 +1654,98 @@ function findPossibleMove() {
   return null;
 }
 
+// ═══════════════════════════════════════════════════
+//  EFFECTS
+// ═══════════════════════════════════════════════════
+let _audioCtx = null;
+function getAudio() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playTone(freq, dur=0.08, type='sine', vol=0.18) {
+  try {
+    const ctx = getAudio(), o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+dur);
+    o.start(); o.stop(ctx.currentTime+dur);
+  } catch(e) {}
+}
+function playMatch()   { playTone(520,.07,'sine',.15); setTimeout(()=>playTone(680,.1,'sine',.12),60); }
+function playSpecial() { [400,600,800].forEach((f,i)=>setTimeout(()=>playTone(f,.12,'square',.12),i*60)); }
+function playWin()     { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.18,'sine',.18),i*90)); }
+function playCombo()   { playTone(700+comboCount*80,.12,'sawtooth',.1); }
+function vibrate(p)    { try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){} }
+
+function shakeScreen() {
+  const el = document.querySelector('.board-wrap');
+  if(!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'),400);
+}
+
+function spawnParticles(r, c, color) {
+  const boardEl=document.getElementById('board'), rect=boardEl.getBoundingClientRect();
+  const cx=rect.left+cLeft(c)+CELL/2, cy=rect.top+cTop(r)+CELL/2;
+  for(let i=0;i<8;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const angle=(i/8)*Math.PI*2, dist=40+Math.random()*40, size=4+Math.random()*5;
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${color};--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;animation:particleFly ${.4+Math.random()*.3}s ease forwards;`;
+    document.body.appendChild(p); setTimeout(()=>p.remove(),800);
+  }
+}
+function spawnGemParticles(r,c,g){const cols=['#ff7db0','#5ee0ff','#ffe36a','#6af2a0','#cc66ff','#ff9040'];spawnParticles(r,c,cols[g]||'#FFD700');}
+
+function launchConfetti() {
+  const canvas=document.getElementById('confettiCanvas');
+  if(!canvas) return;
+  canvas.style.display='block'; canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx2=canvas.getContext('2d');
+  const cols=['#FFD700','#ff6b9d','#6af2a0','#5ee0ff','#cc66ff','#ff9040'];
+  const pieces=Array.from({length:120},()=>({x:Math.random()*canvas.width,y:-10-Math.random()*100,color:cols[Math.floor(Math.random()*cols.length)],vx:(Math.random()-.5)*3,vy:2+Math.random()*4,rot:Math.random()*360,vr:(Math.random()-.5)*8,w:6+Math.random()*8,h:10+Math.random()*8}));
+  let frame=0;
+  (function draw(){
+    ctx2.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.vy+=.05;ctx2.save();ctx2.translate(p.x,p.y);ctx2.rotate(p.rot*Math.PI/180);ctx2.fillStyle=p.color;ctx2.globalAlpha=Math.max(0,1-frame/120);ctx2.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx2.restore();});
+    frame++;
+    if(frame<150) requestAnimationFrame(draw);
+    else{ctx2.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='none';}
+  })();
+}
+
+function calcStars(ml,tm){const r=ml/tm;return r>=STAR3?3:r>=STAR2?2:1;}
+
+// ═══════════════════════════════════════════════════
+//  TUTORIAL
+// ═══════════════════════════════════════════════════
+const TUTORIAL_STEPS=[
+  [{text:'👋 Bem-vindo ao Glixar! Troque gemas adjacentes para combinar 3 ou mais iguais.',target:'board'},{text:'💡 Use a Dica se travar — ela mostra um movimento possível!',target:'hint'}],
+  [{text:'🚀 Combine 4 em linha e cria um Foguete — limpa linha e coluna inteiras!',target:'board'},{text:'🎯 Seus objetivos ficam aqui. Complete-os antes das jogadas acabarem!',target:'goals'}],
+  [{text:'🪨 Pedras bloqueiam o caminho! Faça matches ao lado para quebrá-las.',target:'board'},{text:'🔨 Power-ups salvam na hora certa. Você ganha +1 a cada 5 fases!',target:'powers'}],
+];
+function startTutorial(lvl){const steps=TUTORIAL_STEPS[lvl-1];if(!steps)return;tutStep=0;showTutStep(lvl-1,0);}
+function showTutStep(li,si){
+  const steps=TUTORIAL_STEPS[li];
+  if(!steps||si>=steps.length){endTutorial();return;}
+  const step=steps[si];
+  document.getElementById('tutorialOverlay').classList.add('show');
+  document.getElementById('tutText').textContent=step.text;
+  const targets={board:document.getElementById('board'),hint:document.querySelector('.btn-hint'),goals:document.getElementById('goalsDiv'),powers:document.getElementById('powersBar')};
+  const t=targets[step.target];
+  if(t){
+    const rect=t.getBoundingClientRect();
+    document.getElementById('tutHighlight').style.cssText=`left:${rect.left-4}px;top:${rect.top-4}px;width:${rect.width+8}px;height:${rect.height+8}px;`;
+    document.getElementById('tutBubble').style.cssText=`left:50%;transform:translateX(-50%);top:${Math.min(rect.bottom+14,window.innerHeight-140)}px;`;
+  }
+  document.getElementById('tutBubble').querySelector('.tutorial-btn').onclick=()=>nextTutStep(li);
+}
+function nextTutStep(li){tutStep++;showTutStep(li,tutStep);}
+function endTutorial(){tutStep=-1;document.getElementById('tutorialOverlay').classList.remove('show');}
+
+// ═══════════════════════════════════════════════════
+//  WIN / LOSE
+// ═══════════════════════════════════════════════════
 function checkWinLose() {
   if (levelOver) return;
 
@@ -1377,11 +1771,28 @@ function checkWinLose() {
 }
 
 function showWinSplash() {
-  const nextCfg = getLevelConfig(level + 1);
+  const nextCfg  = getLevelConfig(level + 1);
+  levelStars     = calcStars(moves, cfg.moves);
+  totalStars    += levelStars;
+  localStorage.setItem('glixarStars', totalStars);
+
+  playWin();
+  vibrate([50,30,50,30,100]);
+  launchConfetti();
+
   document.getElementById('splashIcon').textContent  = level % 10 === 0 ? '👑' : '🎉';
   document.getElementById('splashTitle').textContent = 'Fase Completa!';
   document.getElementById('splashMsg').innerHTML     =
     `Fase ${level} — ${score.toLocaleString('pt-BR')} pts<br>Próxima: Fase ${level+1} (${nextCfg.label})`;
+
+  // Show stars
+  const starsDiv = document.getElementById('splashStars');
+  starsDiv.style.display = 'flex';
+  ['s0','s1','s2'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('lit');
+    if (i < levelStars) setTimeout(() => el.classList.add('lit'), 300 + i*200);
+  });
   // Show name input if no name yet, else just next button
   const hasName = playerName.trim().length > 0;
   document.getElementById('nameRow').style.display    = hasName ? 'none' : 'flex';
