@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#0e0628">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Castle Match">
+<meta name="apple-mobile-web-app-title" content="Glixar">
 <meta name="description" content="Jogo match-3 estilo Royal Match com níveis infinitos">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Castle Match ✨</title>
+<title>Glixar ✨</title>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -333,7 +333,7 @@ body::before{
 <body>
 
 <div class="hdr">
-  <div class="logo">✨ Castle</div>
+  <div class="logo">✨ Glixar</div>
   <div style="display:flex;gap:8px;align-items:center;">
     <button class="rank-btn" onclick="openRank()" title="Ranking">🏆</button>
     <div class="level-badge">
@@ -488,15 +488,15 @@ let CELL       = 44;
 let comboCount = 0;
 let splashMode  = ''; // 'win' | 'lose' | 'continue'
 let continues   = 2;
-let playerName  = localStorage.getItem('castleName') || '';
-let ranking     = JSON.parse(localStorage.getItem('castleRank') || '[]');
+let playerName  = localStorage.getItem('glixarName') || '';
+let ranking     = JSON.parse(localStorage.getItem('glixarRank') || '[]');
 let activeTool  = null;  // 'hammer' | 'bomb' | null
 const PW_MAX    = 3;     // max of each power-up
 
 // ═══════════════════════════════════════════════════
 //  SAVE / LOAD
 // ═══════════════════════════════════════════════════
-const SAVE_KEY = 'castleSave';
+const SAVE_KEY = 'glixarSave';
 
 function saveGame() {
   if (levelOver) return; // don't save mid-splash
@@ -1444,7 +1444,7 @@ function saveAndNext() {
   const inp = document.getElementById('nameInput').value.trim();
   if (inp.length === 0) { document.getElementById('nameInput').focus(); return; }
   playerName = inp;
-  localStorage.setItem('castleName', playerName);
+  localStorage.setItem('glixarName', playerName);
   saveScore();
   document.getElementById('nameRow').style.display   = 'none';
   document.getElementById('splashBtn').style.display = 'block';
@@ -1457,7 +1457,7 @@ function saveScore() {
   // Keep top 50, sort by level desc then score desc
   ranking.sort((a,b) => b.level - a.level || b.score - a.score);
   if (ranking.length > 50) ranking.length = 50;
-  localStorage.setItem('castleRank', JSON.stringify(ranking));
+  localStorage.setItem('glixarRank', JSON.stringify(ranking));
 }
 
 // ── RANKING UI ──
