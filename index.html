@@ -921,6 +921,7 @@ body::before{
   display:none;position:fixed;inset:0;z-index:250;
   background:linear-gradient(180deg,#0e0a40 0%,#1a0e68 20%,#0e1a50 45%,#081830 70%,#040c20 100%);
   flex-direction:column;overflow:hidden;
+  position:fixed;
 }
 .map-overlay::before{
   content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
@@ -1055,7 +1056,7 @@ body::before{
 
 /* ── Preview popup ── */
 .map-preview{
-  display:none;position:fixed;inset:0;z-index:300;
+  display:none;position:absolute;inset:0;z-index:20;
   background:rgba(0,0,0,.72);align-items:flex-end;justify-content:center;
 }
 .map-preview.show{display:flex;}
@@ -1480,6 +1481,24 @@ body::before{
     </div>
     <div class="map-path" id="mapPath"></div>
   </div>
+
+  <!-- PHASE PREVIEW (inside map overlay) -->
+  <div class="map-preview" id="mapPreview">
+    <div class="map-preview-box">
+      <div class="mp-handle"></div>
+      <div class="mp-close" onclick="closeMapPreview()">✕</div>
+      <div class="mp-header">
+        <div class="mp-title" id="mpTitle">Fase 1</div>
+        <div class="mp-difficulty" id="mpDifficulty">Normal</div>
+      </div>
+      <div class="mp-stars" id="mpStars"></div>
+      <div class="mp-info-row" id="mpInfo"></div>
+      <div class="mp-goals-title">Objetivos</div>
+      <div class="mp-goals" id="mpGoals"></div>
+      <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
+    </div>
+  </div>
+
   <!-- Bottom nav -->
   <div class="map-bottomnav">
     <div class="map-nav-btn active">
@@ -1505,22 +1524,6 @@ body::before{
   </div>
 </div>
 
-<!-- PHASE PREVIEW POPUP -->
-<div class="map-preview" id="mapPreview">
-  <div class="map-preview-box">
-    <div class="mp-handle"></div>
-    <div class="mp-close" onclick="closeMapPreview()">✕</div>
-    <div class="mp-header">
-      <div class="mp-title" id="mpTitle">Fase 1</div>
-      <div class="mp-difficulty" id="mpDifficulty">Normal</div>
-    </div>
-    <div class="mp-stars" id="mpStars"></div>
-    <div class="mp-info-row" id="mpInfo"></div>
-    <div class="mp-goals-title">Objetivos</div>
-    <div class="mp-goals" id="mpGoals"></div>
-    <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
-  </div>
-</div>
 
 <!-- DAILY MISSIONS OVERLAY -->
 <div class="daily-overlay" id="dailyOverlay">
