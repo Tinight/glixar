@@ -1590,22 +1590,22 @@ body::before{
       <span style="font-size:1.15rem;">🗺️</span>
       <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#00f2fe;">Mapa</span>
     </div>
-    <div onclick="openRank();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+    <div onclick="openRankFromMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
       gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
       <span style="font-size:1.15rem;">🏆</span>
       <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Rank</span>
     </div>
-    <div onclick="openCheckin();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+    <div onclick="openCheckinFromMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
       gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
       <span style="font-size:1.15rem;">📅</span>
       <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Check-in</span>
     </div>
-    <div onclick="openProfile();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+    <div onclick="openProfileFromMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
       gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
       <span style="font-size:1.15rem;">👤</span>
       <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Perfil</span>
     </div>
-    <div onclick="openSettings();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+    <div onclick="openSettingsFromMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
       gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
       <span style="font-size:1.15rem;">⚙️</span>
       <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Config</span>
@@ -1920,6 +1920,7 @@ function openCheckin() {
 
 function closeCheckin() {
   document.getElementById('checkinOverlay').classList.remove('show');
+  maybeReturnToMap();
 }
 
 function renderCheckinGrid() {
@@ -3684,6 +3685,39 @@ const WORLDS = [
 ];
 function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) || WORLDS[0]; }
 
+// Open overlays from map — hide map, open overlay, restore map on close
+function openRankFromMap() {
+  document.getElementById('mapOverlay').style.display = 'none';
+  _mapFromNav = true;
+  openRank();
+}
+function openCheckinFromMap() {
+  document.getElementById('mapOverlay').style.display = 'none';
+  _mapFromNav = true;
+  openCheckin();
+}
+function openProfileFromMap() {
+  document.getElementById('mapOverlay').style.display = 'none';
+  _mapFromNav = true;
+  openProfile();
+}
+function openSettingsFromMap() {
+  document.getElementById('mapOverlay').style.display = 'none';
+  _mapFromNav = true;
+  openSettings();
+}
+
+// Flag: came from map nav
+let _mapFromNav = false;
+
+// Called when rank/checkin/profile/settings close — go back to map if needed
+function maybeReturnToMap() {
+  if (_mapFromNav) {
+    _mapFromNav = false;
+    document.getElementById('mapOverlay').style.display = 'flex';
+  }
+}
+
 function _mapHidePreview() {
   const el = document.getElementById('mapPreview');
   if (el) el.style.display = 'none';
@@ -3723,7 +3757,11 @@ function renderMapLives() {
 function closeMap() {
   _mapHidePreview();
   document.getElementById('mapOverlay').style.display = 'none';
-  if (localStorage.getItem('glixarSave'))
+  // Only show game-wrap if player is actively in a game (not just in map)
+  // Check if a level is in progress (board exists and is not level-over)
+  const boardHasContent = document.getElementById('board') &&
+    document.getElementById('board').children.length > 1;
+  if (boardHasContent && localStorage.getItem('glixarSave'))
     document.querySelector('.game-wrap').style.display = 'flex';
 }
 
@@ -4437,6 +4475,7 @@ function openSettings() {
 function closeSettings() {
   const overlay = document.getElementById('settingsOverlay');
   if (overlay) overlay.classList.remove('show');
+  maybeReturnToMap();
 }
 
 function toggleSound() {
@@ -4468,6 +4507,7 @@ function openProfile() {
 
 function closeProfile() {
   document.getElementById('profileOverlay').classList.remove('show');
+  maybeReturnToMap();
 }
 
 function saveProfile() {
@@ -4477,7 +4517,7 @@ function saveProfile() {
 
   const oldName = playerName;
   playerName    = newName;
-  playerCountry = newCountry;
+  playerCountry = newCountry || '';
   localStorage.setItem('glixarName',    playerName);
   localStorage.setItem('glixarCountry', playerCountry);
 
@@ -4508,6 +4548,7 @@ function openRank() {
 }
 function closeRank() {
   document.getElementById('rankOverlay').classList.remove('show');
+  maybeReturnToMap();
 }
 
 async function renderRankList() {
@@ -4553,7 +4594,7 @@ function buildRankItems(ul, entries, isOnline) {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;color:#fff;font-size:.88rem;
              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${e.country?e.country.split(' ')[0]+' ':''}${e.name||'?'}${isMe?' <span style="color:var(--gold);">👈 Você</span>':''}
+          ${e.country ? e.country.split(' ')[0]+' ' : ''}${e.name||'Jogador'}${isMe?' <span style="color:var(--gold);">👈 Você</span>':''}
         </div>
         <div style="font-size:.68rem;color:rgba(255,255,255,.45);margin-top:1px;">
           Fase ${e.level||1} · ${e.date||''}
