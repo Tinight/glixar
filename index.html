@@ -46,26 +46,23 @@ const db    = getFirestore(fbApp);
 window._fb = {
   // Upsert: one document per player (docId = sanitized name)
   // Keeps highest totalScore and highest level reached
-  async saveScore(name, lvl, totalPts) {
+  async saveScore(name, lvl, totalPts, country) {
     try {
       const docId  = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 40);
       const docRef = doc(db, 'ranking', docId);
-
-      // Get current entry to compare
-      const snap = await getDoc(docRef);
+      const snap   = await getDoc(docRef);
       const existing = snap.exists() ? snap.data() : null;
 
-      // Only update if this is a better score or higher level
-      const newScore = totalPts;
-      const newLevel = lvl;
-      if (existing && existing.score >= newScore && existing.level >= newLevel) return true;
+      const bestScore = Math.max(totalPts, existing?.score || 0);
+      const bestLevel = Math.max(lvl,      existing?.level || 0);
 
       await setDoc(docRef, {
         name,
-        score: Math.max(newScore, existing?.score || 0),
-        level: Math.max(newLevel, existing?.level || 0),
-        date:  new Date().toLocaleDateString('pt-BR'),
-        ts:    serverTimestamp()
+        country: country || existing?.country || '',
+        score:   bestScore,
+        level:   bestLevel,
+        date:    new Date().toLocaleDateString('pt-BR'),
+        ts:      serverTimestamp()
       }, { merge: true });
       return true;
     } catch(e) { console.warn('Firebase saveScore:', e); return false; }
@@ -464,6 +461,39 @@ body::before{
 .gi.goal-rock{background:rgba(120,120,120,.2);border:1px solid rgba(150,150,150,.3);}
 .gi.goal-ice {background:rgba(100,180,255,.15);border:1px solid rgba(150,200,255,.3);}
 .gi.goal-combo{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.3);}
+
+/* ── PROFILE MODAL ── */
+.profile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:300;align-items:center;justify-content:center;padding:16px;}
+.profile-overlay.show{display:flex;}
+.profile-box{
+  background:linear-gradient(135deg,#1a0550,#0a0220);
+  border:2px solid var(--gold);border-radius:22px;
+  padding:22px 18px;width:100%;max-width:360px;
+  animation:splashIn .35s cubic-bezier(.34,1.4,.64,1) both;
+}
+.profile-box h2{font-family:'Luckiest Guy',cursive;font-size:1.4rem;
+  color:var(--gold);text-align:center;margin-bottom:16px;}
+.profile-field{margin-bottom:12px;}
+.profile-field label{display:block;font-size:.72rem;font-weight:800;
+  color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.profile-field input, .profile-field select{
+  width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);
+  border-radius:10px;padding:10px 12px;color:#fff;font-size:.9rem;font-family:'Nunito',sans-serif;
+  outline:none;transition:border-color .2s;}
+.profile-field input:focus, .profile-field select:focus{border-color:var(--gold);}
+.profile-field select option{background:#1a0550;color:#fff;}
+.profile-avatar{text-align:center;margin-bottom:16px;}
+.profile-avatar .av{font-size:3rem;width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,#4a1a8e,#2a0860);border:3px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 6px;}
+.profile-avatar .av-name{font-size:.75rem;color:rgba(255,255,255,.5);}
+.profile-save-btn{width:100%;padding:12px;font-family:'Luckiest Guy',cursive;
+  font-size:1rem;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(180deg,var(--gold),var(--gold-dark));
+  color:#3a1800;box-shadow:0 4px 0 rgba(0,0,0,.4);margin-top:4px;
+  transition:transform .1s;}
+.profile-save-btn:active{transform:translateY(3px);}
 
 /* ── SETTINGS OVERLAY ── */
 .settings-overlay{
@@ -936,6 +966,45 @@ body::before{
 
 </div><!-- /game-wrap -->
 
+<!-- PROFILE OVERLAY -->
+<div class="profile-overlay" id="profileOverlay">
+  <div class="profile-box">
+    <h2>👤 Meu Perfil</h2>
+    <div class="profile-avatar">
+      <div class="av" id="profileAvatar">🎮</div>
+      <div class="av-name" id="profileAvatarName">Jogador</div>
+    </div>
+    <div class="profile-field">
+      <label>Apelido</label>
+      <input type="text" id="profileName" maxlength="18" placeholder="Seu apelido no ranking...">
+    </div>
+    <div class="profile-field">
+      <label>País</label>
+      <select id="profileCountry">
+        <option value="">Selecionar país...</option>
+        <option value="🇧🇷 Brasil">🇧🇷 Brasil</option>
+        <option value="🇵🇹 Portugal">🇵🇹 Portugal</option>
+        <option value="🇺🇸 EUA">🇺🇸 EUA</option>
+        <option value="🇦🇷 Argentina">🇦🇷 Argentina</option>
+        <option value="🇲🇽 México">🇲🇽 México</option>
+        <option value="🇨🇴 Colômbia">🇨🇴 Colômbia</option>
+        <option value="🇨🇱 Chile">🇨🇱 Chile</option>
+        <option value="🇵🇪 Peru">🇵🇪 Peru</option>
+        <option value="🇪🇸 Espanha">🇪🇸 Espanha</option>
+        <option value="🇫🇷 França">🇫🇷 França</option>
+        <option value="🇩🇪 Alemanha">🇩🇪 Alemanha</option>
+        <option value="🇮🇹 Itália">🇮🇹 Itália</option>
+        <option value="🇬🇧 Reino Unido">🇬🇧 Reino Unido</option>
+        <option value="🇯🇵 Japão">🇯🇵 Japão</option>
+        <option value="🌍 Outro">🌍 Outro</option>
+      </select>
+    </div>
+    <button class="profile-save-btn" onclick="saveProfile()">💾 Salvar Perfil</button>
+    <button class="btn" style="width:100%;margin-top:8px;background:rgba(255,255,255,.06);
+      font-size:.8rem;padding:10px;" onclick="closeProfile()">Fechar</button>
+  </div>
+</div>
+
 <!-- CHECKIN OVERLAY -->
 <div class="checkin-overlay" id="checkinOverlay">
   <div class="checkin-box">
@@ -1163,6 +1232,7 @@ let comboCount = 0;
 let splashMode  = ''; // 'win' | 'lose' | 'continue'
 let continues   = 2;
 let playerName  = localStorage.getItem('glixarName') || '';
+let playerCountry = localStorage.getItem('glixarCountry') || '';
 let ranking     = JSON.parse(localStorage.getItem('glixarRank') || '[]');
 let activeTool    = null;
 const PW_MAX      = 3;
@@ -3380,7 +3450,7 @@ async function saveScore() {
 
   // Firebase save (non-blocking)
   if (window._fb) {
-    window._fb.saveScore(playerName, level, totalScore)
+    window._fb.saveScore(playerName, level, totalScore, playerCountry)
       .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); })
       .catch(e => console.warn('Firebase save error:', e));
   }
@@ -3419,6 +3489,9 @@ function openSettings() {
         <div class="settings-handle"></div>
         <div class="settings-title">⚙️ Configurações</div>
         <div class="settings-section">
+          <div class="settings-item" onclick="openProfile();closeSettings()">
+            <span class="si-icon">👤</span><span class="si-label">Meu Perfil</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
+          </div>
           <div class="settings-item" onclick="openMap();closeSettings()">
             <span class="si-icon">🗺️</span><span class="si-label">Mapa de Fases</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
           </div>
@@ -3480,6 +3553,54 @@ function toggleVibrate() {
   localStorage.setItem('glixarVibrate', vibrateEnabled ? 'on' : 'off');
   const t = document.getElementById('vibrateToggle');
   if (t) { t.className = 'si-toggle ' + (vibrateEnabled?'on':'off'); }
+}
+
+// ── PROFILE ──
+function openProfile() {
+  const nameEl    = document.getElementById('profileName');
+  const countryEl = document.getElementById('profileCountry');
+  const avatarEl  = document.getElementById('profileAvatar');
+  const avNameEl  = document.getElementById('profileAvatarName');
+  if (nameEl)    nameEl.value    = playerName;
+  if (countryEl) countryEl.value = playerCountry;
+  if (avatarEl)  avatarEl.textContent = playerName ? playerName[0].toUpperCase() : '🎮';
+  if (avNameEl)  avNameEl.textContent = playerName || 'Sem apelido';
+  document.getElementById('profileOverlay').classList.add('show');
+}
+
+function closeProfile() {
+  document.getElementById('profileOverlay').classList.remove('show');
+}
+
+function saveProfile() {
+  const newName    = document.getElementById('profileName').value.trim();
+  const newCountry = document.getElementById('profileCountry').value;
+  if (!newName) { showToast('Digite um apelido!'); return; }
+
+  const oldName = playerName;
+  playerName    = newName;
+  playerCountry = newCountry;
+  localStorage.setItem('glixarName',    playerName);
+  localStorage.setItem('glixarCountry', playerCountry);
+
+  // If name changed, update local ranking entry
+  if (oldName && oldName !== newName) {
+    const idx = ranking.findIndex(r => r.name === oldName);
+    if (idx >= 0) {
+      ranking[idx].name    = newName;
+      ranking[idx].country = newCountry;
+      localStorage.setItem('glixarRank', JSON.stringify(ranking));
+    }
+  }
+
+  // Save to Firebase with new name
+  if (window._fb && totalScore > 0) {
+    window._fb.saveScore(playerName, level, totalScore, playerCountry)
+      .then(() => console.log('Profile updated in Firebase'));
+  }
+
+  showToast('✅ Perfil salvo!');
+  closeProfile();
 }
 
 function openRank() {
