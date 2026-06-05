@@ -1075,10 +1075,11 @@ body::before{
 }
 .mp-handle{width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 14px;}
 .mp-close{
-  position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:8px;
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:10px;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
   display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.5);font-size:.75rem;cursor:pointer;
+  color:#fff;font-size:.9rem;cursor:pointer;z-index:5;
+  font-weight:700;
 }
 .mp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .mp-title{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:#FFD700;}
@@ -1486,10 +1487,9 @@ body::before{
   </div>
 
   <!-- PHASE PREVIEW (inside map overlay) -->
-  <div class="map-preview" id="mapPreview">
-    <div class="map-preview-box">
+  <div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
+    <div class="map-preview-box" onclick="event.stopPropagation()">
       <div class="mp-handle"></div>
-      <div class="mp-close" onclick="closeMapPreview()">✕</div>
       <div class="mp-header">
         <div class="mp-title" id="mpTitle">Fase 1</div>
         <div class="mp-difficulty" id="mpDifficulty">Normal</div>
@@ -1499,6 +1499,11 @@ body::before{
       <div class="mp-goals-title">Objetivos</div>
       <div class="mp-goals" id="mpGoals"></div>
       <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
+      <button onclick="closeMapPreview()" style="
+        width:100%;margin-top:8px;padding:10px;border:none;border-radius:12px;
+        background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+        color:rgba(255,255,255,.5);font-family:'Nunito',sans-serif;font-size:.85rem;
+        font-weight:700;cursor:pointer;">✕ Fechar</button>
     </div>
   </div>
 
