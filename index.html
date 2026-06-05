@@ -1493,34 +1493,8 @@ function buildBoardFromState() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
-  // Place NEW random obstacles for this level
-  randomizeObstacles();
-}
-
-function randomizeObstacles() {
-  const boardEl = document.getElementById('board');
-  const total = (cfg.rocks||0) + (cfg.ices||0);
-  if (total === 0) return;
-  const positions = [];
-  for (let r = 2; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
-      positions.push({r, c});
-  shuffle(positions);
-  let placed = 0;
-  for (const {r, c} of positions) {
-    if (placed >= total) break;
-    const isRock = placed < (cfg.rocks||0);
-    obstacleBoard[r][c] = isRock ? OB_ROCK : OB_ICE;
-    obstacleHp[r][c]    = isRock ? 2 : 1;
-    // Mark board cell as occupied by obstacle (not a gem)
-    board[r][c]   = -1;
-    special[r][c] = SP_NONE;
-    // Remove any gem that was placed here during board generation
-    if (gemEls[r] && gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
-    obstacleEls[r][c] = createObstacleEl(r, c);
-    boardEl.appendChild(obstacleEls[r][c]);
-    placed++;
-  }
+  // RESTORE obstacles from saved state (not randomize)
+  restoreObstaclesFromState(boardEl);
 }
 
 function createObstacleEl(r, c) {
@@ -1697,34 +1671,8 @@ function buildBoard() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
-  // Place NEW random obstacles for this level
-  randomizeObstacles();
-}
-
-function randomizeObstacles() {
-  const boardEl = document.getElementById('board');
-  const total = (cfg.rocks||0) + (cfg.ices||0);
-  if (total === 0) return;
-  const positions = [];
-  for (let r = 2; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
-      positions.push({r, c});
-  shuffle(positions);
-  let placed = 0;
-  for (const {r, c} of positions) {
-    if (placed >= total) break;
-    const isRock = placed < (cfg.rocks||0);
-    obstacleBoard[r][c] = isRock ? OB_ROCK : OB_ICE;
-    obstacleHp[r][c]    = isRock ? 2 : 1;
-    // Mark board cell as occupied by obstacle (not a gem)
-    board[r][c]   = -1;
-    special[r][c] = SP_NONE;
-    // Remove any gem that was placed here during board generation
-    if (gemEls[r] && gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
-    obstacleEls[r][c] = createObstacleEl(r, c);
-    boardEl.appendChild(obstacleEls[r][c]);
-    placed++;
-  }
+  // RESTORE obstacles from saved state (not randomize)
+  restoreObstaclesFromState(boardEl);
 }
 
 function createObstacleEl(r, c) {
@@ -2499,7 +2447,7 @@ async function gravityAndRefill(shapes) {
     }
   }
 
-  // Obstacles stay fixed — update size only, no position change
+  // Obstacles stay fixed — update size AND position
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const el = obstacleEls[r][c];
@@ -3636,8 +3584,10 @@ window.addEventListener('resize', () => {
   if (!processing) {
     computeCell();
     for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
-      const el = gemEls[r]?.[c];
-      if(el) { el.style.width=el.style.height=CELL+'px'; el.style.top=cTop(r)+'px'; el.style.left=cLeft(c)+'px'; }
+      const gel = gemEls[r]?.[c];
+      if(gel) { gel.style.width=gel.style.height=CELL+'px'; gel.style.top=cTop(r)+'px'; gel.style.left=cLeft(c)+'px'; }
+      const oel = obstacleEls[r]?.[c];
+      if(oel) { oel.style.width=oel.style.height=CELL+'px'; oel.style.top=cTop(r)+'px'; oel.style.left=cLeft(c)+'px'; }
     }
   }
 });
