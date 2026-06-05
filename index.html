@@ -568,6 +568,25 @@ body::before{
 .si-toggle.off::after{left:3px;}
 .settings-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 0;}
 
+/* ── COUNTDOWN ── */
+.countdown-overlay{
+  display:none;position:fixed;inset:0;z-index:400;
+  background:rgba(0,0,0,.55);align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.countdown-overlay.show{display:flex;}
+.countdown-num{
+  font-family:'Luckiest Guy',cursive;font-size:8rem;
+  color:#fff;text-shadow:0 0 40px rgba(255,215,0,.8),0 4px 0 rgba(0,0,0,.5);
+  animation:countAnim .8s ease both;
+}
+@keyframes countAnim{
+  0%  {transform:scale(2);opacity:0;}
+  30% {transform:scale(1);opacity:1;}
+  70% {transform:scale(1);opacity:1;}
+  100%{transform:scale(.5);opacity:0;}
+}
+
 /* ── SCREEN SHAKE ── */
 @keyframes screenShake{
   0%,100%{transform:translate(0,0);}
@@ -793,38 +812,145 @@ body::before{
 .menu-confirm-btns .btn{flex:1;font-size:.88rem;padding:11px 6px;}
 
 /* ── MAP SCREEN ── */
-.map-overlay{display:none;position:fixed;inset:0;background:linear-gradient(160deg,#0e0628,#2a0a5e);
-  z-index:250;flex-direction:column;align-items:center;overflow-y:auto;padding:16px 12px 32px;}
+/* ── MAP SCREEN (Candy Crush style) ── */
+.map-overlay{
+  display:none;position:fixed;inset:0;z-index:250;
+  background:linear-gradient(180deg,#1a0660 0%,#0e1a60 40%,#0a3040 100%);
+  flex-direction:column;overflow:hidden;
+}
 .map-overlay.show{display:flex;}
-.map-header{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.map-title{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);text-shadow:0 2px 0 var(--gold-dark);}
-.map-close{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:10px;
-  padding:6px 14px;color:#fff;font-family:'Luckiest Guy',cursive;font-size:.9rem;cursor:pointer;}
-.map-path{width:100%;max-width:440px;display:flex;flex-direction:column;gap:0;position:relative;}
-.map-node{
-  display:flex;align-items:center;gap:12px;padding:8px 0;position:relative;
+
+/* Scrollable path area */
+.map-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:80px 0 120px;
+  position:relative;
 }
-.map-node:nth-child(odd) {flex-direction:row;}
-.map-node:nth-child(even){flex-direction:row-reverse;}
+.map-scroll::-webkit-scrollbar{display:none;}
+
+/* Fixed top header */
+.map-topbar{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  background:linear-gradient(180deg,rgba(10,6,40,.95),transparent);
+  padding:12px 16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.map-topbar-title{font-family:'Luckiest Guy',cursive;font-size:1.6rem;
+  color:var(--gold);text-shadow:0 2px 0 var(--gold-dark);letter-spacing:1px;}
+.map-topbar-close{
+  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.2);
+  border-radius:12px;padding:6px 16px;color:#fff;
+  font-family:'Luckiest Guy',cursive;font-size:.9rem;cursor:pointer;
+}
+
+/* The sinuous path */
+.map-path{
+  width:100%;max-width:400px;margin:0 auto;
+  display:flex;flex-direction:column-reverse;/* bottom = level 1 */
+  position:relative;padding:0 16px;
+}
+
+/* Row of 3 bubbles */
+.map-row{
+  display:flex;justify-content:space-around;align-items:center;
+  margin-bottom:8px;position:relative;
+}
+/* Alternate rows shift left/right for snake effect */
+.map-row.ltr{justify-content:flex-start;gap:20px;padding-left:16px;}
+.map-row.rtl{justify-content:flex-end;gap:20px;padding-right:16px;}
+.map-row.center{justify-content:center;}
+
+/* Connector curves between rows */
+.map-row-connector{
+  height:28px;position:relative;margin-bottom:0;
+}
+.map-row-connector::before{
+  content:'';position:absolute;left:50%;top:0;
+  width:3px;height:100%;
+  background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.06));
+  transform:translateX(-50%);border-radius:2px;
+}
+
+/* Individual bubble */
 .map-bubble{
-  width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.2);
-  background:linear-gradient(135deg,#2a0a6e,#12043a);
+  width:64px;height:64px;border-radius:50%;
+  border:4px solid rgba(255,255,255,.2);
+  background:linear-gradient(145deg,#2a0a6e,#12043a);
   display:flex;align-items:center;justify-content:center;
-  font-family:'Luckiest Guy',cursive;font-size:.9rem;color:rgba(255,255,255,.4);
-  flex-shrink:0;transition:all .3s;position:relative;cursor:pointer;
+  font-family:'Luckiest Guy',cursive;font-size:1rem;
+  color:rgba(255,255,255,.35);
+  flex-shrink:0;position:relative;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 0 rgba(0,0,0,.4);
 }
-.map-bubble.done{border-color:var(--gold);background:linear-gradient(135deg,#4a1a8e,#2a0860);color:var(--gold);}
-.map-bubble.current{border-color:#44ffaa;box-shadow:0 0 16px #44ffaa88;color:#fff;
-  animation:mapPulse .8s ease infinite alternate;}
-.map-bubble.locked{opacity:.4;cursor:default;}
-.map-stars{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
-  display:flex;gap:1px;font-size:.55rem;white-space:nowrap;}
-.map-info{flex:1;min-width:0;}
-.map-info-label{font-weight:800;color:#fff;font-size:.85rem;}
-.map-info-sub{font-size:.7rem;color:rgba(255,255,255,.4);}
-.map-connector{width:3px;height:24px;background:rgba(255,255,255,.1);margin:0 auto;margin-left:28px;}
-.map-connector.done{background:var(--gold);}
-@keyframes mapPulse{from{box-shadow:0 0 8px #44ffaa44;}to{box-shadow:0 0 20px #44ffaacc;}}
+.map-bubble:active{transform:scale(.92);}
+.map-bubble.done{
+  border-color:var(--gold);
+  background:linear-gradient(145deg,#5a2a9e,#3a1070);
+  color:var(--gold);
+  box-shadow:0 4px 0 rgba(0,0,0,.4),0 0 12px rgba(255,215,0,.2);
+}
+.map-bubble.current{
+  border-color:#44ffaa;width:72px;height:72px;font-size:1.1rem;
+  background:linear-gradient(145deg,#1a6e4a,#0a3a28);
+  color:#fff;
+  box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 20px rgba(68,255,170,.4);
+  animation:mapPulse .9s ease infinite alternate;
+}
+.map-bubble.locked{
+  opacity:.35;cursor:default;
+  background:linear-gradient(145deg,#1a1a2e,#0a0a1e);
+}
+.map-bubble .map-lock{font-size:1.1rem;filter:grayscale(1) opacity(.5);}
+.map-stars{
+  position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:1px;font-size:.6rem;white-space:nowrap;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+
+/* Preview popup */
+.map-preview{
+  display:none;position:fixed;inset:0;z-index:260;
+  background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;
+}
+.map-preview.show{display:flex;}
+.map-preview-box{
+  background:linear-gradient(180deg,#2a0a6e,#150440);
+  border:3px solid var(--gold);border-radius:24px 24px 0 0;
+  padding:20px 20px 32px;width:100%;max-width:440px;
+  animation:slideUp .35s cubic-bezier(.34,1.2,.64,1) both;
+}
+.mp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.mp-title{font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--gold);}
+.mp-close{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:4px 12px;color:#fff;font-size:.8rem;cursor:pointer;}
+.mp-stars{display:flex;gap:4px;margin-bottom:14px;}
+.mp-star{font-size:1.4rem;filter:grayscale(1) opacity(.3);transition:filter .3s;}
+.mp-star.earned{filter:none;}
+.mp-info{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.mp-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;padding:6px 12px;font-size:.75rem;color:rgba(255,255,255,.7);font-weight:700;}
+.mp-badge span{color:var(--gold);}
+.mp-goals{margin-bottom:18px;}
+.mp-goals-title{font-size:.65rem;color:rgba(255,255,255,.4);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:8px;}
+.mp-goal-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;}
+.mp-goal-item .mg-icon{font-size:1rem;}
+.mp-goal-item .mg-text{font-size:.8rem;color:#fff;font-weight:700;flex:1;}
+.mp-goal-item .mg-amt{font-size:.7rem;color:rgba(255,255,255,.45);}
+.mp-play-btn{
+  width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;
+  font-family:'Luckiest Guy',cursive;font-size:1.2rem;letter-spacing:1px;
+  background:linear-gradient(180deg,#44ff88,#22aa44);color:#003322;
+  box-shadow:0 5px 0 rgba(0,80,30,.5);transition:transform .1s;
+}
+.mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,80,30,.5);}
+
+@keyframes mapPulse{
+  from{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 12px rgba(68,255,170,.2);}
+  to{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 28px rgba(68,255,170,.6);}
+}
 
 /* ── DAILY MISSIONS ── */
 .daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
@@ -1066,6 +1192,9 @@ body::before{
   <div class="dt-label" id="dtLabel">Fase completa!</div>
 </div>
 
+<div class="countdown-overlay" id="countdownOverlay">
+  <div class="countdown-num" id="countdownNum">3</div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="combo-badge" id="comboBadge"></div>
 <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:399;display:none;"></canvas>
@@ -1142,11 +1271,30 @@ body::before{
 
 <!-- MAP OVERLAY -->
 <div class="map-overlay" id="mapOverlay">
-  <div class="map-header">
-    <div class="map-title">🗺️ Mapa</div>
-    <button class="map-close" onclick="closeMap()">✕ Fechar</button>
+  <div class="map-topbar">
+    <div class="map-topbar-title">🗺️ Fases</div>
+    <button class="map-topbar-close" onclick="closeMap()">✕ Fechar</button>
   </div>
-  <div class="map-path" id="mapPath"></div>
+  <div class="map-scroll" id="mapScroll">
+    <div class="map-path" id="mapPath"></div>
+  </div>
+</div>
+
+<!-- PHASE PREVIEW POPUP -->
+<div class="map-preview" id="mapPreview">
+  <div class="map-preview-box">
+    <div class="mp-header">
+      <div class="mp-title" id="mpTitle">Fase 1</div>
+      <button class="mp-close" onclick="closeMapPreview()">✕</button>
+    </div>
+    <div class="mp-stars" id="mpStars"></div>
+    <div class="mp-info" id="mpInfo"></div>
+    <div class="mp-goals">
+      <div class="mp-goals-title">Objetivos</div>
+      <div id="mpGoals"></div>
+    </div>
+    <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
+  </div>
 </div>
 
 <!-- DAILY MISSIONS OVERLAY -->
@@ -1716,6 +1864,12 @@ function startLevel() {
   renderGoals();
   renderPowers();
   buildBoard();
+  // Show countdown if coming from map preview
+  if (_showCountdown) {
+    _showCountdown = false;
+    processing = true;
+    showCountdown(() => { processing = false; });
+  }
 
   // Timer phase
   stopTimer();
@@ -2977,6 +3131,36 @@ function launchConfetti() {
 function calcStars(ml,tm){const r=ml/tm;return r>=STAR3?3:r>=STAR2?2:1;}
 
 // ═══════════════════════════════════════════════════
+//  COUNTDOWN ANIMATION
+// ═══════════════════════════════════════════════════
+function showCountdown(cb) {
+  const overlay = document.getElementById('countdownOverlay');
+  const numEl   = document.getElementById('countdownNum');
+  if (!overlay || !numEl) { cb(); return; }
+  let n = 3;
+  overlay.classList.add('show');
+  numEl.textContent = n;
+  const tick = () => {
+    n--;
+    if (n <= 0) {
+      numEl.textContent = '▶';
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        cb();
+      }, 500);
+      return;
+    }
+    numEl.textContent = n;
+    // Re-trigger animation
+    numEl.style.animation = 'none';
+    void numEl.offsetWidth;
+    numEl.style.animation = '';
+    setTimeout(tick, 800);
+  };
+  setTimeout(tick, 800);
+}
+
+// ═══════════════════════════════════════════════════
 //  TIMER
 // ═══════════════════════════════════════════════════
 function startTimer() {
@@ -3107,58 +3291,159 @@ function closeDaily() {
 // ═══════════════════════════════════════════════════
 //  MAP
 // ═══════════════════════════════════════════════════
+let _previewLevel    = 1;
+let _showCountdown   = false;
+
 function openMap() {
   renderMap();
   document.getElementById('mapOverlay').classList.add('show');
+  // Scroll to current level
+  setTimeout(() => {
+    const cur = document.getElementById('map-bubble-'+level);
+    if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
+  }, 100);
 }
 
 function closeMap() {
   document.getElementById('mapOverlay').classList.remove('show');
+  closeMapPreview();
 }
 
 function renderMap() {
   const path = document.getElementById('mapPath');
   path.innerHTML = '';
-  const maxLevel = Math.max(level + 3, Object.keys(levelStarsMap).length + 3);
-  for (let lvl = 1; lvl <= maxLevel; lvl++) {
-    // Connector line (not before first)
-    if (lvl > 1) {
+  const maxReached = Math.max(level, ...Object.keys(levelStarsMap).map(Number));
+  const maxLevel   = maxReached + 4; // show a few locked levels ahead
+
+  // Build bubbles grouped in rows of 3 (snake pattern)
+  const ROW_SIZE = 3;
+  const levels = [];
+  for (let i = 1; i <= maxLevel; i++) levels.push(i);
+
+  // Split into rows of 3
+  const rows = [];
+  for (let i = 0; i < levels.length; i += ROW_SIZE)
+    rows.push(levels.slice(i, i + ROW_SIZE));
+
+  // Render rows (path is column-reversed so row[0] is at bottom)
+  rows.forEach((row, rowIdx) => {
+    // Connector between rows
+    if (rowIdx > 0) {
       const conn = document.createElement('div');
-      conn.className = 'map-connector' + ((levelStarsMap[lvl-1] || 0) > 0 ? ' done' : '');
+      conn.className = 'map-row-connector';
       path.appendChild(conn);
     }
-    const stars = levelStarsMap[lvl] || 0;
-    const isCurrent = lvl === level;
-    const isDone    = stars > 0;
-    // Locked only if beyond the highest level ever reached
-    const maxReached = Math.max(level, ...Object.keys(levelStarsMap).map(Number));
-    const isLocked  = lvl > maxReached;
-    const lcfg      = getLevelConfig(lvl);
 
-    const node = document.createElement('div');
-    node.className = 'map-node';
+    const rowEl = document.createElement('div');
+    // Alternate direction: even rows left-to-right, odd rows right-to-left
+    const dir = rowIdx % 2 === 0 ? 'ltr' : 'rtl';
+    rowEl.className = `map-row ${dir}`;
 
-    const bubble = document.createElement('div');
-    bubble.className = 'map-bubble' + (isDone ? ' done' : '') + (isCurrent ? ' current' : '') + (isLocked ? ' locked' : '');
-    bubble.textContent = lvl;
+    // If rtl, reverse the order for visual snake
+    const displayRow = dir === 'rtl' ? [...row].reverse() : row;
 
-    // Stars under bubble
-    const starSpan = document.createElement('div');
-    starSpan.className = 'map-stars';
-    starSpan.textContent = isDone ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : (isLocked ? '🔒' : '▶');
-    bubble.appendChild(starSpan);
+    displayRow.forEach(lvl => {
+      const stars     = levelStarsMap[lvl] || 0;
+      const isCurrent = lvl === level;
+      const isDone    = stars > 0;
+      const isLocked  = lvl > maxReached;
 
-    if (!isLocked) bubble.onclick = () => { closeMap(); level = lvl; startLevel(); };
+      const bubble = document.createElement('div');
+      bubble.className = 'map-bubble' +
+        (isDone    ? ' done'    : '') +
+        (isCurrent ? ' current' : '') +
+        (isLocked  ? ' locked'  : '');
+      bubble.id = 'map-bubble-' + lvl;
 
-    const info = document.createElement('div');
-    info.className = 'map-info';
-    info.innerHTML = `<div class="map-info-label">Fase ${lvl} ${lcfg.hasTimer ? '⏱️' : ''}</div>
-      <div class="map-info-sub">${lcfg.label} · ${lcfg.moves} jogadas${lcfg.rocks>0?' · 🪨'+lcfg.rocks:''}${lcfg.ices>0?' · ❄️'+lcfg.ices:''}</div>`;
+      // Level number or lock
+      if (isLocked) {
+        bubble.innerHTML = `<span class="map-lock">🔒</span>`;
+      } else {
+        bubble.textContent = lvl;
+      }
 
-    node.appendChild(bubble);
-    node.appendChild(info);
-    path.appendChild(node);
+      // Stars badge
+      if (!isLocked) {
+        const starSpan = document.createElement('div');
+        starSpan.className = 'map-stars';
+        if (isDone) {
+          starSpan.textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+        } else if (isCurrent) {
+          starSpan.textContent = '▶';
+        }
+        bubble.appendChild(starSpan);
+      }
+
+      // Click → open preview (not go directly)
+      if (!isLocked) {
+        bubble.onclick = () => openMapPreview(lvl);
+      }
+
+      rowEl.appendChild(bubble);
+    });
+
+    path.appendChild(rowEl);
+  });
+}
+
+function openMapPreview(lvl) {
+  _previewLevel = lvl;
+  const lcfg  = getLevelConfig(lvl);
+  const stars  = levelStarsMap[lvl] || 0;
+  const isCur  = lvl === level;
+
+  // Title
+  document.getElementById('mpTitle').textContent = `Fase ${lvl}`;
+
+  // Stars
+  const starsEl = document.getElementById('mpStars');
+  starsEl.innerHTML = '';
+  for (let i = 1; i <= 3; i++) {
+    const s = document.createElement('div');
+    s.className = 'mp-star' + (i <= stars ? ' earned' : '');
+    s.textContent = '⭐';
+    starsEl.appendChild(s);
   }
+
+  // Info badges
+  const infoEl = document.getElementById('mpInfo');
+  infoEl.innerHTML = `
+    <div class="mp-badge">⚡ <span>${lcfg.moves}</span> jogadas</div>
+    <div class="mp-badge">📊 <span>${lcfg.label}</span></div>
+    ${stars > 0 ? `<div class="mp-badge">⭐ <span>${stars}/3</span> estrelas</div>` : ''}
+  `;
+
+  // Goals
+  const goalsEl = document.getElementById('mpGoals');
+  goalsEl.innerHTML = '';
+  const goalTypes = lcfg.goalTypes || [{type:'gem'}];
+  const gemNames  = ['Vermelha','Azul','Amarela','Verde','Roxa','Laranja','Rosa','Ciano'];
+  goalTypes.forEach((gt, i) => {
+    const item = document.createElement('div');
+    item.className = 'mp-goal-item';
+    let icon = GEMS[i % GEMS.length], text = 'Colete gemas', amt = lcfg.goalAmt;
+    if (gt.type === 'combo') { icon = '🔥'; text = 'Faça combos'; amt = gt.target; }
+    item.innerHTML = `<span class="mg-icon">${icon}</span><span class="mg-text">${text}</span><span class="mg-amt">x${amt}</span>`;
+    goalsEl.appendChild(item);
+  });
+
+  // Play button text
+  const playBtn = document.getElementById('mpPlayBtn');
+  playBtn.textContent = isCur ? '▶ Continuar' : (stars > 0 ? '🔄 Rejog ar' : '▶ Jogar');
+
+  document.getElementById('mapPreview').classList.add('show');
+}
+
+function closeMapPreview() {
+  document.getElementById('mapPreview').classList.remove('show');
+}
+
+function playFromPreview() {
+  closeMapPreview();
+  closeMap();
+  level = _previewLevel;
+  _showCountdown = true;
+  startLevel();
 }
 
 // ═══════════════════════════════════════════════════
