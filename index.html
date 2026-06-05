@@ -1560,12 +1560,6 @@ function startLevel() {
       const g = gemPicks[gemIdx++ % cfg.gemColors];
       goalsTarget['gem_'+g] = cfg.goalAmt;
       goals['gem_'+g] = 0;
-    } else if (gt.type === GOAL_ROCK) {
-      goalsTarget['rock'] = gt.target;
-      goals['rock'] = 0;
-    } else if (gt.type === GOAL_ICE) {
-      goalsTarget['ice'] = gt.target;
-      goals['ice'] = 0;
     } else if (gt.type === GOAL_COMBO) {
       goalsTarget['combo'] = gt.target;
       goals['combo'] = 0;
@@ -3565,10 +3559,8 @@ function renderGoals() {
     if (key.startsWith('gem_')) {
       const g = parseInt(key.split('_')[1]);
       icon = GEMS[g]; extraClass = '';
-    } else if (key === 'rock') {
-      icon = '🪨'; extraClass = ' goal-rock';
-    } else if (key === 'ice') {
-      icon = '❄️'; extraClass = ' goal-ice';
+    } else if (key === 'rock' || key === 'ice') {
+      return; // obstacles disabled — skip
     } else if (key === 'combo') {
       icon = '🔥'; extraClass = ' goal-combo';
     }
