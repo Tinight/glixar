@@ -370,7 +370,50 @@ body::before{
 .gc-6{background:radial-gradient(circle at 38% 28%,#ffb3d9,#ff4da6,#990055);box-shadow:inset 0 -3px 8px rgba(0,0,0,.3),0 2px 6px rgba(255,77,166,.4);}
 .gc-7{background:radial-gradient(circle at 38% 28%,#b3ecff,#00ccff,#006699);box-shadow:inset 0 -3px 8px rgba(0,0,0,.3),0 2px 6px rgba(0,204,255,.4);}
 
-
+/* ── OBSTACLES ── */
+.obs-el{
+  position:absolute;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1.1rem,4vw,1.5rem);
+  pointer-events:none;z-index:15;
+  transition:none;
+  box-sizing:border-box;
+}
+/* Rock obstacle */
+.obs-rock{
+  background:radial-gradient(circle at 40% 25%,#b0b0b0,#6a6a6a,#2a2a2a);
+  border:2.5px solid #777;
+  box-shadow:inset 0 -4px 8px rgba(0,0,0,.6),inset 0 2px 4px rgba(255,255,255,.15),0 3px 8px rgba(0,0,0,.5);
+}
+.obs-rock.hp2{
+  background:radial-gradient(circle at 40% 25%,#cccccc,#888888,#444444);
+  border-color:#aaa;
+}
+/* crack lines via SVG */
+.obs-rock.crack{position:relative;}
+.obs-rock.crack::after{
+  content:'';position:absolute;inset:0;border-radius:7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M22 4 L16 18 L24 16 L17 36' stroke='rgba(0%2C0%2C0%2C.7)' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M28 12 L22 18' stroke='rgba(0%2C0%2C0%2C.5)' stroke-width='1.5' fill='none'/%3E%3Cpath d='M14 20 L10 28' stroke='rgba(0%2C0%2C0%2C.4)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") center/85% no-repeat;
+}
+.obs-rock::before{content:'🪨';font-size:.85em;position:relative;z-index:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));}
+/* Ice obstacle */
+.obs-ice{
+  background:linear-gradient(135deg,rgba(180,235,255,.85),rgba(80,170,230,.7),rgba(40,120,200,.6));
+  border:2.5px solid rgba(200,240,255,.9);
+  box-shadow:inset 0 0 16px rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,80,160,.3),0 0 12px rgba(100,200,255,.5);
+}
+.obs-ice::before{
+  content:'❄️';position:absolute;font-size:.95em;
+  animation:iceSpin 3s linear infinite;
+  filter:drop-shadow(0 0 4px rgba(100,200,255,.8));
+}
+@keyframes iceSpin{0%{transform:rotate(0deg) scale(1);}50%{transform:rotate(180deg) scale(1.1);}100%{transform:rotate(360deg) scale(1);}}
+/* crack animation */
+@keyframes rockCrack{
+  0%{transform:scale(1);}20%{transform:scale(1.15) rotate(-3deg);}
+  40%{transform:scale(.95) rotate(2deg);}100%{transform:scale(1);}
+}
+.obs-crack-anim{animation:rockCrack .25s ease;}
 
 /* ── PARTICLES ── */
 .particle{
@@ -418,7 +461,8 @@ body::before{
   border-radius:7px;padding:3px 7px;font-size:.7rem;font-weight:800;color:#fff;transition:all .3s;}
 .gi.done{opacity:.35;text-decoration:line-through;}
 .gi .g{font-size:.85rem;}
-
+.gi.goal-rock{background:rgba(120,120,120,.2);border:1px solid rgba(150,150,150,.3);}
+.gi.goal-ice {background:rgba(100,180,255,.15);border:1px solid rgba(150,200,255,.3);}
 .gi.goal-combo{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.3);}
 
 /* ── SETTINGS OVERLAY ── */
@@ -794,7 +838,8 @@ body::before{
 @keyframes timerPulse{from{border-color:#ff2222;}to{border-color:#ff8888;box-shadow:0 0 12px #ff222288;}}
 
 /* ── VARIED GOALS ── */
-
+.gi.goal-rock{background:rgba(120,120,120,.2);border:1px solid rgba(150,150,150,.3);}
+.gi.goal-ice {background:rgba(100,180,255,.15);border:1px solid rgba(150,200,255,.3);}
 .gi.goal-combo{background:rgba(255,200,0,.12);border:1px solid rgba(255,200,0,.3);}
 .gi.goal-time{background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.3);}
 
@@ -1034,19 +1079,26 @@ const SP_BOMB    = 2;
 const SP_CROSS   = 3;
 const SP_RAINBOW = 4;
 
+// Obstacle types — stored in obstacleBoard[r][c]
+const OB_NONE = 0;
+const OB_ROCK = 1; // rock: needs 2 adjacent matches to break
+const OB_ICE  = 2; // ice: traps gem underneath, 1 adjacent match frees it
+
 // Stars thresholds
 const STAR3 = 0.6;
 const STAR2 = 0.3;
 
 // Goal types
 const GOAL_GEM   = 'gem';   // collect X of gem color
+const GOAL_ROCK  = 'rock';  // break X rocks
+const GOAL_ICE   = 'ice';   // free X ice
 const GOAL_COMBO = 'combo'; // make X combos
 
 // Mission definitions (daily)
 const MISSION_DEFS = [
   { id:'matches',  icon:'💎', name:'Combinar 30 gemas',    target:30,  type:'matches',  reward:'hammer' },
   { id:'combos',   icon:'🔥', name:'Fazer 5 combos',       target:5,   type:'combos',   reward:'bomb'   },
-  { id:'score',    icon:'🏆', name:'Fazer 10.000 pontos',   target:10000,type:'score',    reward:'shuffle'},
+  { id:'rocks',    icon:'🪨', name:'Quebrar 8 pedras',      target:8,   type:'rocks',    reward:'shuffle'},
   { id:'phases',   icon:'🏆', name:'Completar 2 fases',    target:2,   type:'phases',   reward:'hammer' },
   { id:'specials', icon:'✨', name:'Criar 3 gemas especiais',target:3,  type:'specials', reward:'bomb'   },
   { id:'stars',    icon:'⭐', name:'Ganhar 5 estrelas',     target:5,   type:'stars',    reward:'shuffle'},
@@ -1056,7 +1108,7 @@ const MISSION_DEFS = [
 function getLevelConfig(lvl) {
   // Smoother infinite scaling
   const moves     = Math.max(14, 28 - Math.floor((lvl - 1) * 0.6));
-  const gemColors = Math.min(8, 3 + Math.floor((lvl + 1) / 4));
+  const gemColors = Math.min(8, 3 + Math.floor((lvl - 1) / 3));
   const goalCount = lvl <= 2 ? 1 : lvl <= 5 ? 2 : 3;
   const goalAmt   = Math.min(30, 6 + Math.floor((lvl - 1) * 1.5));
   const label     = lvl <= 3  ? 'Normal'  :
@@ -1064,22 +1116,22 @@ function getLevelConfig(lvl) {
                     lvl <= 15 ? 'Difícil' :
                     lvl <= 25 ? 'Épico'   : 'Lendário';
   const powerUps  = lvl <= 10 ? 1 : 0;
+  // Obstacles start appearing from level 3
+  const rocks = 0;  // disabled temporarily
+  const ices  = 0;  // disabled temporarily
   const hasTimer  = lvl >= 7 && (lvl % 7 === 0);
   const timerSecs = hasTimer ? Math.max(45, 90 - Math.floor(lvl/7)*8) : 0;
-  const goalTypes = buildGoalTypes(lvl);
-  return { moves, gemColors, goalCount, goalAmt, label, powerUps, hasTimer, timerSecs, goalTypes };
+  const goalTypes = buildGoalTypes(lvl, 0, 0);
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks:0, ices:0, hasTimer, timerSecs, goalTypes };
 }
 
 function buildGoalTypes(lvl) {
   const types = [];
-  const gemCount = lvl <= 2 ? 1 : lvl <= 5 ? 2 : 3;
-  for (let i = 0; i < gemCount; i++) {
-    types.push({ type: GOAL_GEM });
-  }
-  // Combo goals starting level 6, on even levels
-  if (lvl >= 6 && lvl % 2 === 0) {
-    types.push({ type: GOAL_COMBO, target: Math.min(10, 2 + Math.floor(lvl / 4)) });
-  }
+  // Gem goals scale with level
+  const gemCount = lvl <= 3 ? 1 : lvl <= 8 ? 2 : 3;
+  for (let i = 0; i < gemCount; i++) types.push({ type: GOAL_GEM });
+  // Combo goal every 5 levels
+  if (lvl >= 5 && lvl % 5 === 0) types.push({ type: GOAL_COMBO, target: 3 + Math.floor(lvl/10) });
   return types;
 }
 
@@ -1316,7 +1368,9 @@ function getLives() {
   const now = Date.now();
   return lifeTimestamps.filter(t => t === 0 || t <= now).length;
 }
-
+let obstacleBoard = []; // obstacleBoard[r][c] = OB_* 
+let obstacleHp    = []; // hp for rocks (2=full, 1=cracked)
+let obstacleEls   = []; // DOM elements for obstacles
 let levelStars    = 0;  // stars earned this level (1-3)
 let totalStars    = parseInt(localStorage.getItem('glixarStars')||'0');
 let tutStep       = -1;
@@ -1338,6 +1392,7 @@ let levelStarsMap  = JSON.parse(localStorage.getItem('glixarMap') || '{}'); // {
 let sessionCombos   = 0;
 let sessionMatches  = 0;
 let sessionSpecials = 0;
+let sessionRocks    = 0;
 
 // ═══════════════════════════════════════════════════
 //  SAVE / LOAD
@@ -1353,6 +1408,8 @@ function saveGame() {
     pwCounts: {...pwCounts},
     board: board.map(row => [...row]),
     special: special.map(row => [...row]),
+    obstacleBoard: obstacleBoard.map(row => [...row]),
+    obstacleHp: obstacleHp.map(row => [...row]),
     cfg: {...cfg},
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -1378,23 +1435,10 @@ function loadSave() {
     cfg           = d.cfg;
     board         = d.board;
     special       = d.special;
+    obstacleBoard = d.obstacleBoard || Array.from({length:ROWS},()=>new Array(COLS).fill(OB_NONE));
+    obstacleHp    = d.obstacleHp    || Array.from({length:ROWS},()=>new Array(COLS).fill(0));
     timerSeconds  = d.timerSeconds  || 0;
     timerPhase    = d.timerPhase    || false;
-
-    // Sanitizar metas antigas de obstáculos
-    if (goalsTarget) {
-      if (goalsTarget['rock'] !== undefined) delete goalsTarget['rock'];
-      if (goalsTarget['ice'] !== undefined) delete goalsTarget['ice'];
-      if (goals['rock'] !== undefined) delete goals['rock'];
-      if (goals['ice'] !== undefined) delete goals['ice'];
-
-      const hasGemGoal = Object.keys(goalsTarget).some(k => k.startsWith('gem_'));
-      if (!hasGemGoal) {
-        goalsTarget['gem_0'] = cfg.goalAmt || 15;
-        goals['gem_0'] = 0;
-      }
-    }
-
     return true;
   } catch(e) {
     console.warn('Save corrupt:', e);
@@ -1448,9 +1492,22 @@ function buildBoardFromState() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
+  // RESTORE obstacles from saved state (not randomize)
+  restoreObstaclesFromState(boardEl);
 }
 
-
+function createObstacleEl(r, c) {
+  const el   = document.createElement('div');
+  const type = obstacleBoard[r][c];
+  const hp   = obstacleHp[r][c];
+  el.className = type === OB_ROCK
+    ? `obs-el obs-rock${hp < 2 ? ' crack' : ' hp2'}`
+    : 'obs-el obs-ice';
+  // Same size as gems, positioned exactly on the grid cell
+  el.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;z-index:15;`;
+  el.dataset.r = r; el.dataset.c = c;
+  return el;
+}
 
 // ═══════════════════════════════════════════════════
 //  LAYOUT HELPERS
@@ -1497,20 +1554,34 @@ function startLevel() {
 
   // Build goals from goalTypes config
   goals = {}; goalsTarget = {};
-  const goalTypesArr = cfg.goalTypes || [{type:GOAL_GEM}];
+  const goalTypesArr = cfg.goalTypes && cfg.goalTypes.length > 0
+    ? cfg.goalTypes : [{type:GOAL_GEM}];
   const gemPicks = shuffle(Array.from({length:cfg.gemColors},(_,i)=>i));
   let gemIdx = 0;
   goalTypesArr.forEach(gt => {
     if (gt.type === GOAL_GEM) {
       const g = gemPicks[gemIdx++ % cfg.gemColors];
-      goalsTarget['gem_'+g] = cfg.goalAmt;
-      goals['gem_'+g] = 0;
+      const key = 'gem_'+g;
+      // Avoid duplicate keys
+      if (goalsTarget[key] !== undefined) {
+        const g2 = gemPicks[(gemIdx++) % cfg.gemColors];
+        goalsTarget['gem_'+g2] = cfg.goalAmt;
+        goals['gem_'+g2] = 0;
+      } else {
+        goalsTarget[key] = cfg.goalAmt;
+        goals[key] = 0;
+      }
     } else if (gt.type === GOAL_COMBO) {
       goalsTarget['combo'] = gt.target;
       goals['combo'] = 0;
     }
   });
-  sessionCombos = 0; sessionMatches = 0; sessionSpecials = 0;
+  // Safety: ensure at least 1 gem goal
+  if (Object.keys(goalsTarget).filter(k=>k!=='rock'&&k!=='ice').length === 0) {
+    goalsTarget['gem_0'] = cfg.goalAmt;
+    goals['gem_0'] = 0;
+  }
+  sessionCombos = 0; sessionMatches = 0; sessionSpecials = 0; sessionRocks = 0;
 
   // Power-ups: give 1 of each if empty, otherwise keep accumulated (max 3)
   if (!pwCounts || Object.keys(pwCounts).length === 0) {
@@ -1523,7 +1594,9 @@ function startLevel() {
     setTimeout(() => showToast('🎁 +1 Power-up de cada!'), 600);
   }
 
-
+  obstacleBoard = Array.from({length:ROWS}, () => new Array(COLS).fill(OB_NONE));
+  obstacleHp    = Array.from({length:ROWS}, () => new Array(COLS).fill(0));
+  obstacleEls   = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
 
   document.getElementById('splash').classList.remove('show');
   updateUI();
@@ -1605,9 +1678,32 @@ function buildBoard() {
       boardEl.appendChild(gemEls[r][c]);
     }
   setupBombPreview();
+  // RESTORE obstacles from saved state (not randomize)
+  restoreObstaclesFromState(boardEl);
 }
 
+function createObstacleEl(r, c) {
+  const el   = document.createElement('div');
+  const type = obstacleBoard[r][c];
+  const hp   = obstacleHp[r][c];
+  el.className = type === OB_ROCK
+    ? `obs-el obs-rock${hp < 2 ? ' crack' : ' hp2'}`
+    : 'obs-el obs-ice';
+  // Same size as gems, positioned exactly on the grid cell
+  el.style.cssText = `width:${CELL}px;height:${CELL}px;top:${cTop(r)}px;left:${cLeft(c)}px;z-index:15;`;
+  el.dataset.r = r; el.dataset.c = c;
+  return el;
+}
 
+function restoreObstaclesFromState(boardEl) {
+  obstacleEls = Array.from({length:ROWS}, () => new Array(COLS).fill(null));
+  for (let r2 = 0; r2 < ROWS; r2++)
+    for (let c2 = 0; c2 < COLS; c2++)
+      if (obstacleBoard[r2][c2] !== OB_NONE) {
+        obstacleEls[r2][c2] = createObstacleEl(r2, c2);
+        boardEl.appendChild(obstacleEls[r2][c2]);
+      }
+}
 
 function setupBombPreview() {
   const boardEl = document.getElementById('board');
@@ -1772,6 +1868,10 @@ function onSwipe(r, c, dir) {
     activateRainbow(nr, nc, board[r][c]); return;
   }
 
+  // Block if obstacle involved
+  if (obstacleBoard[r][c] !== OB_NONE || obstacleBoard[nr][nc] !== OB_NONE) {
+    playNoMove(); return;
+  }
   trySwap(r, c, nr, nc);
 }
 
@@ -1837,6 +1937,11 @@ function onCellClick(r, c) {
 }
 
 async function trySwap(r1,c1,r2,c2) {
+  // Block swap if either cell has an obstacle
+  if (obstacleBoard[r1][c1] !== OB_NONE || obstacleBoard[r2][c2] !== OB_NONE) {
+    playNoMove(); vibrate([30]);
+    return;
+  }
   processing = true;
   resetInactivity();
   startWatchdog();
@@ -2031,11 +2136,31 @@ async function activateRainbow(r, c, targetColor) {
       const {r:rr,c:cc} = uk(key);
       const g = board[rr][cc]; if(g<0) return;
       score += 100; totalScore += 100;
-      trackMission('score', 100);
       // Goals use gem_N key format
       const gk = 'gem_'+g;
       if(goalsTarget[gk] !== undefined)
         goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+    });
+    // Also damage adjacent obstacles via popCells mechanism
+    allCells.forEach(key => {
+      const {r:rr,c:cc} = uk(key);
+      for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr=rr+dr, nc=cc+dc;
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&obstacleBoard[nr][nc]!==OB_NONE) {
+          obstacleHp[nr][nc]--;
+          const el=obstacleEls[nr][nc];
+          if(el) el.classList.add('obs-crack-anim');
+          if(obstacleHp[nr][nc]<=0){
+            const wasType=obstacleBoard[nr][nc];
+            if(el){el.classList.add('popping');setTimeout(()=>{if(obstacleEls[nr][nc])obstacleEls[nr][nc].remove();obstacleEls[nr][nc]=null;},320);}
+            obstacleBoard[nr][nc]=OB_NONE;
+            if(gemEls[nr][nc])gemEls[nr][nc].style.filter='';
+            if(wasType===OB_ROCK){if(goalsTarget['rock']!==undefined)goals['rock']=Math.min((goals['rock']||0)+1,goalsTarget['rock']);}
+            else if(wasType===OB_ICE){if(goalsTarget['ice']!==undefined)goals['ice']=Math.min((goals['ice']||0)+1,goalsTarget['ice']);}
+          }
+        }
+      }
+    });
     updateUI(); renderGoals();
     await popCells(allCells);
     await gravityAndRefill([]);
@@ -2081,7 +2206,6 @@ async function resolveMatches(matchResult, pivot) {
     const g = board[r][c];
     if (g < 0) return;
     score += 60 * comboCount; totalScore += 60 * comboCount;
-    trackMission('score', 60 * comboCount);
     // Gem goals use key format gem_N
     const gemKey = 'gem_' + g;
     if (goalsTarget[gemKey] !== undefined)
@@ -2145,6 +2269,20 @@ async function resolveMatches(matchResult, pivot) {
 //  POP CELLS
 // ═══════════════════════════════════════════════════
 async function popCells(cellSet) {
+  // Collect adjacent obstacle cells to damage
+  const obstacleDamage = new Set();
+  cellSet.forEach(key => {
+    const {r,c} = uk(key);
+    // Also damage obstacles that are in the matched set itself (ice over gem)
+    if (obstacleBoard[r][c] !== OB_NONE) obstacleDamage.add(key);
+    // Damage adjacent obstacles
+    for (const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&obstacleBoard[nr][nc]!==OB_NONE)
+        obstacleDamage.add(k(nr,nc));
+    }
+  });
+
   // Animate pop
   cellSet.forEach(key => {
     const {r,c} = uk(key);
@@ -2152,9 +2290,47 @@ async function popCells(cellSet) {
     if (el) { el.classList.add('popping'); el.style.zIndex = 20; }
   });
 
+  // Damage obstacles
+  obstacleDamage.forEach(key => {
+    const {r,c} = uk(key);
+    if (obstacleBoard[r][c] === OB_NONE) return;
+    obstacleHp[r][c]--;
+    const el = obstacleEls[r][c];
+    if (el) { el.classList.add('obs-crack-anim'); setTimeout(()=>el.classList.remove('obs-crack-anim'),300); }
+    if (obstacleHp[r][c] <= 0) {
+      const wasType = obstacleBoard[r][c];
+      if (el) { el.classList.add('popping'); }
+      setTimeout(() => {
+        if (obstacleEls[r][c]) { obstacleEls[r][c].remove(); obstacleEls[r][c] = null; }
+        obstacleBoard[r][c] = OB_NONE;
+        if (gemEls[r][c]) gemEls[r][c].style.filter = '';
+      }, 310);
+      spawnParticles(r, c, wasType===OB_ICE?'#aaddff':'#aaaaaa');
+      vibrate([40]);
+      playRock();
+      if (wasType === OB_ROCK) {
+        sessionRocks++;
+        trackMission('rocks', 1);
+        if (goalsTarget['rock'] !== undefined)
+          goals['rock'] = Math.min((goals['rock']||0)+1, goalsTarget['rock']);
+      } else if (wasType === OB_ICE) {
+        if (goalsTarget['ice'] !== undefined)
+          goals['ice'] = Math.min((goals['ice']||0)+1, goalsTarget['ice']);
+      }
+      renderGoals();
+    } else {
+      // Rock cracked — update visual
+      if (el && obstacleBoard[r][c] === OB_ROCK) {
+        el.className = 'obs-el obs-rock crack';
+      }
+    }
+  });
+
   await delay(320);
   cellSet.forEach(key => {
     const {r,c} = uk(key);
+    // Never remove obstacle elements as gems
+    if (obstacleBoard[r][c] !== OB_NONE) return;
     if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
     board[r][c]   = -1;
     special[r][c] = SP_NONE;
@@ -2172,6 +2348,7 @@ async function gravityAndRefill(shapes) {
   // If board[r][c] == -1 but gemEls[r][c] exists, remove the stale element
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
+      if (obstacleBoard[r][c] !== OB_NONE) continue;
       if (board[r][c] < 0 && gemEls[r][c]) {
         gemEls[r][c].remove();
         gemEls[r][c] = null;
@@ -2180,61 +2357,85 @@ async function gravityAndRefill(shapes) {
 
   // ── PHASE 1: Apply gravity column by column ──
   for (let c = 0; c < COLS; c++) {
-    // Collect surviving gems top→bottom (only cells with valid gem + element)
-    const surviving = [];
+
+    // Split column into segments (obstacle rows are walls)
+    const segments = [];
+    let seg = [];
     for (let r = 0; r < ROWS; r++) {
-      if (board[r][c] >= 0 && gemEls[r][c]) {
-        surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
-        board[r][c]  = -1;
-        gemEls[r][c] = null;
+      if (obstacleBoard[r][c] === OB_NONE) {
+        seg.push(r);
+      } else {
+        if (seg.length > 0) { segments.push([...seg]); seg = []; }
       }
     }
+    if (seg.length > 0) segments.push(seg);
 
-    const missing = ROWS - surviving.length;
-    const colShape = shapes.find(sh => sh.c === c);
+    for (const segRows of segments) {
+      // Collect surviving gems top→bottom (only cells with valid gem + element)
+      const surviving = [];
+      for (const r of segRows) {
+        if (board[r][c] >= 0 && gemEls[r][c]) {
+          surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
+          board[r][c]  = -1;
+          gemEls[r][c] = null;
+        }
+      }
 
-    // Spawn new gems above this column
-    const newGems = [];
-    for (let i = 0; i < missing; i++) {
-      const isSpecial = colShape && i === missing - 1;
-      const type = isSpecial ? colShape.gem  : Math.floor(Math.random() * cfg.gemColors);
-      const sp   = isSpecial ? colShape.spType : SP_NONE;
-      const el   = makeGemEl(type, sp, -1, c, false);
-      el.style.transition = 'none';
-      el.style.opacity    = '0';
-      // Start ABOVE the board
-      el.style.top    = cTop(-missing + i) + 'px';
-      el.style.left   = cLeft(c) + 'px';
-      el.style.width  = CELL + 'px';
-      el.style.height = CELL + 'px';
-      boardEl.appendChild(el);
-      newGems.push({ type, sp, el });
-    }
+      const missing = segRows.length - surviving.length;
+      const colShape = shapes.find(sh => sh.c === c);
 
-    // Place: new gems at top, survivors at bottom (gravity = fall down)
-    const ordered = [...newGems, ...surviving];
-    ordered.forEach(({ type, sp, el }, idx) => {
-      const targetRow = idx;
-      board[targetRow][c]   = type;
-      special[targetRow][c] = sp;
-      gemEls[targetRow][c]  = el;
-      el.dataset.r    = targetRow;
-      el.dataset.c    = c;
-      el.dataset.type = type;
-      el.dataset.sp   = sp;
-      // Move survivors to their start position instantly (before animation)
-      if (idx >= missing) {
+      // Spawn new gems above this segment
+      const newGems = [];
+      for (let i = 0; i < missing; i++) {
+        const isSpecial = colShape && i === missing - 1;
+        const type = isSpecial ? colShape.gem  : Math.floor(Math.random() * cfg.gemColors);
+        const sp   = isSpecial ? colShape.spType : SP_NONE;
+        const el   = makeGemEl(type, sp, -1, c, false);
         el.style.transition = 'none';
-        el.style.top        = cTop(targetRow) + 'px';
+        el.style.opacity    = '0';
+        // Start ABOVE this segment
+        el.style.top    = cTop(segRows[0] - missing + i) + 'px';
+        el.style.left   = cLeft(c) + 'px';
+        el.style.width  = CELL + 'px';
+        el.style.height = CELL + 'px';
+        boardEl.appendChild(el);
+        newGems.push({ type, sp, el });
       }
-    });
+
+      // Place: new gems at top, survivors at bottom (gravity = fall down)
+      const ordered = [...newGems, ...surviving];
+      ordered.forEach(({ type, sp, el }, idx) => {
+        const targetRow = segRows[idx];
+        board[targetRow][c]   = type;
+        special[targetRow][c] = sp;
+        gemEls[targetRow][c]  = el;
+        el.dataset.r    = targetRow;
+        el.dataset.c    = c;
+        el.dataset.type = type;
+        el.dataset.sp   = sp;
+        // Move survivors to their start position instantly (before animation)
+        if (idx >= missing) {
+          el.style.transition = 'none';
+          el.style.top        = cTop(targetRow) + 'px';
+        }
+      });
+    }
   }
+
+  // ── Guarantee obstacle cells are clear ──
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (obstacleBoard[r][c] !== OB_NONE) {
+        if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
+        board[r][c] = -1;
+      }
 
   // ── PHASE 2: Single reflow then animate all gems to final positions ──
   void document.getElementById('board').offsetHeight;
 
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
+      if (obstacleBoard[r][c] !== OB_NONE) continue;
       const el = gemEls[r][c];
       if (!el) continue;
       el.style.transition = '';
@@ -2245,6 +2446,18 @@ async function gravityAndRefill(shapes) {
       el.style.height     = CELL + 'px';
     }
   }
+
+  // ── Keep obstacles at correct size/position ──
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      const el = obstacleEls[r][c];
+      if (el) {
+        el.style.width  = CELL + 'px';
+        el.style.height = CELL + 'px';
+        el.style.top    = cTop(r) + 'px';
+        el.style.left   = cLeft(c) + 'px';
+      }
+    }
 
   await delay(420);
 }
@@ -2355,19 +2568,34 @@ async function executeHammer(r, c) {
     showToast('🔨 Bam!');
     playPowerUp(); vibrate([30,10,60]);
 
-    const g = board[r][c];
-    if (g >= 0) {
-      score += 80; totalScore += 80;
-      trackMission('score', 80);
-      const gk = 'gem_' + g;
-      if (goalsTarget[gk] !== undefined) {
-        goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+    if (obstacleBoard[r][c] !== OB_NONE) {
+      // Hit an obstacle directly — destroy it regardless of HP
+      const wasType = obstacleBoard[r][c];
+      const el = obstacleEls[r][c];
+      if (el) { el.classList.add('popping'); }
+      spawnParticles(r, c, wasType===OB_ICE?'#aaddff':'#aaaaaa');
+      playRock();
+      await delay(320);
+      if (obstacleEls[r][c]) { obstacleEls[r][c].remove(); obstacleEls[r][c] = null; }
+      obstacleBoard[r][c] = OB_NONE;
+      obstacleHp[r][c]    = 0;
+      board[r][c]         = -1;
+      if (gemEls[r][c]) gemEls[r][c].style.filter = '';
+      // Track goals
+      if (wasType === OB_ROCK) {
+        sessionRocks++;
+        trackMission('rocks', 1);
+        if (goalsTarget['rock'] !== undefined)
+          goals['rock'] = Math.min((goals['rock']||0)+1, goalsTarget['rock']);
+      } else if (wasType === OB_ICE) {
+        if (goalsTarget['ice'] !== undefined)
+          goals['ice'] = Math.min((goals['ice']||0)+1, goalsTarget['ice']);
       }
-      updateUI(); renderGoals();
+      renderGoals();
+    } else {
+      // Hit a normal gem — remove it
+      await popCells(new Set([k(r,c)]));
     }
-
-    // Hit a normal gem — remove it
-    await popCells(new Set([k(r,c)]));
 
     await gravityAndRefill([]);
     comboCount = 0;
@@ -2393,12 +2621,27 @@ async function executeBomb(cr, cc) {
     shakeScreen();
     vibrate([80,30,80,30,80]);
     playSpecial();
-    // Score gems
+    // Score gems + damage obstacles in blast radius
     cells.forEach(key => {
       const {r,c} = uk(key);
+      // Damage obstacles directly hit
+      if(obstacleBoard[r][c] !== OB_NONE) {
+        obstacleHp[r][c]--;
+        const el=obstacleEls[r][c];
+        if(el) el.classList.add('obs-crack-anim');
+        if(obstacleHp[r][c]<=0){
+          const wasType=obstacleBoard[r][c];
+          if(el){el.classList.add('popping');setTimeout(()=>{if(obstacleEls[r][c])obstacleEls[r][c].remove();obstacleEls[r][c]=null;},320);}
+          obstacleBoard[r][c]=OB_NONE;
+          if(gemEls[r][c])gemEls[r][c].style.filter='';
+          if(wasType===OB_ROCK){if(goalsTarget['rock']!==undefined)goals['rock']=Math.min((goals['rock']||0)+1,goalsTarget['rock']);}
+          else if(wasType===OB_ICE){if(goalsTarget['ice']!==undefined)goals['ice']=Math.min((goals['ice']||0)+1,goalsTarget['ice']);}
+          score+=80; totalScore+=80;
+        }
+        return; // obstacle cell — no gem score
+      }
       const g = board[r][c]; if(g<0) return;
       score += 80; totalScore += 80;
-      trackMission('score', 80);
       const gk = 'gem_'+g;
       if(goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
     });
@@ -2499,6 +2742,7 @@ function playCombo()   {
   playTone(f,.1,'sine',.12); setTimeout(()=>playTone(f*1.25,.12,'sine',.1),60);
 }
 function playPowerUp() { [600,800,1000].forEach((f,i)=>setTimeout(()=>playTone(f,.1,'sine',.12),i*50)); }
+function playRock()    { playTone(180,.12,'sawtooth',.15); playTone(220,.08,'square',.1); }
 function vibrate(p)    { if(!vibrateEnabled) return; try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){} }
 
 function shakeScreen() {
@@ -2725,7 +2969,7 @@ function renderMap() {
     const info = document.createElement('div');
     info.className = 'map-info';
     info.innerHTML = `<div class="map-info-label">Fase ${lvl} ${lcfg.hasTimer ? '⏱️' : ''}</div>
-      <div class="map-info-sub">${lcfg.label} · ${lcfg.moves} jogadas</div>`;
+      <div class="map-info-sub">${lcfg.label} · ${lcfg.moves} jogadas${lcfg.rocks>0?' · 🪨'+lcfg.rocks:''}${lcfg.ices>0?' · ❄️'+lcfg.ices:''}</div>`;
 
     node.appendChild(bubble);
     node.appendChild(info);
@@ -2902,9 +3146,11 @@ function resetSplashUI() {
 function checkWinLose() {
   if (levelOver) return;
 
-  const won = Object.keys(goalsTarget)
-    .filter(k => k !== 'rock' && k !== 'ice')
-    .every(k => (goals[k]||0) >= goalsTarget[k]);
+  // Only count active (non-obstacle) goals
+  const activeKeys = Object.keys(goalsTarget).filter(k => k !== 'rock' && k !== 'ice');
+  // Never win if there are no active goals
+  if (activeKeys.length === 0) return;
+  const won = activeKeys.every(k => (goals[k]||0) >= goalsTarget[k]);
   if (won) {
     levelOver  = true;
     processing = false;
@@ -2965,7 +3211,7 @@ function showWinSplash() {
   document.getElementById('chanceDots').style.display         = 'none';
   document.getElementById('livesSplashHearts').style.display  = 'none';
   document.getElementById('splashTimer').style.display        = 'none';
-  if (hasName) saveScore(level + 1);
+  if (hasName) saveScore();
   document.getElementById('splash').classList.add('show');
 }
 
@@ -3096,7 +3342,7 @@ function saveAndNext() {
   if (inp.length === 0) { document.getElementById('nameInput').focus(); return; }
   playerName = inp;
   localStorage.setItem('glixarName', playerName);
-  saveScore(level + 1);
+  saveScore();
   document.getElementById('nameRow').style.display          = 'none';
   document.getElementById('livesSplashHearts').style.display = 'none';
   document.getElementById('splashTimer').style.display       = 'none';
@@ -3104,14 +3350,13 @@ function saveAndNext() {
 }
 
 // Save to BOTH localStorage and Firebase
-async function saveScore(lvlToSave) {
+async function saveScore() {
   if (!playerName) return;
-  const targetLvl = lvlToSave || level;
 
   // Build entry with TOTAL accumulated score and highest level
   const entry = {
     name:  playerName,
-    level: targetLvl, // highest level reached
+    level, // highest level reached
     score: totalScore, // accumulated across all phases
     date:  new Date().toLocaleDateString('pt-BR')
   };
@@ -3123,7 +3368,7 @@ async function saveScore(lvlToSave) {
     ranking[existIdx] = {
       ...ex,
       score: Math.max(ex.score, totalScore),
-      level: Math.max(ex.level, targetLvl),
+      level: Math.max(ex.level, level),
       date:  entry.date
     };
   } else {
@@ -3135,7 +3380,7 @@ async function saveScore(lvlToSave) {
 
   // Firebase save (non-blocking)
   if (window._fb) {
-    window._fb.saveScore(playerName, targetLvl, totalScore)
+    window._fb.saveScore(playerName, level, totalScore)
       .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); });
   }
 }
