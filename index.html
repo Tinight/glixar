@@ -3862,10 +3862,14 @@ function closeMapPreview() {
 
 function playFromPreview() {
   const lvl = _previewLevel;
+  // Hide everything
   _mapHidePreview();
-  document.getElementById('mapOverlay').classList.remove('show');
+  document.getElementById('mapOverlay').style.display = 'none';
   document.getElementById('menuScreen').classList.remove('show');
-  document.querySelector('.game-wrap').style.display = 'flex';
+  // Show game
+  const gw = document.querySelector('.game-wrap');
+  gw.style.display = 'flex';
+  // Start level
   setTimeout(() => {
     level = lvl;
     _showCountdown = true;
