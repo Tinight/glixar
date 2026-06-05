@@ -1527,50 +1527,127 @@ body::before{
 </div>
 
 <!-- MAP OVERLAY -->
-<div class="map-overlay" id="mapOverlay">
-  <div class="map-topbar">
-    <div class="map-topbar-lives" id="mapTopLives">❤️❤️❤️</div>
+<div id="mapOverlay" style="display:none;position:fixed;inset:0;z-index:250;
+  background:linear-gradient(180deg,#02000a 0%,#050a30 40%,#001219 100%);
+  flex-direction:column;overflow:hidden;">
+
+  <!-- Background glow -->
+  <div style="position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(circle at 20% 25%,rgba(0,242,254,.15) 0%,transparent 50%),
+      radial-gradient(circle at 80% 65%,rgba(79,172,254,.18) 0%,transparent 55%);
+  "></div>
+
+  <!-- Topbar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px 12px;flex-shrink:0;position:relative;z-index:10;
+    background:linear-gradient(180deg,rgba(2,0,10,.92),transparent);">
+    <div id="mapTopLives" style="display:flex;align-items:center;gap:3px;
+      background:rgba(0,242,254,.1);border:1.5px solid rgba(0,242,254,.3);
+      border-radius:12px;padding:5px 10px;font-size:.82rem;">❤️❤️❤️</div>
     <div style="text-align:center;flex:1;">
-      <div class="map-topbar-title">✨ GLIXAR</div>
-      <div class="map-topbar-sub" id="mapWorldSub">Galáxia Cristalina</div>
+      <div style="font-family:'Luckiest Guy',cursive;font-size:1.25rem;color:#00f2fe;
+        letter-spacing:2px;text-shadow:0 0 10px rgba(0,242,254,.7);">✨ GLIXAR</div>
+      <div id="mapWorldSub" style="font-size:.52rem;color:rgba(0,242,254,.5);margin-top:2px;">Galáxia Cristalina</div>
     </div>
-    <button class="map-topbar-close" onclick="openSettings();closeMap()">⚙️</button>
+    <button onclick="openSettings();closeMap()" style="
+      background:rgba(0,242,254,.1);border:1.5px solid rgba(0,242,254,.25);
+      border-radius:12px;padding:5px 14px;color:#00f2fe;
+      font-family:'Luckiest Guy',cursive;font-size:.85rem;cursor:pointer;">⚙️</button>
   </div>
-  <div class="map-scroll" id="mapScroll">
-    <div class="world-header">
-      <div class="world-badge">
-        <span class="wb-icon">🌌</span>
-        <span class="wb-name" id="mapWorldName">Galáxia Roxa</span>
-      </div>
+
+  <!-- World badge -->
+  <div style="text-align:center;margin:6px 0 14px;flex-shrink:0;position:relative;z-index:10;">
+    <div style="display:inline-flex;align-items:center;gap:7px;
+      background:linear-gradient(135deg,rgba(0,242,254,.15),rgba(79,172,254,.1));
+      border:1.5px solid rgba(0,242,254,.35);border-radius:20px;padding:6px 18px;">
+      <span id="mapWorldIcon">🌌</span>
+      <span id="mapWorldName" style="font-family:'Luckiest Guy',cursive;font-size:.78rem;
+        color:#00f2fe;letter-spacing:1.5px;">Galáxia Cristalina</span>
     </div>
-    <div class="map-path" id="mapPath"></div>
+  </div>
+
+  <!-- Scrollable path -->
+  <div id="mapScroll" style="flex:1;overflow-y:auto;overflow-x:hidden;
+    padding:4px 20px 100px;position:relative;z-index:10;">
+    <div id="mapPath" style="display:flex;flex-direction:column-reverse;gap:4px;"></div>
   </div>
 
   <!-- Bottom nav -->
-  <div class="map-bottomnav">
-    <div class="map-nav-btn active">
-      <span class="mnb-icon">🗺️</span>
-      <span class="mnb-label">Mapa</span>
+  <div style="position:absolute;bottom:0;left:0;right:0;z-index:10;
+    background:linear-gradient(0deg,rgba(2,0,10,1) 65%,transparent);
+    padding:8px 12px 16px;display:flex;justify-content:space-around;gap:4px;">
+    <div onclick="void(0)" style="flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;background:rgba(0,242,254,.12);">
+      <span style="font-size:1.15rem;">🗺️</span>
+      <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#00f2fe;">Mapa</span>
     </div>
-    <div class="map-nav-btn" onclick="openRank();closeMap()">
-      <span class="mnb-icon">🏆</span>
-      <span class="mnb-label">Rank</span>
+    <div onclick="openRank();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
+      <span style="font-size:1.15rem;">🏆</span>
+      <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Rank</span>
     </div>
-    <div class="map-nav-btn" onclick="openCheckin();closeMap()">
-      <span class="mnb-icon">📅</span>
-      <span class="mnb-label">Check-in</span>
+    <div onclick="openCheckin();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
+      <span style="font-size:1.15rem;">📅</span>
+      <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Check-in</span>
     </div>
-    <div class="map-nav-btn" onclick="openProfile();closeMap()">
-      <span class="mnb-icon">👤</span>
-      <span class="mnb-label">Perfil</span>
+    <div onclick="openProfile();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
+      <span style="font-size:1.15rem;">👤</span>
+      <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Perfil</span>
     </div>
-    <div class="map-nav-btn" onclick="openSettings();closeMap()">
-      <span class="mnb-icon">⚙️</span>
-      <span class="mnb-label">Config</span>
+    <div onclick="openSettings();closeMap()" style="flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;">
+      <span style="font-size:1.15rem;">⚙️</span>
+      <span style="font-size:.48rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.38);">Config</span>
     </div>
   </div>
-</div>
 
+  <!-- PREVIEW PANEL — inside overlay, shown on top via z-index -->
+  <div id="mapPreview" onclick="closeMapPreview()" style="display:none;position:absolute;
+    inset:0;z-index:20;background:rgba(0,0,0,.72);align-items:flex-end;
+    justify-content:center;padding-bottom:70px;">
+    <div onclick="event.stopPropagation()" style="
+      background:linear-gradient(180deg,#0a1128,#000411);
+      border:2px solid rgba(0,242,254,.4);border-radius:24px 24px 0 0;
+      padding:16px 18px 16px;width:100%;max-width:440px;
+      max-height:80vh;overflow-y:auto;position:relative;">
+      <!-- Shine -->
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;
+        background:linear-gradient(90deg,transparent,rgba(0,242,254,.7),transparent);"></div>
+      <div style="width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 14px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div id="mpTitle" style="font-family:'Luckiest Guy',cursive;font-size:1.5rem;
+          color:#00f2fe;text-shadow:0 0 8px rgba(0,242,254,.5);flex:1;">Fase 1</div>
+        <div id="mpDifficulty" style="font-size:.6rem;font-weight:800;padding:3px 10px;
+          border-radius:8px;background:rgba(0,242,254,.15);border:1px solid rgba(0,242,254,.35);
+          color:#00ffcc;text-transform:uppercase;letter-spacing:1px;">Normal</div>
+        <div onclick="closeMapPreview()" style="width:28px;height:28px;border-radius:8px;
+          background:rgba(0,242,254,.1);border:1px solid rgba(0,242,254,.25);
+          display:flex;align-items:center;justify-content:center;
+          color:rgba(255,255,255,.6);font-size:.8rem;cursor:pointer;">✕</div>
+      </div>
+      <div id="mpStars" style="display:flex;gap:4px;margin-bottom:12px;"></div>
+      <div id="mpInfo" style="display:flex;gap:7px;margin-bottom:14px;"></div>
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;
+        letter-spacing:1.5px;margin-bottom:8px;">Objetivos</div>
+      <div id="mpGoals" style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;"></div>
+      <button id="mpPlayBtn" onclick="playFromPreview()" style="
+        width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;
+        font-family:'Luckiest Guy',cursive;font-size:1.15rem;letter-spacing:1px;
+        background:linear-gradient(180deg,#00ffcc,#00b4d8,#0077b6);
+        color:#001219;box-shadow:0 5px 0 rgba(0,80,120,.5);
+        text-shadow:0 1px 0 rgba(255,255,255,.25);">▶ Jogar</button>
+      <button onclick="closeMapPreview()" style="
+        width:100%;margin-top:8px;padding:11px;border-radius:12px;cursor:pointer;
+        background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);
+        color:rgba(255,255,255,.5);font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;">
+        ✕ Fechar</button>
+    </div>
+  </div>
+
+</div>
 
 <!-- DAILY MISSIONS OVERLAY -->
 <div class="daily-overlay" id="dailyOverlay">
@@ -3601,12 +3678,12 @@ function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) |
 
 function _mapHidePreview() {
   const el = document.getElementById('mapPreview');
-  if (el) { el.style.display = 'none'; el.classList.remove('show'); }
+  if (el) el.style.display = 'none';
 }
 
 function _mapShowPreview() {
   const el = document.getElementById('mapPreview');
-  if (el) { el.style.display = 'flex'; el.classList.add('show'); }
+  if (el) el.style.display = 'flex';
 }
 
 function openMap() {
@@ -3615,9 +3692,7 @@ function openMap() {
   renderMapLives();
   document.querySelector('.game-wrap').style.display = 'none';
   document.getElementById('menuScreen').classList.remove('show');
-  const mo = document.getElementById('mapOverlay');
-  mo.classList.add('show');
-  mo.style.display = 'flex';// force display in case CSS class fails
+  document.getElementById('mapOverlay').style.display = 'flex';
   setTimeout(() => {
     const cur = document.getElementById('map-bubble-' + level);
     if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -3639,9 +3714,7 @@ function renderMapLives() {
 
 function closeMap() {
   _mapHidePreview();
-  const mo = document.getElementById('mapOverlay');
-  mo.classList.remove('show');
-  mo.style.display = 'none';
+  document.getElementById('mapOverlay').style.display = 'none';
   if (localStorage.getItem('glixarSave'))
     document.querySelector('.game-wrap').style.display = 'flex';
 }
@@ -4636,27 +4709,6 @@ window.addEventListener('resize', () => {
 
 </div>
 
-<!-- PHASE PREVIEW — fixed, outside mapOverlay for correct stacking -->
-<div class="map-preview" id="mapPreview" onclick="closeMapPreview()" style="display:none;">
-  <div class="map-preview-box" onclick="event.stopPropagation()">
-    <div class="mp-handle"></div>
-    <div class="mp-header">
-      <div class="mp-title" id="mpTitle">Fase 1</div>
-      <div class="mp-difficulty" id="mpDifficulty">Normal</div>
-    </div>
-    <div class="mp-stars" id="mpStars"></div>
-    <div class="mp-info-row" id="mpInfo"></div>
-    <div class="mp-goals-title">Objetivos</div>
-    <div class="mp-goals" id="mpGoals"></div>
-    <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
-    <button onclick="closeMapPreview()" style="width:100%;margin-top:8px;padding:12px;
-      border:1.5px solid rgba(255,255,255,.15);border-radius:12px;
-      background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);
-      font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">
-      ✕ Fechar
-    </button>
-  </div>
-</div>
 
 <!-- MENU CONFIRM -->
 <div class="menu-confirm" id="menuConfirm">
