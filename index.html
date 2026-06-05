@@ -3647,10 +3647,11 @@ function renderMapLives() {
 
 function closeMap() {
   document.getElementById('mapOverlay').classList.remove('show');
-  closeMapPreview();
-  // Show game-wrap again
+  document.getElementById('mapPreview').classList.remove('show');
+  // Only show game-wrap if there's an active game (level was started)
+  const hasSave = !!localStorage.getItem('glixarSave');
   const gw = document.querySelector('.game-wrap');
-  if (gw) gw.style.display = 'flex';
+  if (gw && hasSave) gw.style.display = 'flex';
 }
 
 function renderMap() {
@@ -3794,14 +3795,20 @@ function closeMapPreview() {
 }
 
 function playFromPreview() {
-  closeMapPreview();
-  // Show game-wrap before starting level
+  const lvl = _previewLevel;
+  // Close everything first
+  document.getElementById('mapPreview').classList.remove('show');
+  document.getElementById('mapOverlay').classList.remove('show');
+  // Show game-wrap
   const gw = document.querySelector('.game-wrap');
   if (gw) gw.style.display = 'flex';
-  document.getElementById('mapOverlay').classList.remove('show');
-  level = _previewLevel;
-  _showCountdown = true;
-  startLevel();
+  document.getElementById('menuScreen').classList.remove('show');
+  // Small delay to let DOM settle before starting level
+  setTimeout(() => {
+    level = lvl;
+    _showCountdown = true;
+    startLevel();
+  }, 80);
 }
 
 // ═══════════════════════════════════════════════════
