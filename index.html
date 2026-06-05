@@ -122,6 +122,39 @@ body::before{
     radial-gradient(1px 1px at 33% 84%,rgba(255,255,255,.6) 0%,transparent 100%);
 }
 
+/* ── MENU SCREEN ── */
+.menu-screen{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:linear-gradient(160deg,#0e0628,#2a0a5e,#1a0040);
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center;
+}
+.menu-screen.show{display:flex;}
+.menu-logo{
+  font-family:'Luckiest Guy',cursive;font-size:3.5rem;color:var(--gold);
+  text-shadow:0 4px 0 var(--gold-dark),0 8px 20px rgba(0,0,0,.6);
+  letter-spacing:3px;animation:menuPulse 2s ease infinite alternate;
+  margin-bottom:6px;
+}
+@keyframes menuPulse{from{text-shadow:0 4px 0 var(--gold-dark),0 8px 20px rgba(0,0,0,.6);}
+  to{text-shadow:0 4px 0 var(--gold-dark),0 8px 40px rgba(255,215,0,.4);}}
+.menu-tagline{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:32px;letter-spacing:1px;}
+.menu-lives{margin-bottom:20px;font-size:1.4rem;letter-spacing:4px;}
+.menu-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;}
+.menu-btn{
+  padding:14px 20px;border-radius:14px;border:none;cursor:pointer;
+  font-family:'Luckiest Guy',cursive;font-size:1.1rem;letter-spacing:1px;
+  transition:transform .15s,filter .15s;
+  box-shadow:0 5px 0 rgba(0,0,0,.4);
+}
+.menu-btn:hover{filter:brightness(1.1);transform:translateY(-2px);}
+.menu-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.4);}
+.menu-btn-primary{background:linear-gradient(180deg,#FFD700,#C8A200);color:#3a1800;}
+.menu-btn-secondary{background:linear-gradient(180deg,#4a1a8e,#2a0860);color:#fff;border:2px solid rgba(255,255,255,.2);}
+.menu-life-timer{font-size:.7rem;color:rgba(255,80,80,.8);margin-bottom:8px;
+  background:rgba(255,80,80,.1);padding:6px 14px;border-radius:8px;
+  border:1px solid rgba(255,80,80,.2);}
+
 /* ── HEADER ── */
 .hdr{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:6px;position:relative;z-index:2;}
@@ -583,7 +616,11 @@ body::before{
 .phase-stars span.lit{filter:none;}
 
 /* Special gem glow rings */
-.sp-rocket{box-shadow:0 0 0 2.5px #ffe36a,0 0 10px #ffc200;}
+.sp-rocket{box-shadow:0 0 0 2.5px #ff4444,0 0 10px rgba(255,68,68,.5);}
+.sp-mine{box-shadow:0 0 0 2.5px #ff2222,0 0 12px rgba(255,34,34,.6);
+  animation:minePulse .5s ease infinite alternate;}
+@keyframes minePulse{from{box-shadow:0 0 0 2.5px #ff2222,0 0 6px rgba(255,34,34,.3);}
+  to{box-shadow:0 0 0 2.5px #ff2222,0 0 18px rgba(255,34,34,.8);}}
 .sp-bomb  {box-shadow:0 0 0 2.5px #ff4444,0 0 10px #ff0000;}
 .sp-cross {box-shadow:0 0 0 2.5px #cc66ff,0 0 10px #9900ff;}
 .sp-rainbow{box-shadow:0 0 0 2.5px #fff,0 0 12px #fff;animation:rbglow 1.2s linear infinite;}
@@ -898,6 +935,15 @@ body::before{
 </head>
 <body>
 
+<!-- ══ MENU SCREEN ══ -->
+<div class="menu-screen" id="menuScreen">
+  <div class="menu-logo">✨ Glixar</div>
+  <div class="menu-tagline">Match-3 com níveis infinitos</div>
+  <div class="menu-lives" id="menuLives"></div>
+  <div class="menu-btns" id="menuBtns"></div>
+  <div style="font-size:.6rem;color:rgba(255,255,255,.2);margin-top:16px;font-family:monospace;">v1.0.0 · Breitner Tinight</div>
+</div>
+
 <div class="game-wrap">
 
 <!-- ══ HEADER: logo + diamonds + gear ══ -->
@@ -924,11 +970,7 @@ body::before{
     <div class="num" id="movesVal">20</div>
     <div class="lbl">Jogadas</div>
   </div>
-  <div class="box timer-box" id="timerBox" style="display:none;">
-    <div class="icon">⏱️</div>
-    <div class="num" id="timerVal">90</div>
-    <div class="lbl">Seg</div>
-  </div>
+  <!-- timer removed -->
   <div class="box score-box">
     <div class="lbl">Pontos</div>
     <div class="num" id="scoreVal">0</div>
@@ -1147,6 +1189,7 @@ const SP_ROCKET  = 1;
 const SP_BOMB    = 2;
 const SP_CROSS   = 3;
 const SP_RAINBOW = 4;
+const SP_MINE    = 5; // 2x2 square → mine (3x3 explosion)
 
 // Obstacle types — stored in obstacleBoard[r][c]
 const OB_NONE = 0;
@@ -1188,10 +1231,10 @@ function getLevelConfig(lvl) {
   // Obstacles start appearing from level 3
   const rocks = 0;  // disabled temporarily
   const ices  = 0;  // disabled temporarily
-  const hasTimer  = lvl >= 7 && (lvl % 7 === 0);
-  const timerSecs = hasTimer ? Math.max(45, 90 - Math.floor(lvl/7)*8) : 0;
+  const hasTimer  = false;
+  const timerSecs = 0;
   const goalTypes = buildGoalTypes(lvl, 0, 0);
-  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks:0, ices:0, hasTimer, timerSecs, goalTypes };
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks:0, ices:0, hasTimer:false, timerSecs:0, goalTypes };
 }
 
 function buildGoalTypes(lvl) {
@@ -1698,14 +1741,18 @@ function startLevel() {
 
 function onSplashBtn() {
   document.getElementById('splash').classList.remove('show');
-  if (splashMode === 'win')   { level++; startLevel(); return; }
-  else if (splashMode === 'pause') {
-    // Just unpause — save is intact, board is still there
-    levelOver = false;
-    processing = false;
-    if (timerPhase && timerSeconds > 0) startTimer();
+  if (splashMode === 'win') {
+    level++; startLevel(); return;
+  } else if (splashMode === 'pause') {
+    levelOver = false; processing = false;
+  } else if (splashMode === 'menu') {
+    // No lives — go back to menu WITHOUT resetting progress
+    // Level and progress are saved, player returns when they have lives
+    goToMenu();
+  } else {
+    // True game over — reset everything
+    level = 1; totalScore = 0; newGame();
   }
-  else { level = 1; totalScore = 0; newGame(); }
 }
 
 // ═══════════════════════════════════════════════════
@@ -1832,8 +1879,9 @@ function wouldMatch(r, c, g) {
 // ═══════════════════════════════════════════════════
 function makeGemEl(type, sp, r, c, fromAbove) {
   const el = document.createElement('div');
-  const spClass = sp === SP_ROCKET ? 'sp-rocket' : sp === SP_BOMB ? 'sp-bomb' :
-                  sp === SP_CROSS  ? 'sp-cross'  : sp === SP_RAINBOW ? 'sp-rainbow' : '';
+  const spClass = sp === SP_ROCKET  ? 'sp-rocket'  : sp === SP_BOMB    ? 'sp-bomb'    :
+                  sp === SP_CROSS   ? 'sp-cross'   : sp === SP_RAINBOW ? 'sp-rainbow' :
+                  sp === SP_MINE    ? 'sp-mine'    : '';
   el.className  = `gem-el gc-${type}${spClass ? ' '+spClass : ''}`;
   el.style.width = el.style.height = CELL + 'px';
   el.style.left  = cLeft(c) + 'px';
@@ -1852,7 +1900,7 @@ function makeGemEl(type, sp, r, c, fromAbove) {
   if (sp !== SP_NONE) {
     const ico = document.createElement('div');
     ico.className = 'sp-icon';
-    ico.textContent = sp === SP_ROCKET ? '🚀' : sp === SP_BOMB ? '💣' :
+    ico.textContent = sp === SP_MINE ? '💥' : sp === SP_ROCKET ? '🚀' : sp === SP_BOMB ? '💣' :
                       sp === SP_CROSS  ? '✳️'  : '';
     el.appendChild(ico);
   }
@@ -2013,7 +2061,7 @@ async function trySwap(r1,c1,r2,c2) {
     return;
   }
   processing = true;
-  resetInactivity();
+  document.querySelectorAll('.hint-glow').forEach(el=>el.classList.remove('hint-glow'));
   startWatchdog();
   try {
     animSwap(r1,c1,r2,c2);
@@ -2036,6 +2084,7 @@ async function trySwap(r1,c1,r2,c2) {
     console.error('trySwap error:', e);
   } finally {
     processing = false;
+    resetInactivity();
   }
 }
 
@@ -2148,6 +2197,22 @@ function findAllMatches() {
     }
   });
 
+  // ── 2x2 square → SP_MINE ──
+  for (let rm = 0; rm < ROWS - 1; rm++) {
+    for (let cm = 0; cm < COLS - 1; cm++) {
+      const gm = board[rm][cm];
+      if (gm < 0) continue;
+      if (board[rm][cm+1]===gm && board[rm+1][cm]===gm && board[rm+1][cm+1]===gm) {
+        const sq = [k(rm,cm), k(rm,cm+1), k(rm+1,cm), k(rm+1,cm+1)];
+        if (sq.some(key => cells.has(key))) {
+          sq.forEach(key => cells.add(key));
+          if (!shapes.find(s => s.r===rm && s.c===cm && s.spType===SP_MINE))
+            shapes.push({ r:rm, c:cm, gem:gm, spType:SP_MINE });
+        }
+      }
+    }
+  }
+
   return { cells, shapes };
 }
 
@@ -2172,7 +2237,15 @@ function triggerSpecialAt(r, c, extraCells) {
   const sp = special[r][c];
   if (sp === SP_NONE) return;
 
-  if (sp === SP_ROCKET) {
+  if (sp === SP_MINE) {
+    // Mine: add 3x3 area to cells (like bomb but larger)
+    for (let dr=-1;dr<=1;dr++)
+      for (let dc=-1;dc<=1;dc++) {
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) extraCells.add(k(nr,nc));
+      }
+    return;
+  } else if (sp === SP_ROCKET) {
     const dir = gemEls[r][c]?.dataset.dir || 'h';
     if (dir === 'h' || true) { // clear entire row AND col (upgraded feel)
       for (let cc=0;cc<COLS;cc++) extraCells.add(k(r,cc));
@@ -2629,6 +2702,47 @@ function cancelActiveTool() {
 }
 
 // Called from onCellClick when activeTool is set
+// ── MINE: 3x3 explosion with chain reaction ──
+async function executeMine(r, c) {
+  const cells = new Set();
+  const chainSpecials = [];
+  for (let dr = -1; dr <= 1; dr++)
+    for (let dc = -1; dc <= 1; dc++) {
+      const nr = r+dr, nc = c+dc;
+      if (nr>=0 && nr<ROWS && nc>=0 && nc<COLS) {
+        cells.add(k(nr,nc));
+        // Collect specials in blast radius for chain reaction
+        if (special[nr][nc] !== SP_NONE && !(nr===r && nc===c))
+          chainSpecials.push({r:nr, c:nc, sp:special[nr][nc]});
+      }
+    }
+  showToast('💥 BOOM!'); shakeScreen();
+  vibrate([100,30,100]); playSpecial();
+
+  // Score + goals
+  cells.forEach(key => {
+    const {r:rr,c:cc} = uk(key);
+    if (obstacleBoard[rr][cc] !== OB_NONE) return;
+    const g = board[rr][cc]; if (g < 0) return;
+    score += 80; totalScore += 80;
+    const gk = 'gem_'+g;
+    if (goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+  });
+  updateUI(); renderGoals();
+  await popCells(cells);
+  await gravityAndRefill([]);
+
+  // Chain reaction: trigger other specials caught in blast
+  for (const ch of chainSpecials) {
+    if (board[ch.r] && board[ch.r][ch.c] >= 0 && special[ch.r][ch.c] !== SP_NONE) {
+      await delay(150);
+      await activateSpecial(ch.r, ch.c, special[ch.r][ch.c]);
+    }
+  }
+}
+
+// ── CHAIN REACTION helper ── already in executeMine above
+// executeBomb also triggers chains:
 async function executeHammer(r, c) {
   cancelActiveTool();
   pwCounts.hammer--;
@@ -3169,6 +3283,70 @@ function updateSplashLivesHearts() {
   }
 }
 
+// ── MAIN MENU ──
+function showMenu() {
+  stopTimer();
+  document.getElementById('menuScreen').classList.add('show');
+  document.querySelector('.game-wrap').style.display = 'none';
+  renderMenuState();
+}
+
+function hideMenu() {
+  document.getElementById('menuScreen').classList.remove('show');
+  document.querySelector('.game-wrap').style.display = 'flex';
+}
+
+function renderMenuState() {
+  const cur    = getLives();
+  const livesEl = document.getElementById('menuLives');
+  const btnsEl  = document.getElementById('menuBtns');
+  if (!livesEl || !btnsEl) return;
+
+  // Lives display
+  let livesHtml = '';
+  for (let i = 0; i < MAX_LIVES; i++)
+    livesHtml += `<span style="${i < cur ? '' : 'opacity:.25;filter:grayscale(1);'}">❤️</span>`;
+  const ms = getNextRegenMs();
+  if (cur < MAX_LIVES && ms > 0)
+    livesHtml += `<div class="menu-life-timer">+❤️ em ${formatTimeLeft(ms)}</div>`;
+  livesEl.innerHTML = livesHtml;
+
+  // Buttons
+  const hasSave = !!localStorage.getItem('glixarSave');
+  btnsEl.innerHTML = '';
+
+  if (hasSave && cur > 0) {
+    const btn = document.createElement('button');
+    btn.className = 'menu-btn menu-btn-primary';
+    btn.textContent = `▶ Continuar — Fase ${level}`;
+    btn.onclick = () => { hideMenu(); };
+    btnsEl.appendChild(btn);
+  } else if (hasSave && cur === 0) {
+    const info = document.createElement('div');
+    info.style.cssText = 'color:rgba(255,255,255,.5);font-size:.8rem;margin-bottom:8px;';
+    info.textContent = `Fase ${level} salva. Aguarde uma vida para continuar!`;
+    btnsEl.appendChild(info);
+  }
+
+  const newBtn = document.createElement('button');
+  newBtn.className = 'menu-btn menu-btn-secondary';
+  newBtn.textContent = hasSave ? '🔄 Novo Jogo' : '▶ Jogar';
+  newBtn.onclick = () => {
+    if (hasSave && cur > 0) {
+      if (!confirm('Iniciar novo jogo? O progresso atual será perdido.')) return;
+    }
+    hideMenu();
+    level = 1; totalScore = 0; newGame();
+  };
+  btnsEl.appendChild(newBtn);
+
+  const rankBtn = document.createElement('button');
+  rankBtn.className = 'menu-btn menu-btn-secondary';
+  rankBtn.textContent = '🏆 Ranking';
+  rankBtn.onclick = () => openRank();
+  btnsEl.appendChild(rankBtn);
+}
+
 // ── MENU CONFIRM ──
 function openMenuConfirm() {
   document.getElementById('menuConfirm').classList.add('show');
@@ -3183,20 +3361,9 @@ function goToMenu() {
   levelOver = true;
   processing = false;
   selected = null;
-  resetSplashUI();
-  document.getElementById('splashIcon').textContent  = '🏠';
-  document.getElementById('splashTitle').textContent = 'Pausado';
-  document.getElementById('splashMsg').innerHTML     = `Fase ${level} salva!<br>Continue quando quiser.`;
-  document.getElementById('splashStars').style.display      = 'none';
-  document.getElementById('chanceDots').style.display       = 'none';
-  document.getElementById('nameRow').style.display          = 'none';
-  document.getElementById('splashBtnRow').style.display     = 'none';
-  document.getElementById('livesSplashHearts').style.display= 'none';
-  document.getElementById('splashTimer').style.display      = 'none';
-  document.getElementById('splashBtn').style.display        = 'block';
-  document.getElementById('splashBtn').textContent          = '▶ Continuar Jogando';
-  splashMode = 'pause';
-  document.getElementById('splash').classList.add('show');
+  document.getElementById('splash').classList.remove('show');
+  saveGame();
+  showMenu();
 }
 
 // ═══════════════════════════════════════════════════
@@ -3335,18 +3502,21 @@ function showLoseSplash() {
   resetSplashUI();
   playLose();
   vibrate([80,30,80,30,120]);
-  document.getElementById('splashIcon').textContent  = '💀';
-  document.getElementById('splashTitle').textContent = 'Game Over!';
-  document.getElementById('splashMsg').innerHTML     =
-    `Fase ${level} — ${score.toLocaleString('pt-BR')} pts`;
-  document.getElementById('chanceDots').style.display        = 'none';
-  document.getElementById('nameRow').style.display           = 'none';
-  document.getElementById('splashStars').style.display       = 'none';
-  document.getElementById('splashBtnRow').style.display      = 'none';
-  document.getElementById('splashBtn').style.display         = 'block';
-  document.getElementById('splashBtn').textContent           = '🔄 Recomeçar do Zero';
-  document.getElementById('livesSplashHearts').style.display = 'none';
-  document.getElementById('splashTimer').style.display       = 'none';
+  // No lives left — send back to menu, save progress
+  // Player keeps their level and can return when lives regenerate
+  saveGame();
+  document.getElementById('splashIcon').textContent  = '😴';
+  document.getElementById('splashTitle').textContent = 'Sem Vidas!';
+  document.getElementById('splashMsg').innerHTML =
+    `Fase ${level} salva!<br>` +
+    `<span style="font-size:.8rem;color:rgba(255,255,255,.5);">Aguarde suas vidas regenerarem.</span>`;
+  document.getElementById('livesSplashHearts').style.display = 'flex';
+  updateSplashLivesHearts();
+  document.getElementById('splashTimer').style.display = 'block';
+  updateSplashTimer();
+  document.getElementById('splashBtn').style.display  = 'block';
+  document.getElementById('splashBtn').textContent    = '🏠 Voltar ao Menu';
+  splashMode = 'menu';
   document.getElementById('splash').classList.add('show');
 }
 
@@ -3655,7 +3825,7 @@ function buildRankItems(ul, entries, isOnline) {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;color:#fff;font-size:.88rem;
              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          ${e.name}${isMe?' <span style="color:var(--gold);">👈 Você</span>':''}
+          ${e.country?e.country.split(' ')[0]+' ':''}${e.name||'?'}${isMe?' <span style="color:var(--gold);">👈 Você</span>':''}
         </div>
         <div style="font-size:.68rem;color:rgba(255,255,255,.45);margin-top:1px;">
           Fase ${e.level||1} · ${e.date||''}
@@ -3737,9 +3907,19 @@ function showCombo(n) {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// Auto-hint disabled (removed — was confusing on reload)
+let _hintTimer = null;
 function resetInactivity() {
-  // no-op — hints only on manual request via settings
+  clearTimeout(_hintTimer);
+  document.querySelectorAll('.hint-glow').forEach(el => el.classList.remove('hint-glow'));
+  if (processing || levelOver) return;
+  _hintTimer = setTimeout(() => {
+    if (processing || levelOver || moves <= 0) return;
+    const h = findPossibleMove();
+    if (h && gemEls[h.r1]?.[h.c1] && gemEls[h.r2]?.[h.c2]) {
+      gemEls[h.r1][h.c1].classList.add('hint-glow');
+      gemEls[h.r2][h.c2].classList.add('hint-glow');
+    }
+  }, 6000);
 }
 
 // Safety watchdog — if processing gets stuck, unblock after 6s
@@ -3781,12 +3961,17 @@ window.addEventListener('resize', () => {
   if (hasSave()) {
     const ok = loadSave();
     if (ok) {
-      const el = document.getElementById('resumeOverlay');
-      const msg = document.getElementById('resumeMsg');
-      if (msg) msg.textContent = `Fase ${level} — ${moves} jogadas restantes`;
-      el.classList.add('show');
-      maybeShowCheckin();
-      return;
+      // Check if has lives to play
+      if (getLives() > 0) {
+        // Has save + lives → hide resume overlay, go directly to game
+        maybeShowCheckin();
+        return; // game-wrap already visible
+      } else {
+        // Has save but no lives → show menu (can't play yet)
+        showMenu();
+        maybeShowCheckin();
+        return;
+      }
     }
   }
   newGame();
