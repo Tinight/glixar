@@ -126,16 +126,32 @@ body::before{
 }
 
 /* ── HEADER ── */
-.hdr{width:100%;display:flex;align-items:center;justify-content:space-between;
+.hdr{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:6px;position:relative;z-index:2;}
 .logo{font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--gold);
   text-shadow:0 2px 0 var(--gold-dark),0 4px 10px rgba(0,0,0,.6);letter-spacing:2px;}
-.level-badge{
-  background:linear-gradient(135deg,#4a1a8e,#2a0860);
-  border:2px solid var(--gold);border-radius:14px;padding:5px 14px;text-align:center;
-  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);}
-.level-lbl{font-size:.58rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;}
-.level-num{font-size:1.3rem;font-weight:900;color:var(--gold);line-height:1;}
+.gear-btn{
+  background:linear-gradient(135deg,#2a0a6e,#12043a);
+  border:2px solid rgba(255,215,0,.35);border-radius:10px;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;cursor:pointer;flex-shrink:0;
+  transition:filter .15s,transform .1s;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);}
+.gear-btn:hover{filter:brightness(1.2);transform:scale(1.05);}
+
+/* ── LIVES ROW ── */
+.lives-row{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:6px;
+}
+.lives-hearts{display:flex;gap:4px;align-items:center;}
+.life-heart{font-size:.95rem;transition:transform .3s,filter .3s;line-height:1;}
+.life-heart.empty{filter:grayscale(1) opacity(.22);transform:scale(.8);}
+.life-timer-pill{
+  font-size:.6rem;font-weight:700;color:#ff6666;
+  background:rgba(255,80,80,.12);padding:3px 10px;border-radius:8px;
+  border:1px solid rgba(255,80,80,.22);white-space:nowrap;
+}
 
 /* ── INFO BAR ── */
 .info-bar{width:100%;display:flex;align-items:stretch;gap:6px;
@@ -589,15 +605,7 @@ body::before{
 .btn-give-up {background:linear-gradient(180deg,#ff4444,#cc0000);}
 
 /* ── LIVES ── */
-.lives-bar{
-  display:flex;align-items:center;gap:2px;
-  background:linear-gradient(135deg,#3a1080,#1a0550);
-  border:2px solid var(--gold);border-radius:10px;
-  padding:4px 7px;flex-shrink:0;
-}
-.life-heart{font-size:.85rem;transition:transform .3s,filter .3s;line-height:1;}
-.life-heart.empty{filter:grayscale(1) opacity(.25);transform:scale(.8);}
-.life-timer{font-size:.5rem;color:var(--gold);font-weight:800;white-space:nowrap;margin-left:2px;}
+/* lives-bar replaced by lives-row */
 
 /* lives splash */
 .lives-splash-hearts{display:flex;justify-content:center;gap:10px;margin:10px 0 16px;}
@@ -748,7 +756,7 @@ body::before{
 .gi.goal-time{background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.3);}
 
 /* map + daily buttons in header */
-.hdr-btns{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+
 .hdr-btn{background:linear-gradient(135deg,#4a1a8e,#2a0860);border:2px solid var(--gold);
   border-radius:10px;padding:5px 8px;cursor:pointer;font-size:1rem;
   transition:filter .15s,transform .1s;position:relative;}
@@ -773,18 +781,11 @@ body::before{
 <body>
 
 <div class="game-wrap">
-<!-- ══ HEADER ══ -->
+
+<!-- ══ HEADER: logo + gear only ══ -->
 <div class="hdr">
   <div class="logo">✨ Glixar</div>
-  <div class="hdr-btns">
-    <div class="lives-bar" id="livesBar">
-      <span class="life-heart" id="lh0">❤️</span>
-      <span class="life-heart" id="lh1">❤️</span>
-      <span class="life-heart" id="lh2">❤️</span>
-      <span class="life-timer" id="lifeTimer" style="display:none;"></span>
-    </div>
-    <button class="hdr-btn gear-btn" onclick="openSettings()" title="Configurações">⚙️</button>
-  </div>
+  <button class="gear-btn" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙️</button>
 </div>
 
 <!-- ══ INFO ROW: fase + jogadas + timer + pontos ══ -->
@@ -809,12 +810,21 @@ body::before{
   </div>
 </div>
 
+<!-- ══ LIVES ROW ══ -->
+<div class="lives-row">
+  <div class="lives-hearts">
+    <span class="life-heart" id="lh0">❤️</span>
+    <span class="life-heart" id="lh1">❤️</span>
+    <span class="life-heart" id="lh2">❤️</span>
+  </div>
+  <div class="life-timer-pill" id="lifeTimer" style="display:none;"></div>
+</div>
+
 <!-- ══ POWER-UPS ══ -->
 <div class="powers" id="powersBar"></div>
 
 <!-- ══ BOARD (objectives inside) ══ -->
 <div class="board-wrap" id="boardWrap">
-  <!-- Objectives strip pinned to top of board -->
   <div class="goals-strip">
     <span class="goals-lbl">Meta:</span>
     <div class="goals" id="goalsDiv"></div>
@@ -1520,8 +1530,88 @@ function makeGemEl(type, sp, r, c, fromAbove) {
     el.appendChild(ico);
   }
 
-  el.addEventListener('click', () => onCellClick(+el.dataset.r, +el.dataset.c));
+  // Support both click AND drag/swipe
+  addGemInteraction(el);
   return el;
+}
+
+// ── DRAG STATE ──
+let _drag = { active:false, r:-1, c:-1, startX:0, startY:0 };
+
+function addGemInteraction(el) {
+  // TOUCH
+  el.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    _drag = { active:true, r:+el.dataset.r, c:+el.dataset.c, startX:t.clientX, startY:t.clientY };
+    e.preventDefault();
+  }, { passive:false });
+
+  el.addEventListener('touchend', e => {
+    if (!_drag.active) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - _drag.startX;
+    const dy = t.clientY - _drag.startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 8) {
+      // Tap — treat as click
+      onCellClick(_drag.r, _drag.c);
+    } else if (dist > 12) {
+      // Swipe — determine direction
+      const dir = getSwipeDir(dx, dy);
+      if (dir) onSwipe(_drag.r, _drag.c, dir);
+    }
+    _drag.active = false;
+    e.preventDefault();
+  }, { passive:false });
+
+  // MOUSE
+  el.addEventListener('mousedown', e => {
+    _drag = { active:true, r:+el.dataset.r, c:+el.dataset.c, startX:e.clientX, startY:e.clientY };
+  });
+
+  el.addEventListener('mouseup', e => {
+    if (!_drag.active) return;
+    const dx = e.clientX - _drag.startX;
+    const dy = e.clientY - _drag.startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 8) {
+      onCellClick(_drag.r, _drag.c);
+    } else if (dist > 12) {
+      const dir = getSwipeDir(dx, dy);
+      if (dir) onSwipe(_drag.r, _drag.c, dir);
+    }
+    _drag.active = false;
+  });
+}
+
+function getSwipeDir(dx, dy) {
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (ax < 8 && ay < 8) return null;
+  if (ax > ay) return dx > 0 ? 'r' : 'l';
+  return dy > 0 ? 'd' : 'u';
+}
+
+function onSwipe(r, c, dir) {
+  if (processing) return;
+  // Clear any selection
+  if (selected) { gemEls[selected.r]?.[selected.c]?.classList.remove('selected'); selected = null; }
+
+  // Cancel active tool on swipe
+  if (activeTool) { cancelActiveTool(); return; }
+
+  const nr = dir === 'u' ? r-1 : dir === 'd' ? r+1 : r;
+  const nc = dir === 'l' ? c-1 : dir === 'r' ? c+1 : c;
+  if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return;
+
+  // Rainbow special case
+  if (special[r][c] === SP_RAINBOW && board[nr][nc] >= 0) {
+    activateRainbow(r, c, board[nr][nc]); return;
+  }
+  if (special[nr][nc] === SP_RAINBOW && board[r][c] >= 0) {
+    activateRainbow(nr, nc, board[r][c]); return;
+  }
+
+  trySwap(r, c, nr, nc);
 }
 
 function refreshGemEl(r, c) {
@@ -2605,14 +2695,14 @@ function updateLivesUI() {
     const el = document.getElementById('lh'+i);
     if (el) el.className = 'life-heart' + (i < cur ? '' : ' empty');
   }
-  const timerEl = document.getElementById('lifeTimer');
-  if (timerEl) {
+  const pill = document.getElementById('lifeTimer');
+  if (pill) {
     const ms = getNextRegenMs();
     if (cur < MAX_LIVES && ms > 0) {
-      timerEl.style.display = 'block';
-      timerEl.textContent   = formatTimeLeft(ms);
+      pill.style.display  = 'inline-block';
+      pill.textContent    = formatTimeLeft(ms) + ' para +❤️';
     } else {
-      timerEl.style.display = 'none';
+      pill.style.display = 'none';
     }
   }
 }
