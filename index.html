@@ -1055,7 +1055,7 @@ body::before{
 
 /* ── Preview popup ── */
 .map-preview{
-  display:none;position:fixed;inset:0;z-index:260;
+  display:none;position:fixed;inset:0;z-index:300;
   background:rgba(0,0,0,.72);align-items:flex-end;justify-content:center;
 }
 .map-preview.show{display:flex;}
@@ -3590,10 +3590,15 @@ function renderMap() {
   if (nameEl) nameEl.textContent = world.icon + ' ' + world.name;
   if (subEl)  subEl.textContent  = world.icon + ' ' + world.name;
 
-  // Group levels into rows of 3
+  // Group levels into rows of 3 (bottom to top)
   const rows = [];
-  for (let i = maxLevel; i >= 1; i -= 3)
-    rows.push([Math.max(1,i-2), Math.max(1,i-1), i].filter(l=>l>=1));
+  for (let start = 1; start <= maxLevel; start += 3) {
+    const row = [];
+    for (let l = start; l < start + 3 && l <= maxLevel; l++) row.push(l);
+    if (row.length > 0) rows.push(row);
+  }
+  // Reverse so highest levels appear at top of scroll
+  rows.reverse();
 
   const GEMS_DECO = ['💜','💙','💛','❤️','💚','🧡','🩷','🩵'];
 
@@ -3603,7 +3608,8 @@ function renderMap() {
       const conn = document.createElement('div');
       // Alternate connector side
       const prevDir = (rowIdx-1) % 2 === 0 ? 'left' : 'right';
-      conn.className = 'path-connector ' + (rowIdx%2===0?'right':'left');
+      // connector on the side where the NEXT row starts
+      conn.className = 'path-connector ' + (rowIdx%2===0?'left':'right');
       path.appendChild(conn);
     }
 
