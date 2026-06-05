@@ -274,6 +274,9 @@ body::before{
 .pw .pw-info{display:flex;flex-direction:column;align-items:flex-start;}
 .pw .pn{font-size:.6rem;font-weight:900;color:#fff;line-height:1.2;}
 .pw .pcount{font-size:.55rem;font-weight:900;color:var(--gold);}
+.pw-buy{font-size:.5rem;font-weight:800;color:#00e5ff;background:rgba(0,229,255,.1);
+  border:1px solid rgba(0,229,255,.3);border-radius:5px;padding:1px 5px;margin-top:1px;
+  cursor:pointer;white-space:nowrap;}
 
 /* bomb preview overlay */
 #bombPreview{
@@ -2338,18 +2341,21 @@ async function gravityAndRefill(shapes) {
   shapes = shapes || [];
   const boardEl = document.getElementById('board');
 
+  // ── PRE-PASS: sync gemEls with board data ──
+  // If board[r][c] == -1 but gemEls[r][c] exists, remove the stale element
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++) {
+      if (obstacleBoard[r][c] !== OB_NONE) continue;
+      if (board[r][c] < 0 && gemEls[r][c]) {
+        gemEls[r][c].remove();
+        gemEls[r][c] = null;
+      }
+    }
+
   // ── PHASE 1: Apply gravity column by column ──
-  // Simple approach: for each column, collect free rows (no obstacle)
-  // then fill from bottom with surviving gems, rest spawn from above
   for (let c = 0; c < COLS; c++) {
 
-    // Collect free rows (obstacle rows are walls — skip them)
-    const freeRows = [];
-    for (let r = 0; r < ROWS; r++)
-      if (obstacleBoard[r][c] === OB_NONE) freeRows.push(r);
-
-    // Within each segment between obstacles, apply gravity independently
-    // Split freeRows into segments separated by obstacles
+    // Split column into segments (obstacle rows are walls)
     const segments = [];
     let seg = [];
     for (let r = 0; r < ROWS; r++) {
@@ -2362,14 +2368,13 @@ async function gravityAndRefill(shapes) {
     if (seg.length > 0) segments.push(seg);
 
     for (const segRows of segments) {
-      // Collect surviving gems in this segment (top to bottom)
+      // Collect surviving gems top→bottom (only cells with valid gem + element)
       const surviving = [];
       for (const r of segRows) {
         if (board[r][c] >= 0 && gemEls[r][c]) {
           surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
-          // Clear the old position immediately
-          board[r][c]   = -1;
-          gemEls[r][c]  = null;
+          board[r][c]  = -1;
+          gemEls[r][c] = null;
         }
       }
 
@@ -2457,26 +2462,52 @@ async function gravityAndRefill(shapes) {
 // ═══════════════════════════════════════════════════
 //  POWER-UPS
 // ═══════════════════════════════════════════════════
+// Diamond cost per power-up
+const PW_COST = { hammer: 15, shuffle: 10, bomb: 20 };
+
 function renderPowers() {
   const bar = document.getElementById('powersBar');
   bar.innerHTML = '';
   POWERUPS.forEach(p => {
     const n = pwCounts[p.id] || 0;
     const isActive = activeTool === p.id;
+    const cost = PW_COST[p.id] || 15;
+    const canBuy = n < PW_MAX && diamonds >= cost;
     const div = document.createElement('div');
     div.className = 'pw' + (n > 0 ? ' has' : '') + (isActive ? ' active-tool' : '');
     const dots = Array.from({length: PW_MAX}, (_,i) =>
       `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;margin:0 1px;background:${i<n?'var(--gold)':'rgba(255,255,255,.2)'}"></span>`
     ).join('');
+    const buyBtn = n < PW_MAX
+      ? `<span class="pw-buy" data-id="${p.id}">💎${cost}</span>`
+      : '';
     div.innerHTML = `
       <span class="pi">${p.icon}</span>
       <div class="pw-info">
         <span class="pn">${p.name}</span>
         <div>${dots}</div>
+        ${buyBtn}
       </div>`;
-    div.onclick = () => usePowerUp(p.id);
+    // Main click = use power-up
+    div.onclick = (e) => {
+      if (e.target.classList.contains('pw-buy')) {
+        buyPowerUp(p.id); return;
+      }
+      usePowerUp(p.id);
+    };
     bar.appendChild(div);
   });
+}
+
+function buyPowerUp(id) {
+  const cost = PW_COST[id] || 15;
+  if (diamonds < cost) { showToast(`Precisa de ${cost} 💎!`); return; }
+  if ((pwCounts[id]||0) >= PW_MAX) { showToast('Já está no máximo!'); return; }
+  if (!spendDiamonds(cost)) return;
+  pwCounts[id] = Math.min(PW_MAX, (pwCounts[id]||0) + 1);
+  renderPowers();
+  saveGame();
+  showToast(`${POWERUPS.find(p=>p.id===id)?.icon} +1 comprado!`);
 }
 
 // Called when user taps a power-up button
@@ -2533,7 +2564,36 @@ async function executeHammer(r, c) {
   try {
     showToast('🔨 Bam!');
     playPowerUp(); vibrate([30,10,60]);
-    await popCells(new Set([k(r,c)]));
+
+    if (obstacleBoard[r][c] !== OB_NONE) {
+      // Hit an obstacle directly — destroy it regardless of HP
+      const wasType = obstacleBoard[r][c];
+      const el = obstacleEls[r][c];
+      if (el) { el.classList.add('popping'); }
+      spawnParticles(r, c, wasType===OB_ICE?'#aaddff':'#aaaaaa');
+      playRock();
+      await delay(320);
+      if (obstacleEls[r][c]) { obstacleEls[r][c].remove(); obstacleEls[r][c] = null; }
+      obstacleBoard[r][c] = OB_NONE;
+      obstacleHp[r][c]    = 0;
+      board[r][c]         = -1;
+      if (gemEls[r][c]) gemEls[r][c].style.filter = '';
+      // Track goals
+      if (wasType === OB_ROCK) {
+        sessionRocks++;
+        trackMission('rocks', 1);
+        if (goalsTarget['rock'] !== undefined)
+          goals['rock'] = Math.min((goals['rock']||0)+1, goalsTarget['rock']);
+      } else if (wasType === OB_ICE) {
+        if (goalsTarget['ice'] !== undefined)
+          goals['ice'] = Math.min((goals['ice']||0)+1, goalsTarget['ice']);
+      }
+      renderGoals();
+    } else {
+      // Hit a normal gem — remove it
+      await popCells(new Set([k(r,c)]));
+    }
+
     await gravityAndRefill([]);
     comboCount = 0;
     const more = findAllMatches();
