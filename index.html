@@ -43,6 +43,9 @@ const fbApp = initializeApp(firebaseConfig);
 const db    = getFirestore(fbApp);
 
 // ── Expose Firebase helpers to global scope ──
+// Firebase ready promise
+window._fbReady = new Promise(resolve => { window._fbResolve = resolve; });
+
 window._fb = {
   // Upsert: one document per player (docId = sanitized name)
   // Keeps highest totalScore and highest level reached
@@ -81,6 +84,8 @@ window._fb = {
 };
 
 console.log('🔥 Firebase connected!');
+// Signal ready
+if (window._fbResolve) window._fbResolve(true);
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -3378,11 +3383,16 @@ async function saveScore() {
   if (ranking.length > 100) ranking.length = 100;
   localStorage.setItem('glixarRank', JSON.stringify(ranking));
 
-  // Firebase save (non-blocking)
-  if (window._fb) {
-    window._fb.saveScore(playerName, level, totalScore)
-      .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); });
-  }
+  // Firebase save (non-blocking, wait for module to load)
+  const doSave = () => {
+    if (window._fb) {
+      window._fb.saveScore(playerName, level, totalScore)
+        .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); })
+        .catch(e => console.warn('Firebase save error:', e));
+    }
+  };
+  if (window._fbReady) window._fbReady.then(doSave);
+  else setTimeout(doSave, 2000);
 }
 
 // Current rank tab
@@ -3496,18 +3506,21 @@ async function renderRankList() {
   ul.innerHTML  = '';
 
   if (_rankTab === 'global') {
-    // Show loading
     if (loading) loading.style.display = 'block';
-
     let entries = [];
-    if (window._fb) {
-      entries = await window._fb.getTop(50);
+    try {
+      // Wait up to 5s for Firebase module to load
+      if (window._fbReady) await Promise.race([
+        window._fbReady,
+        new Promise(r => setTimeout(r, 5000))
+      ]);
+      if (window._fb) entries = await window._fb.getTop(100);
+    } catch(e) {
+      console.warn('Ranking load error:', e);
     }
-
     if (loading) loading.style.display = 'none';
-
     if (entries.length === 0) {
-      ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Seja o primeiro! Jogue e complete uma fase. 🏆</li>';
+      ul.innerHTML = '<li style="color:rgba(255,255,255,.4);text-align:center;padding:20px;">Seja o primeiro a jogar! 🏆<br><small style="font-size:.65rem;opacity:.5;">Complete uma fase para aparecer aqui.</small></li>';
       return;
     }
     buildRankItems(ul, entries, true);
