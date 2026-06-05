@@ -95,7 +95,14 @@ body{
   font-family:'Nunito',sans-serif;
   background:linear-gradient(160deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%);
   min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  padding:8px 6px 16px;overflow-x:hidden;overflow-y:auto;
+  padding:0;overflow-x:hidden;overflow-y:auto;
+}
+.game-wrap{
+  width:100%;max-width:440px;
+  padding:8px 10px 20px;
+  display:flex;flex-direction:column;align-items:stretch;
+  position:relative;z-index:1;
+  box-sizing:border-box;
 }
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -113,7 +120,7 @@ body::before{
 }
 
 /* ── HEADER ── */
-.hdr{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;
+.hdr{width:100%;display:flex;align-items:center;justify-content:space-between;
   margin-bottom:6px;position:relative;z-index:2;}
 .logo{font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--gold);
   text-shadow:0 2px 0 var(--gold-dark),0 4px 10px rgba(0,0,0,.6);letter-spacing:2px;}
@@ -125,14 +132,14 @@ body::before{
 .level-num{font-size:1.3rem;font-weight:900;color:var(--gold);line-height:1;}
 
 /* ── INFO BAR ── */
-.info-bar{width:100%;max-width:440px;display:flex;align-items:stretch;gap:6px;
+.info-bar{width:100%;display:flex;align-items:stretch;gap:6px;
   margin-bottom:6px;position:relative;z-index:2;}
 .box{background:linear-gradient(135deg,#35108a,#180550);border:2px solid var(--gold);
-  border-radius:13px;padding:7px 12px;text-align:center;
+  border-radius:13px;padding:6px 10px;text-align:center;
   box-shadow:0 4px 12px rgba(0,0,0,.4);flex-shrink:0;}
-.box .icon{font-size:1rem;}
-.box .num{font-size:1.4rem;font-weight:900;color:#fff;line-height:1.1;}
-.box .lbl{font-size:.58rem;color:rgba(255,255,255,.45);text-transform:uppercase;}
+.box .icon{font-size:.9rem;}
+.box .num{font-size:1.2rem;font-weight:900;color:#fff;line-height:1.1;}
+.box .lbl{font-size:.52rem;color:rgba(255,255,255,.45);text-transform:uppercase;}
 
 .score-box{flex:1;background:linear-gradient(135deg,#4a1a8e,#2d0a60);}
 .score-box .num{color:var(--gold);}
@@ -147,7 +154,7 @@ body::before{
 .gi .g{font-size:.95rem;}
 
 /* ── POWER-UPS BAR ── */
-.powers{width:100%;max-width:440px;display:flex;gap:5px;margin-bottom:6px;
+.powers{width:100%;display:flex;gap:5px;margin-bottom:6px;
   position:relative;z-index:2;}
 .pw{flex:1;background:linear-gradient(135deg,#2a0a6e,#12043a);
   border:2px solid rgba(255,255,255,.15);border-radius:10px;
@@ -186,7 +193,7 @@ body::before{
   background:linear-gradient(135deg,#2e0e78 0%,#190558 100%);
   border:3px solid var(--gold);border-radius:18px;padding:0;overflow:hidden;
   box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
-  max-width:440px;width:100%;
+  width:100%;
 }
 #board{position:relative;width:100%;overflow:visible;padding:6px;}
 
@@ -449,7 +456,7 @@ body::before{
 }
 
 /* ── BOTTOM BUTTONS ── */
-.actions{width:100%;max-width:440px;margin-top:8px;
+.actions{width:100%;margin-top:8px;
   position:relative;z-index:2;}
 .actions .btn{width:100%;}
 .btn{
@@ -497,7 +504,7 @@ body::before{
 .splash-box .btn{font-size:1.05rem;padding:13px 22px;width:100%;max-width:220px;margin:0 auto;display:block;}
 
 /* ── PROGRESS BAR ── */
-.prog-wrap{width:100%;max-width:440px;margin-bottom:4px;position:relative;z-index:2;}
+.prog-wrap{width:100%;margin-bottom:4px;position:relative;z-index:2;}
 .prog-bar{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:4px;
   background:linear-gradient(90deg,#ffd700,#ff9900);
@@ -577,14 +584,14 @@ body::before{
 
 /* ── LIVES ── */
 .lives-bar{
-  display:flex;align-items:center;gap:3px;
+  display:flex;align-items:center;gap:2px;
   background:linear-gradient(135deg,#3a1080,#1a0550);
-  border:2px solid var(--gold);border-radius:11px;
-  padding:5px 8px;flex-shrink:0;
+  border:2px solid var(--gold);border-radius:10px;
+  padding:4px 7px;flex-shrink:0;
 }
-.life-heart{font-size:.95rem;transition:transform .3s,filter .3s;line-height:1;}
+.life-heart{font-size:.85rem;transition:transform .3s,filter .3s;line-height:1;}
 .life-heart.empty{filter:grayscale(1) opacity(.25);transform:scale(.8);}
-.life-timer{font-size:.55rem;color:var(--gold);font-weight:800;white-space:nowrap;margin-left:2px;}
+.life-timer{font-size:.5rem;color:var(--gold);font-weight:800;white-space:nowrap;margin-left:2px;}
 
 /* lives splash */
 .lives-splash-hearts{display:flex;justify-content:center;gap:10px;margin:10px 0 16px;}
@@ -759,6 +766,7 @@ body::before{
 </head>
 <body>
 
+<div class="game-wrap">
 <!-- ══ HEADER ══ -->
 <div class="hdr">
   <div class="logo">✨ Glixar</div>
@@ -815,6 +823,7 @@ body::before{
   <button class="btn btn-restart" onclick="restartLevel()">🔁 Reiniciar Fase</button>
 </div>
 
+</div><!-- /game-wrap -->
 <div class="toast" id="toast"></div>
 <div class="combo-badge" id="comboBadge"></div>
 <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:399;display:none;"></canvas>
@@ -1339,6 +1348,7 @@ function buildBoard() {
   const boardEl = document.getElementById('board');
   boardEl.innerHTML = '<div id="bombPreview"></div>';
   computeCell();
+  document.querySelectorAll('.hint-glow').forEach(el=>el.classList.remove('hint-glow'));
 
   // BG grid
   for (let r = 0; r < ROWS; r++)
@@ -3104,21 +3114,9 @@ function showCombo(n) {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// Auto-hint after inactivity
-let _inactivityTimer = null;
+// Auto-hint disabled (removed — was confusing on reload)
 function resetInactivity() {
-  clearTimeout(_inactivityTimer);
-  document.querySelectorAll('.hint-glow').forEach(el=>el.classList.remove('hint-glow'));
-  if (processing || levelOver) return;
-  _inactivityTimer = setTimeout(() => {
-    if (!processing && !levelOver && moves > 0) {
-      const h = findPossibleMove();
-      if (h && gemEls[h.r1]?.[h.c1] && gemEls[h.r2]?.[h.c2]) {
-        gemEls[h.r1][h.c1].classList.add('hint-glow');
-        gemEls[h.r2][h.c2].classList.add('hint-glow');
-      }
-    }
-  }, 8000);
+  // no-op — hints only on manual request via settings
 }
 
 // Safety watchdog — if processing gets stuck, unblock after 6s
