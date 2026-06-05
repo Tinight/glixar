@@ -1,4 +1,4 @@
-const CACHE = 'glixar-v10';
+const CACHE = 'glixar-v11';
 const ASSETS = [
   '/glixar/',
   '/glixar/index.html',
