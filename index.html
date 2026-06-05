@@ -1512,8 +1512,6 @@ body::before{
 
 </div>
 
-<!-- PHASE PREVIEW — fixed, outside mapOverlay for correct stacking -->
-
 <!-- MENU CONFIRM -->
 <div class="menu-confirm" id="menuConfirm">
   <div class="menu-confirm-box">
@@ -3599,21 +3597,23 @@ const WORLDS = [
 ];
 function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) || WORLDS[0]; }
 
-function openMap() {
-  // Hide preview before opening map
-  const prev = document.getElementById('mapPreview');
-  if (prev) { prev.classList.remove('show'); prev.style.display = 'none'; }
+function _mapHidePreview() {
+  const el = document.getElementById('mapPreview');
+  if (el) { el.style.display = 'none'; el.classList.remove('show'); }
+}
 
+function _mapShowPreview() {
+  const el = document.getElementById('mapPreview');
+  if (el) { el.style.display = 'flex'; el.classList.add('show'); }
+}
+
+function openMap() {
+  _mapHidePreview();
   renderMap();
   renderMapLives();
-
-  // Hide game and menu screens
-  const gw = document.querySelector('.game-wrap');
-  if (gw) gw.style.display = 'none';
+  document.querySelector('.game-wrap').style.display = 'none';
   document.getElementById('menuScreen').classList.remove('show');
-
   document.getElementById('mapOverlay').classList.add('show');
-
   setTimeout(() => {
     const cur = document.getElementById('map-bubble-' + level);
     if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -3634,15 +3634,10 @@ function renderMapLives() {
 }
 
 function closeMap() {
-  // Always hide preview first
-  const prev = document.getElementById('mapPreview');
-  if (prev) { prev.classList.remove('show'); prev.style.display = 'none'; }
-
+  _mapHidePreview();
   document.getElementById('mapOverlay').classList.remove('show');
-
-  // Show game-wrap only if a level has been started
-  const gw = document.querySelector('.game-wrap');
-  if (gw && localStorage.getItem('glixarSave')) gw.style.display = 'flex';
+  if (localStorage.getItem('glixarSave'))
+    document.querySelector('.game-wrap').style.display = 'flex';
 }
 
 function renderMap() {
@@ -3734,9 +3729,7 @@ function renderMap() {
 }
 
 function openMapPreview(lvl) {
-  // Safety: only open if map overlay is currently visible
-  const overlay = document.getElementById('mapOverlay');
-  if (!overlay || !overlay.classList.contains('show')) return;
+  if (!document.getElementById('mapOverlay').classList.contains('show')) return;
 
   _previewLevel = lvl;
   const lcfg  = getLevelConfig(lvl);
@@ -3781,41 +3774,24 @@ function openMapPreview(lvl) {
   const playBtn = document.getElementById('mpPlayBtn');
   playBtn.textContent = isCur ? '▶ Continuar' : (stars > 0 ? '🔄 Rejogar' : `▶ Jogar Fase ${lvl}`);
 
-  const mp = document.getElementById('mapPreview');
-  mp.style.display = 'flex';
-  mp.classList.add('show');
+  _mapShowPreview();
 }
 
 function closeMapPreview() {
-  const el = document.getElementById('mapPreview');
-  if (el) { el.classList.remove('show'); el.style.display = 'none'; }
-  // Do NOT close map overlay here
+  _mapHidePreview();
 }
 
 function playFromPreview() {
   const lvl = _previewLevel;
-
-  // 1. Hide preview
-  const prev = document.getElementById('mapPreview');
-  if (prev) { prev.classList.remove('show'); prev.style.display = 'none'; }
-
-  // 2. Hide map overlay
+  _mapHidePreview();
   document.getElementById('mapOverlay').classList.remove('show');
-
-  // 3. Hide menu screen
   document.getElementById('menuScreen').classList.remove('show');
-
-  // 4. Show game-wrap
-  const gw = document.querySelector('.game-wrap');
-  if (gw) gw.style.display = 'flex';
-
-  // 5. Start level after short delay
+  document.querySelector('.game-wrap').style.display = 'flex';
   setTimeout(() => {
     level = lvl;
-    _showCountdown = (lvl !== level); // countdown only when changing level
     _showCountdown = true;
     startLevel();
-  }, 100);
+  }, 80);
 }
 
 // ═══════════════════════════════════════════════════
