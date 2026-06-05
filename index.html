@@ -3686,29 +3686,25 @@ const WORLDS = [
 function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) || WORLDS[0]; }
 
 // Open overlays from map — hide map, open overlay, restore map on close
-function openRankFromMap() {
-  _mapFromNav = true;
-  openRank();
-}
-function openCheckinFromMap() {
-  _mapFromNav = true;
-  openCheckin();
-}
-function openProfileFromMap() {
-  _mapFromNav = true;
-  openProfile();
-}
-function openSettingsFromMap() {
-  _mapFromNav = true;
-  openSettings();
+function openRankFromMap() { rememberMapState(); openRank(); }
+function openCheckinFromMap() { rememberMapState(); openCheckin(); }
+function openProfileFromMap() { rememberMapState(); openProfile(); }
+function openSettingsFromMap() { rememberMapState(); openSettings(); }
+
+// Track if map was open when overlay was opened
+let _mapWasOpen = false;
+
+function rememberMapState() {
+  const mo = document.getElementById('mapOverlay');
+  _mapWasOpen = mo && mo.style.display === 'flex';
 }
 
-// Flag: came from map nav
-let _mapFromNav = false;
-
-// Called when rank/checkin/profile/settings close — go back to map if needed
+// Called when any overlay closes — restore map if it was open
 function maybeReturnToMap() {
-  _mapFromNav = false; // map was never hidden, nothing to restore
+  if (_mapWasOpen) {
+    _mapWasOpen = false;
+    // Map is still visible (z-index stacking), nothing to do
+  }
 }
 
 function _mapHidePreview() {
