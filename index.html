@@ -288,7 +288,7 @@ body::before{
 /* ── CHECKIN MODAL ── */
 .checkin-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:300;align-items:center;justify-content:center;padding:16px;
+  z-index:350;align-items:center;justify-content:center;padding:16px;
 }
 .checkin-overlay.show{display:flex;}
 .checkin-box{
@@ -601,7 +601,7 @@ body::before{
 
 /* ── PROFILE MODAL ── */
 .profile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:300;align-items:center;justify-content:center;padding:16px;}
+  z-index:350;align-items:center;justify-content:center;padding:16px;}
 .profile-overlay.show{display:flex;}
 .profile-box{
   background:linear-gradient(135deg,#1a0550,#0a0220);
@@ -635,7 +635,7 @@ body::before{
 /* ── SETTINGS OVERLAY ── */
 .settings-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
-  z-index:250;align-items:flex-end;justify-content:center;padding:0;
+  z-index:350;align-items:flex-end;justify-content:center;padding:0;
 }
 .settings-overlay.show{display:flex;}
 .settings-box{
@@ -814,7 +814,7 @@ body::before{
 /* ── RANK MODAL ── */
 .rank-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
-  z-index:200;align-items:center;justify-content:center;padding:16px;
+  z-index:350;align-items:center;justify-content:center;padding:16px;
 }
 .rank-overlay.show{display:flex;}
 .rank-box{
@@ -1181,7 +1181,7 @@ body::before{
 
 /* ── DAILY MISSIONS ── */
 .daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:250;align-items:center;justify-content:center;padding:16px;}
+  z-index:350;align-items:center;justify-content:center;padding:16px;}
 .daily-overlay.show{display:flex;}
 .daily-box{background:linear-gradient(135deg,#2a0860,#0e0330);border:3px solid var(--gold);
   border-radius:20px;padding:20px 16px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;}
@@ -3687,22 +3687,18 @@ function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) |
 
 // Open overlays from map — hide map, open overlay, restore map on close
 function openRankFromMap() {
-  document.getElementById('mapOverlay').style.display = 'none';
   _mapFromNav = true;
   openRank();
 }
 function openCheckinFromMap() {
-  document.getElementById('mapOverlay').style.display = 'none';
   _mapFromNav = true;
   openCheckin();
 }
 function openProfileFromMap() {
-  document.getElementById('mapOverlay').style.display = 'none';
   _mapFromNav = true;
   openProfile();
 }
 function openSettingsFromMap() {
-  document.getElementById('mapOverlay').style.display = 'none';
   _mapFromNav = true;
   openSettings();
 }
@@ -3712,10 +3708,7 @@ let _mapFromNav = false;
 
 // Called when rank/checkin/profile/settings close — go back to map if needed
 function maybeReturnToMap() {
-  if (_mapFromNav) {
-    _mapFromNav = false;
-    document.getElementById('mapOverlay').style.display = 'flex';
-  }
+  _mapFromNav = false; // map was never hidden, nothing to restore
 }
 
 function _mapHidePreview() {
