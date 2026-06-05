@@ -1118,7 +1118,7 @@ body::before{
   background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;
   padding-bottom:70px;
 }
-.map-preview.show{display:flex;}
+.map-preview.show{display:flex!important;}
 .map-preview-box{
   background:linear-gradient(180deg,#0a1128,#000411);
   border:2px solid rgba(0,242,254,.4);border-radius:24px 24px 0 0;
@@ -3629,10 +3629,8 @@ function renderMapLives() {
 function closeMap() {
   document.getElementById('mapOverlay').classList.remove('show');
   document.getElementById('mapPreview').classList.remove('show');
-  // Only show game-wrap if there's an active game (level was started)
-  const hasSave = !!localStorage.getItem('glixarSave');
   const gw = document.querySelector('.game-wrap');
-  if (gw && hasSave) gw.style.display = 'flex';
+  if (gw) gw.style.display = 'flex';
 }
 
 function renderMap() {
@@ -3724,6 +3722,9 @@ function renderMap() {
 }
 
 function openMapPreview(lvl) {
+  // Only open if map is actually visible
+  if (!document.getElementById('mapOverlay').classList.contains('show')) return;
+
   _previewLevel = lvl;
   const lcfg  = getLevelConfig(lvl);
   const stars  = levelStarsMap[lvl] || 0;
@@ -3767,12 +3768,14 @@ function openMapPreview(lvl) {
   const playBtn = document.getElementById('mpPlayBtn');
   playBtn.textContent = isCur ? '▶ Continuar' : (stars > 0 ? '🔄 Rejogar' : `▶ Jogar Fase ${lvl}`);
 
-  document.getElementById('mapPreview').classList.add('show');
+  const mp = document.getElementById('mapPreview');
+  mp.style.display = 'flex';
+  mp.classList.add('show');
 }
 
 function closeMapPreview() {
   const el = document.getElementById('mapPreview');
-  if (el) el.classList.remove('show');
+  if (el) { el.classList.remove('show'); el.style.display = 'none'; }
 }
 
 function playFromPreview() {
@@ -4629,7 +4632,7 @@ window.addEventListener('resize', () => {
 </div>
 
 <!-- PHASE PREVIEW — fixed, outside mapOverlay for correct stacking -->
-<div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
+<div class="map-preview" id="mapPreview" onclick="closeMapPreview()" style="display:none;">
   <div class="map-preview-box" onclick="event.stopPropagation()">
     <div class="mp-handle"></div>
     <div class="mp-header">
