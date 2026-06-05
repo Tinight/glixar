@@ -1114,7 +1114,7 @@ body::before{
 
 /* ── Preview popup ── */
 .map-preview{
-  display:none;position:absolute;inset:0;z-index:50;
+  display:none;position:fixed;inset:0;z-index:400;
   background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;
   padding-bottom:70px;
 }
@@ -1510,26 +1510,27 @@ body::before{
     </div>
   </div>
 
-  <!-- PHASE PREVIEW — last so it renders on top of nav -->
-  <div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
-    <div class="map-preview-box" onclick="event.stopPropagation()">
-      <div class="mp-handle"></div>
-      <div class="mp-header">
-        <div class="mp-title" id="mpTitle">Fase 1</div>
-        <div class="mp-difficulty" id="mpDifficulty">Normal</div>
-      </div>
-      <div class="mp-stars" id="mpStars"></div>
-      <div class="mp-info-row" id="mpInfo"></div>
-      <div class="mp-goals-title">Objetivos</div>
-      <div class="mp-goals" id="mpGoals"></div>
-      <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
-      <button onclick="closeMapPreview()" style="width:100%;margin-top:8px;padding:12px;
-        border:1.5px solid rgba(255,255,255,.15);border-radius:12px;
-        background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);
-        font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">
-        ✕ Fechar
-      </button>
+</div>
+
+<!-- PHASE PREVIEW — fixed, outside mapOverlay for correct stacking -->
+<div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
+  <div class="map-preview-box" onclick="event.stopPropagation()">
+    <div class="mp-handle"></div>
+    <div class="mp-header">
+      <div class="mp-title" id="mpTitle">Fase 1</div>
+      <div class="mp-difficulty" id="mpDifficulty">Normal</div>
     </div>
+    <div class="mp-stars" id="mpStars"></div>
+    <div class="mp-info-row" id="mpInfo"></div>
+    <div class="mp-goals-title">Objetivos</div>
+    <div class="mp-goals" id="mpGoals"></div>
+    <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
+    <button onclick="closeMapPreview()" style="width:100%;margin-top:8px;padding:12px;
+      border:1.5px solid rgba(255,255,255,.15);border-radius:12px;
+      background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);
+      font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">
+      ✕ Fechar
+    </button>
   </div>
 </div>
 
@@ -4645,26 +4646,27 @@ window.addEventListener('resize', () => {
     </div>
   </div>
 
-  <!-- PHASE PREVIEW — last so it renders on top of nav -->
-  <div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
-    <div class="map-preview-box" onclick="event.stopPropagation()">
-      <div class="mp-handle"></div>
-      <div class="mp-header">
-        <div class="mp-title" id="mpTitle">Fase 1</div>
-        <div class="mp-difficulty" id="mpDifficulty">Normal</div>
-      </div>
-      <div class="mp-stars" id="mpStars"></div>
-      <div class="mp-info-row" id="mpInfo"></div>
-      <div class="mp-goals-title">Objetivos</div>
-      <div class="mp-goals" id="mpGoals"></div>
-      <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
-      <button onclick="closeMapPreview()" style="width:100%;margin-top:8px;padding:12px;
-        border:1.5px solid rgba(255,255,255,.15);border-radius:12px;
-        background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);
-        font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">
-        ✕ Fechar
-      </button>
+</div>
+
+<!-- PHASE PREVIEW — fixed, outside mapOverlay for correct stacking -->
+<div class="map-preview" id="mapPreview" onclick="closeMapPreview()">
+  <div class="map-preview-box" onclick="event.stopPropagation()">
+    <div class="mp-handle"></div>
+    <div class="mp-header">
+      <div class="mp-title" id="mpTitle">Fase 1</div>
+      <div class="mp-difficulty" id="mpDifficulty">Normal</div>
     </div>
+    <div class="mp-stars" id="mpStars"></div>
+    <div class="mp-info-row" id="mpInfo"></div>
+    <div class="mp-goals-title">Objetivos</div>
+    <div class="mp-goals" id="mpGoals"></div>
+    <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
+    <button onclick="closeMapPreview()" style="width:100%;margin-top:8px;padding:12px;
+      border:1.5px solid rgba(255,255,255,.15);border-radius:12px;
+      background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);
+      font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;">
+      ✕ Fechar
+    </button>
   </div>
 </div>
 
