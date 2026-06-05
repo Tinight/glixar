@@ -125,35 +125,139 @@ body::before{
 /* ── MENU SCREEN ── */
 .menu-screen{
   display:none;position:fixed;inset:0;z-index:200;
-  background:linear-gradient(160deg,#0e0628,#2a0a5e,#1a0040);
-  flex-direction:column;align-items:center;justify-content:center;
-  padding:32px 24px;text-align:center;
+  flex-direction:column;overflow:hidden;
 }
 .menu-screen.show{display:flex;}
+
+/* Background layers */
+.menu-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    #0a0428 0%,
+    #1a0a5e 25%,
+    #2a1080 50%,
+    #1a0a5e 75%,
+    #0a0428 100%);
+}
+/* Stars */
+.menu-bg::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%,#fff,transparent),
+    radial-gradient(1.5px 1.5px at 80% 10%,#fff,transparent),
+    radial-gradient(1px 1px at 50% 35%,rgba(255,255,255,.6),transparent),
+    radial-gradient(2px 2px at 25% 60%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1px 1px at 70% 70%,#fff,transparent),
+    radial-gradient(1.5px 1.5px at 90% 45%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1px 1px at 40% 80%,rgba(255,255,255,.5),transparent),
+    radial-gradient(2px 2px at 60% 25%,rgba(255,255,255,.3),transparent);
+}
+/* Ground */
+.menu-bg::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:35%;
+  background:linear-gradient(180deg,transparent,rgba(0,80,160,.3) 40%,rgba(0,40,100,.5));
+}
+
+/* Path decoration */
+.menu-path{
+  position:absolute;bottom:25%;left:0;right:0;
+  height:60px;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.15) 0,rgba(255,255,255,.15) 40px,
+      transparent 40px,transparent 80px);
+  transform:perspective(400px) rotateX(40deg);
+  transform-origin:bottom center;
+}
+
+/* Content container */
+.menu-content{
+  position:relative;z-index:1;
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:0 24px;
+}
+
+/* Logo area */
+.menu-logo-area{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding-top:40px;
+}
 .menu-logo{
-  font-family:'Luckiest Guy',cursive;font-size:3.5rem;color:var(--gold);
-  text-shadow:0 4px 0 var(--gold-dark),0 8px 20px rgba(0,0,0,.6);
-  letter-spacing:3px;animation:menuPulse 2s ease infinite alternate;
-  margin-bottom:6px;
+  font-family:'Luckiest Guy',cursive;font-size:4rem;
+  background:linear-gradient(180deg,#ffe066,#FFD700,#ff9900);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
+  letter-spacing:4px;
+  animation:logoFloat 3s ease-in-out infinite alternate;
 }
-@keyframes menuPulse{from{text-shadow:0 4px 0 var(--gold-dark),0 8px 20px rgba(0,0,0,.6);}
-  to{text-shadow:0 4px 0 var(--gold-dark),0 8px 40px rgba(255,215,0,.4);}}
-.menu-tagline{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:32px;letter-spacing:1px;}
-.menu-lives{margin-bottom:20px;font-size:1.4rem;letter-spacing:4px;}
-.menu-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;}
+@keyframes logoFloat{
+  from{transform:translateY(0) rotate(-1deg);}
+  to  {transform:translateY(-8px) rotate(1deg);}
+}
+.menu-gem-row{display:flex;gap:10px;margin-top:12px;font-size:1.8rem;
+  animation:gemBounce 1.5s ease-in-out infinite alternate;}
+@keyframes gemBounce{
+  from{transform:translateY(0);}
+  to  {transform:translateY(-5px);}
+}
+.menu-tagline{
+  font-size:.8rem;color:rgba(255,255,255,.45);margin-top:8px;
+  letter-spacing:2px;text-transform:uppercase;
+}
+
+/* Lives row */
+.menu-lives{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  margin-bottom:16px;
+}
+.menu-lives-hearts{font-size:1.5rem;letter-spacing:6px;}
+.menu-life-timer{
+  font-size:.68rem;color:#ff8888;font-weight:700;
+  background:rgba(255,80,80,.12);padding:4px 14px;border-radius:8px;
+  border:1px solid rgba(255,80,80,.2);
+}
+
+/* Bottom panel */
+.menu-panel{
+  width:100%;
+  background:linear-gradient(180deg,rgba(10,4,40,.0),rgba(10,4,40,.95) 20%,rgba(10,4,40,1));
+  padding:20px 24px 36px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+}
+.menu-btns{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;}
 .menu-btn{
-  padding:14px 20px;border-radius:14px;border:none;cursor:pointer;
-  font-family:'Luckiest Guy',cursive;font-size:1.1rem;letter-spacing:1px;
-  transition:transform .15s,filter .15s;
-  box-shadow:0 5px 0 rgba(0,0,0,.4);
+  padding:15px 20px;border-radius:16px;border:none;cursor:pointer;
+  font-family:'Luckiest Guy',cursive;font-size:1.15rem;letter-spacing:1px;
+  transition:transform .12s,filter .12s;
+  box-shadow:0 6px 0 rgba(0,0,0,.45);width:100%;
 }
-.menu-btn:hover{filter:brightness(1.1);transform:translateY(-2px);}
-.menu-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.4);}
-.menu-btn-primary{background:linear-gradient(180deg,#FFD700,#C8A200);color:#3a1800;}
-.menu-btn-secondary{background:linear-gradient(180deg,#4a1a8e,#2a0860);color:#fff;border:2px solid rgba(255,255,255,.2);}
-.menu-life-timer{font-size:.7rem;color:rgba(255,80,80,.8);margin-bottom:8px;
-  background:rgba(255,80,80,.1);padding:6px 14px;border-radius:8px;
-  border:1px solid rgba(255,80,80,.2);}
+.menu-btn:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.45);}
+.menu-btn-primary{
+  background:linear-gradient(180deg,#ffe566,#FFD700,#e8a000);
+  color:#3a1800;font-size:1.3rem;
+}
+.menu-btn-secondary{
+  background:linear-gradient(180deg,#5a2aae,#3a1080);
+  color:#fff;border:2px solid rgba(255,255,255,.15);
+}
+.menu-btn-rank{
+  background:linear-gradient(180deg,#2a6aee,#1a4ab0);
+  color:#fff;border:2px solid rgba(100,160,255,.2);
+}
+/* Bottom icons row */
+.menu-icons{
+  display:flex;gap:16px;margin-top:4px;
+}
+.menu-icon-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:10px 16px;cursor:pointer;
+  transition:transform .12s,filter .12s;min-width:64px;
+}
+.menu-icon-btn:active{transform:scale(.92);}
+.menu-icon-btn .mi-icon{font-size:1.4rem;}
+.menu-icon-btn .mi-label{font-size:.55rem;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
 
 /* ── HEADER ── */
 .hdr{display:flex;align-items:center;justify-content:space-between;
@@ -1063,11 +1167,40 @@ body::before{
 
 <!-- ══ MENU SCREEN ══ -->
 <div class="menu-screen" id="menuScreen">
-  <div class="menu-logo">✨ Glixar</div>
-  <div class="menu-tagline">Match-3 com níveis infinitos</div>
-  <div class="menu-lives" id="menuLives"></div>
-  <div class="menu-btns" id="menuBtns"></div>
-  <div style="font-size:.6rem;color:rgba(255,255,255,.2);margin-top:16px;font-family:monospace;">v1.0.0 · Breitner Tinight</div>
+  <div class="menu-bg"></div>
+  <div class="menu-path"></div>
+  <div class="menu-content">
+    <div class="menu-logo-area">
+      <div class="menu-logo">GLIXAR</div>
+      <div class="menu-gem-row">❤️ 💙 💛 💚 💜</div>
+      <div class="menu-tagline">Match-3 · Níveis Infinitos</div>
+    </div>
+    <div class="menu-lives" id="menuLives">
+      <div class="menu-lives-hearts" id="menuLivesHearts">❤️❤️❤️</div>
+    </div>
+  </div>
+  <div class="menu-panel">
+    <div class="menu-btns" id="menuBtns"></div>
+    <div class="menu-icons">
+      <div class="menu-icon-btn" onclick="openRank()">
+        <span class="mi-icon">🏆</span>
+        <span class="mi-label">Rank</span>
+      </div>
+      <div class="menu-icon-btn" onclick="openProfile();closeSettings()">
+        <span class="mi-icon">👤</span>
+        <span class="mi-label">Perfil</span>
+      </div>
+      <div class="menu-icon-btn" onclick="openCheckin()">
+        <span class="mi-icon">📅</span>
+        <span class="mi-label">Check-in</span>
+      </div>
+      <div class="menu-icon-btn" onclick="openSettings()">
+        <span class="mi-icon">⚙️</span>
+        <span class="mi-label">Config</span>
+      </div>
+    </div>
+    <div style="font-size:.55rem;color:rgba(255,255,255,.18);margin-top:8px;font-family:monospace;letter-spacing:1px;">v1.0.0 · Breitner Tinight</div>
+  </div>
 </div>
 
 <div class="game-wrap">
@@ -1795,6 +1928,20 @@ function newGame() {
 
 function restartLevel() {
   if (processing && !levelOver) return;
+  // Costs 1 life to restart (unless no lives to check)
+  if (getLives() > 0) {
+    if (!confirm('Reiniciar a fase gasta 1 ❤️ vida. Continuar?')) return;
+    spendLife();
+  } else {
+    // No lives — use diamonds or just go to menu
+    if (diamonds >= 20) {
+      if (!confirm('Sem vidas! Reiniciar custa 20 💎. Continuar?')) return;
+      if (!spendDiamonds(20)) return;
+    } else {
+      showToast('Sem vidas! Aguarde regenerar.');
+      return;
+    }
+  }
   score = 0; levelOver = false;
   startLevel();
 }
@@ -2352,6 +2499,7 @@ function findAllMatches() {
   });
 
   // ── 2x2 square → SP_MINE ──
+  // Check for 2x2 squares that are part of the current match
   for (let rm = 0; rm < ROWS - 1; rm++) {
     for (let cm = 0; cm < COLS - 1; cm++) {
       const gm = board[rm][cm];
@@ -2359,7 +2507,10 @@ function findAllMatches() {
       if (board[rm][cm+1]===gm && board[rm+1][cm]===gm && board[rm+1][cm+1]===gm) {
         const sq = [k(rm,cm), k(rm,cm+1), k(rm+1,cm), k(rm+1,cm+1)];
         if (sq.some(key => cells.has(key))) {
+          // Add all 4 to cells, but keep top-left as pivot for mine placement
           sq.forEach(key => cells.add(key));
+          // Remove pivot from cells so gravity places mine there
+          cells.delete(k(rm, cm));
           if (!shapes.find(s => s.r===rm && s.c===cm && s.spType===SP_MINE))
             shapes.push({ r:rm, c:cm, gem:gm, spType:SP_MINE });
         }
@@ -3583,18 +3734,28 @@ function hideMenu() {
 
 function renderMenuState() {
   const cur    = getLives();
-  const livesEl = document.getElementById('menuLives');
-  const btnsEl  = document.getElementById('menuBtns');
-  if (!livesEl || !btnsEl) return;
+  const heartsEl = document.getElementById('menuLivesHearts');
+  const livesEl  = document.getElementById('menuLives');
+  const btnsEl   = document.getElementById('menuBtns');
+  if (!btnsEl) return;
 
-  // Lives display
-  let livesHtml = '';
-  for (let i = 0; i < MAX_LIVES; i++)
-    livesHtml += `<span style="${i < cur ? '' : 'opacity:.25;filter:grayscale(1);'}">❤️</span>`;
+  // Lives hearts
+  if (heartsEl) {
+    let h = '';
+    for (let i = 0; i < MAX_LIVES; i++)
+      h += `<span style="${i < cur ? '' : 'opacity:.2;filter:grayscale(1);'}">❤️</span>`;
+    heartsEl.innerHTML = h;
+  }
+  // Life timer pill
   const ms = getNextRegenMs();
-  if (cur < MAX_LIVES && ms > 0)
-    livesHtml += `<div class="menu-life-timer">+❤️ em ${formatTimeLeft(ms)}</div>`;
-  livesEl.innerHTML = livesHtml;
+  const timerDiv = livesEl?.querySelector('.menu-life-timer');
+  if (timerDiv) timerDiv.remove();
+  if (cur < MAX_LIVES && ms > 0 && livesEl) {
+    const pill = document.createElement('div');
+    pill.className = 'menu-life-timer';
+    pill.textContent = `+❤️ em ${formatTimeLeft(ms)}`;
+    livesEl.appendChild(pill);
+  }
 
   // Buttons
   const hasSave = !!localStorage.getItem('glixarSave');
@@ -3603,19 +3764,19 @@ function renderMenuState() {
   if (hasSave && cur > 0) {
     const btn = document.createElement('button');
     btn.className = 'menu-btn menu-btn-primary';
-    btn.textContent = `▶ Continuar — Fase ${level}`;
-    btn.onclick = () => { hideMenu(); };
+    btn.innerHTML = `▶ Continuar<br><span style="font-size:.7rem;opacity:.7;">Fase ${level}</span>`;
+    btn.onclick = () => hideMenu();
     btnsEl.appendChild(btn);
   } else if (hasSave && cur === 0) {
     const info = document.createElement('div');
-    info.style.cssText = 'color:rgba(255,255,255,.5);font-size:.8rem;margin-bottom:8px;';
-    info.textContent = `Fase ${level} salva. Aguarde uma vida para continuar!`;
+    info.style.cssText = 'color:rgba(255,255,255,.45);font-size:.8rem;text-align:center;padding:8px;';
+    info.innerHTML = `😴 Fase ${level} salva<br><small>Aguarde uma vida para continuar</small>`;
     btnsEl.appendChild(info);
   }
 
   const newBtn = document.createElement('button');
-  newBtn.className = 'menu-btn menu-btn-secondary';
-  newBtn.textContent = hasSave ? '🔄 Novo Jogo' : '▶ Jogar';
+  newBtn.className = hasSave ? 'menu-btn menu-btn-secondary' : 'menu-btn menu-btn-primary';
+  newBtn.textContent = hasSave ? '🔄 Novo Jogo' : '▶ Jogar Agora';
   newBtn.onclick = () => {
     if (hasSave && cur > 0) {
       if (!confirm('Iniciar novo jogo? O progresso atual será perdido.')) return;
@@ -3624,12 +3785,6 @@ function renderMenuState() {
     level = 1; totalScore = 0; newGame();
   };
   btnsEl.appendChild(newBtn);
-
-  const rankBtn = document.createElement('button');
-  rankBtn.className = 'menu-btn menu-btn-secondary';
-  rankBtn.textContent = '🏆 Ranking';
-  rankBtn.onclick = () => openRank();
-  btnsEl.appendChild(rankBtn);
 }
 
 // ── MENU CONFIRM ──
@@ -3972,7 +4127,7 @@ function openSettings() {
         </div>
         <div class="settings-divider"></div>
         <div class="settings-section">
-          <div class="settings-item" onclick="closeSettings();restartLevel()">
+          <div class="settings-item" onclick="closeSettings();setTimeout(restartLevel,100)">
             <span class="si-icon">🔁</span><span class="si-label danger">Reiniciar Fase</span>
           </div>
           <div class="settings-item" onclick="closeSettings();openMenuConfirm()">
