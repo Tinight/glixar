@@ -3615,7 +3615,9 @@ function openMap() {
   renderMapLives();
   document.querySelector('.game-wrap').style.display = 'none';
   document.getElementById('menuScreen').classList.remove('show');
-  document.getElementById('mapOverlay').classList.add('show');
+  const mo = document.getElementById('mapOverlay');
+  mo.classList.add('show');
+  mo.style.display = 'flex';// force display in case CSS class fails
   setTimeout(() => {
     const cur = document.getElementById('map-bubble-' + level);
     if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -3637,7 +3639,9 @@ function renderMapLives() {
 
 function closeMap() {
   _mapHidePreview();
-  document.getElementById('mapOverlay').classList.remove('show');
+  const mo = document.getElementById('mapOverlay');
+  mo.classList.remove('show');
+  mo.style.display = 'none';
   if (localStorage.getItem('glixarSave'))
     document.querySelector('.game-wrap').style.display = 'flex';
 }
@@ -3731,7 +3735,7 @@ function renderMap() {
 }
 
 function openMapPreview(lvl) {
-  if (!document.getElementById('mapOverlay').classList.contains('show')) return;
+  // No guard — just open the preview
 
   _previewLevel = lvl;
   const lcfg  = getLevelConfig(lvl);
