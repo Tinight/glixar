@@ -2338,70 +2338,66 @@ async function gravityAndRefill(shapes) {
   shapes = shapes || [];
   const boardEl = document.getElementById('board');
 
-  // Phase 1: update data model and DOM positions synchronously per column
-  // so the board state is always consistent before any await
+  // ── PHASE 1: Apply gravity column by column ──
+  // Simple approach: for each column, collect free rows (no obstacle)
+  // then fill from bottom with surviving gems, rest spawn from above
   for (let c = 0; c < COLS; c++) {
-    // Process column segment by segment — obstacles act as floors
-    // Gems can only fall within their segment (between obstacles)
-    
-    // Build list of segments: each segment is a range of rows with no obstacle
+
+    // Collect free rows (obstacle rows are walls — skip them)
+    const freeRows = [];
+    for (let r = 0; r < ROWS; r++)
+      if (obstacleBoard[r][c] === OB_NONE) freeRows.push(r);
+
+    // Within each segment between obstacles, apply gravity independently
+    // Split freeRows into segments separated by obstacles
     const segments = [];
-    let segStart = 0;
-    for (let r = 0; r <= ROWS; r++) {
-      const hasObs = r < ROWS && obstacleBoard[r][c] !== OB_NONE;
-      if (hasObs || r === ROWS) {
-        if (r > segStart) segments.push({ r1: segStart, r2: r - 1 });
-        segStart = r + 1; // skip the obstacle row
+    let seg = [];
+    for (let r = 0; r < ROWS; r++) {
+      if (obstacleBoard[r][c] === OB_NONE) {
+        seg.push(r);
+      } else {
+        if (seg.length > 0) { segments.push([...seg]); seg = []; }
       }
     }
+    if (seg.length > 0) segments.push(seg);
 
-    for (const seg of segments) {
-      const { r1, r2 } = seg;
-      const segLen = r2 - r1 + 1;
-
-      // Collect surviving gems in this segment (skip obstacle cells — they're fixed)
+    for (const segRows of segments) {
+      // Collect surviving gems in this segment (top to bottom)
       const surviving = [];
-      for (let r = r1; r <= r2; r++) {
-        if (board[r][c] >= 0 && gemEls[r][c] && obstacleBoard[r][c] === OB_NONE) {
+      for (const r of segRows) {
+        if (board[r][c] >= 0 && gemEls[r][c]) {
           surviving.push({ type: board[r][c], sp: special[r][c], el: gemEls[r][c] });
+          // Clear the old position immediately
+          board[r][c]   = -1;
+          gemEls[r][c]  = null;
         }
       }
 
-      const missing = segLen - surviving.length;
-      if (missing === 0) continue;
-
+      const missing = segRows.length - surviving.length;
       const colShape = shapes.find(sh => sh.c === c);
 
-      // New gems fall into top of segment
+      // Spawn new gems above this segment
       const newGems = [];
       for (let i = 0; i < missing; i++) {
         const isSpecial = colShape && i === missing - 1;
-        const type = isSpecial ? colShape.gem : Math.floor(Math.random() * cfg.gemColors);
+        const type = isSpecial ? colShape.gem  : Math.floor(Math.random() * cfg.gemColors);
         const sp   = isSpecial ? colShape.spType : SP_NONE;
         const el   = makeGemEl(type, sp, -1, c, false);
         el.style.transition = 'none';
         el.style.opacity    = '0';
-        // Start above the segment (not above whole board if obstacle blocks)
-        el.style.top  = cTop(r1 - missing + i) + 'px';
-        el.style.left = cLeft(c) + 'px';
+        // Start ABOVE this segment
+        el.style.top    = cTop(segRows[0] - missing + i) + 'px';
+        el.style.left   = cLeft(c) + 'px';
         el.style.width  = CELL + 'px';
         el.style.height = CELL + 'px';
         boardEl.appendChild(el);
         newGems.push({ type, sp, el });
       }
 
-      // Final order: new gems at top of segment, survivors below
-      const finalCol = [...newGems, ...surviving];
-
-      // Map to non-obstacle rows only within segment
-      const freeRows = [];
-      for (let r = r1; r <= r2; r++) {
-        if (obstacleBoard[r][c] === OB_NONE) freeRows.push(r);
-      }
-
-      finalCol.forEach(({ type, sp, el }, idx) => {
-        if (idx >= freeRows.length) return;
-        const targetRow = freeRows[idx];
+      // Place: new gems at top, survivors at bottom (gravity = fall down)
+      const ordered = [...newGems, ...surviving];
+      ordered.forEach(({ type, sp, el }, idx) => {
+        const targetRow = segRows[idx];
         board[targetRow][c]   = type;
         special[targetRow][c] = sp;
         gemEls[targetRow][c]  = el;
@@ -2409,35 +2405,28 @@ async function gravityAndRefill(shapes) {
         el.dataset.c    = c;
         el.dataset.type = type;
         el.dataset.sp   = sp;
-      });
-
-      // Move survivors instantly to new position
-      surviving.forEach(({ el }, i) => {
-        el.style.transition = 'none';
-        const destRow = freeRows[missing + i] ?? r1 + missing + i;
-        el.style.top = cTop(destRow) + 'px';
+        // Move survivors to their start position instantly (before animation)
+        if (idx >= missing) {
+          el.style.transition = 'none';
+          el.style.top        = cTop(targetRow) + 'px';
+        }
       });
     }
   }
 
-  // Ensure obstacle cells never have a gem assigned
+  // ── Guarantee obstacle cells are clear ──
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++)
       if (obstacleBoard[r][c] !== OB_NONE) {
-        board[r][c] = -1;  // obstacle cells are always "empty" for gem purposes
-        if (gemEls[r][c] && gemEls[r][c] !== obstacleEls[r][c]) {
-          // If a gem accidentally landed on an obstacle cell, remove it
-          gemEls[r][c].remove();
-          gemEls[r][c] = null;
-        }
+        if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
+        board[r][c] = -1;
       }
 
-  // Phase 2: force a single reflow, then re-enable transitions and animate all gems
+  // ── PHASE 2: Single reflow then animate all gems to final positions ──
   void document.getElementById('board').offsetHeight;
 
   for (let c = 0; c < COLS; c++) {
     for (let r = 0; r < ROWS; r++) {
-      // Skip obstacle cells — they don't animate
       if (obstacleBoard[r][c] !== OB_NONE) continue;
       const el = gemEls[r][c];
       if (!el) continue;
@@ -2445,10 +2434,12 @@ async function gravityAndRefill(shapes) {
       el.style.opacity    = '1';
       el.style.top        = cTop(r) + 'px';
       el.style.left       = cLeft(c) + 'px';
+      el.style.width      = CELL + 'px';
+      el.style.height     = CELL + 'px';
     }
   }
 
-  // Obstacles stay fixed — update size AND position
+  // ── Keep obstacles at correct size/position ──
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const el = obstacleEls[r][c];
@@ -2460,7 +2451,6 @@ async function gravityAndRefill(shapes) {
       }
     }
 
-  // Wait for CSS transition to finish
   await delay(420);
 }
 
