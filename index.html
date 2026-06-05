@@ -2176,8 +2176,30 @@ async function activateRainbow(r, c, targetColor) {
       const {r:rr,c:cc} = uk(key);
       const g = board[rr][cc]; if(g<0) return;
       score += 100; totalScore += 100;
-      if(goalsTarget[g] !== undefined)
-        goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+      // Goals use gem_N key format
+      const gk = 'gem_'+g;
+      if(goalsTarget[gk] !== undefined)
+        goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+    });
+    // Also damage adjacent obstacles via popCells mechanism
+    allCells.forEach(key => {
+      const {r:rr,c:cc} = uk(key);
+      for(const [dr,dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr=rr+dr, nc=cc+dc;
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&obstacleBoard[nr][nc]!==OB_NONE) {
+          obstacleHp[nr][nc]--;
+          const el=obstacleEls[nr][nc];
+          if(el) el.classList.add('obs-crack-anim');
+          if(obstacleHp[nr][nc]<=0){
+            const wasType=obstacleBoard[nr][nc];
+            if(el){el.classList.add('popping');setTimeout(()=>{if(obstacleEls[nr][nc])obstacleEls[nr][nc].remove();obstacleEls[nr][nc]=null;},320);}
+            obstacleBoard[nr][nc]=OB_NONE;
+            if(gemEls[nr][nc])gemEls[nr][nc].style.filter='';
+            if(wasType===OB_ROCK){if(goalsTarget['rock']!==undefined)goals['rock']=Math.min((goals['rock']||0)+1,goalsTarget['rock']);}
+            else if(wasType===OB_ICE){if(goalsTarget['ice']!==undefined)goals['ice']=Math.min((goals['ice']||0)+1,goalsTarget['ice']);}
+          }
+        }
+      }
     });
     updateUI(); renderGoals();
     await popCells(allCells);
@@ -2580,11 +2602,29 @@ async function executeBomb(cr, cc) {
     shakeScreen();
     vibrate([80,30,80,30,80]);
     playSpecial();
+    // Score gems + damage obstacles in blast radius
     cells.forEach(key => {
       const {r,c} = uk(key);
+      // Damage obstacles directly hit
+      if(obstacleBoard[r][c] !== OB_NONE) {
+        obstacleHp[r][c]--;
+        const el=obstacleEls[r][c];
+        if(el) el.classList.add('obs-crack-anim');
+        if(obstacleHp[r][c]<=0){
+          const wasType=obstacleBoard[r][c];
+          if(el){el.classList.add('popping');setTimeout(()=>{if(obstacleEls[r][c])obstacleEls[r][c].remove();obstacleEls[r][c]=null;},320);}
+          obstacleBoard[r][c]=OB_NONE;
+          if(gemEls[r][c])gemEls[r][c].style.filter='';
+          if(wasType===OB_ROCK){if(goalsTarget['rock']!==undefined)goals['rock']=Math.min((goals['rock']||0)+1,goalsTarget['rock']);}
+          else if(wasType===OB_ICE){if(goalsTarget['ice']!==undefined)goals['ice']=Math.min((goals['ice']||0)+1,goalsTarget['ice']);}
+          score+=80; totalScore+=80;
+        }
+        return; // obstacle cell — no gem score
+      }
       const g = board[r][c]; if(g<0) return;
       score += 80; totalScore += 80;
-      if(goalsTarget[g] !== undefined) goals[g] = Math.min((goals[g]||0)+1, goalsTarget[g]);
+      const gk = 'gem_'+g;
+      if(goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
     });
     updateUI(); renderGoals();
     await popCells(cells);
@@ -2887,7 +2927,9 @@ function renderMap() {
     const stars = levelStarsMap[lvl] || 0;
     const isCurrent = lvl === level;
     const isDone    = stars > 0;
-    const isLocked  = lvl > level;
+    // Locked only if beyond the highest level ever reached
+    const maxReached = Math.max(level, ...Object.keys(levelStarsMap).map(Number));
+    const isLocked  = lvl > maxReached;
     const lcfg      = getLevelConfig(lvl);
 
     const node = document.createElement('div');
@@ -2903,7 +2945,7 @@ function renderMap() {
     starSpan.textContent = isDone ? '⭐'.repeat(stars) + '☆'.repeat(3-stars) : (isLocked ? '🔒' : '▶');
     bubble.appendChild(starSpan);
 
-    if (!isLocked) bubble.onclick = () => { closeMap(); if (lvl <= level) { level = lvl; startLevel(); } };
+    if (!isLocked) bubble.onclick = () => { closeMap(); level = lvl; startLevel(); };
 
     const info = document.createElement('div');
     info.className = 'map-info';
