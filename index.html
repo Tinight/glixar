@@ -139,6 +139,88 @@ body::before{
   box-shadow:0 3px 10px rgba(0,0,0,.4);}
 .gear-btn:hover{filter:brightness(1.2);transform:scale(1.05);}
 
+/* ── DIAMONDS ── */
+.diamond-display{
+  display:flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,#1a0550,#0d0330);
+  border:1.5px solid rgba(0,200,255,.35);border-radius:10px;
+  padding:4px 10px;cursor:pointer;
+  transition:filter .15s;
+}
+.diamond-display:hover{filter:brightness(1.15);}
+.diamond-display .d-icon{font-size:.95rem;}
+.diamond-display .d-count{font-size:.85rem;font-weight:900;color:#00e5ff;}
+
+/* ── CHECKIN MODAL ── */
+.checkin-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:300;align-items:center;justify-content:center;padding:16px;
+}
+.checkin-overlay.show{display:flex;}
+.checkin-box{
+  background:linear-gradient(135deg,#1a0550,#0a0220);
+  border:2px solid var(--gold);border-radius:22px;
+  padding:20px 16px;width:100%;max-width:380px;
+  animation:splashIn .4s cubic-bezier(.34,1.4,.64,1) both;
+}
+.checkin-box h2{font-family:'Luckiest Guy',cursive;font-size:1.5rem;
+  color:var(--gold);text-align:center;margin-bottom:4px;}
+.checkin-subtitle{text-align:center;font-size:.72rem;color:rgba(255,255,255,.45);
+  margin-bottom:14px;letter-spacing:.5px;}
+.checkin-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:5px;margin-bottom:14px;
+}
+.checkin-day{
+  border-radius:10px;padding:6px 2px;text-align:center;
+  border:1.5px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  position:relative;transition:transform .2s;
+}
+.checkin-day.collected{
+  background:rgba(255,215,0,.12);border-color:rgba(255,215,0,.4);
+}
+.checkin-day.today{
+  background:rgba(0,229,255,.1);border-color:#00e5ff;
+  box-shadow:0 0 10px rgba(0,229,255,.3);
+  transform:scale(1.05);
+}
+.checkin-day.missed{
+  background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.05);
+  opacity:.4;
+}
+.checkin-day .cd-num{font-size:.55rem;color:rgba(255,255,255,.4);margin-bottom:2px;}
+.checkin-day .cd-gem{font-size:.75rem;line-height:1;}
+.checkin-day .cd-val{font-size:.5rem;font-weight:800;color:var(--gold);}
+.checkin-day.today .cd-num{color:#00e5ff;}
+.checkin-day.collected .cd-gem::after{
+  content:'✓';position:absolute;top:2px;right:3px;
+  font-size:.45rem;color:var(--gold);font-weight:900;
+}
+.checkin-collect-btn{
+  width:100%;padding:12px;font-family:'Luckiest Guy',cursive;
+  font-size:1rem;letter-spacing:1px;border:none;border-radius:12px;cursor:pointer;
+  background:linear-gradient(180deg,#00e5ff,#0099bb);color:#003344;
+  box-shadow:0 4px 0 rgba(0,0,0,.4);transition:transform .1s,filter .1s;
+}
+.checkin-collect-btn:hover{filter:brightness(1.1);}
+.checkin-collect-btn:active{transform:translateY(3px);}
+.checkin-collect-btn:disabled{background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);
+  box-shadow:none;cursor:default;}
+
+/* ── DIAMOND REWARD TOAST ── */
+.diamond-toast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  background:linear-gradient(135deg,#003355,#001a2e);
+  border:2px solid #00e5ff;border-radius:16px;
+  padding:16px 28px;text-align:center;z-index:500;
+  pointer-events:none;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;
+}
+.diamond-toast.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
+.diamond-toast .dt-amount{font-family:'Luckiest Guy',cursive;font-size:2rem;color:#00e5ff;}
+.diamond-toast .dt-label{font-size:.75rem;color:rgba(255,255,255,.6);}
+
 /* ── LIVES ROW ── */
 .lives-row{
   display:flex;align-items:center;gap:8px;
@@ -288,8 +370,8 @@ body::before{
   position:absolute;border-radius:9px;
   display:flex;align-items:center;justify-content:center;
   font-size:clamp(1rem,3.5vw,1.3rem);
-  pointer-events:none;z-index:3;
-  transition:top .36s cubic-bezier(.3,0,.2,1.55),left .2s ease;
+  pointer-events:none;z-index:15;
+  transition:none;
 }
 /* Rock obstacle */
 .obs-rock{
@@ -782,10 +864,16 @@ body::before{
 
 <div class="game-wrap">
 
-<!-- ══ HEADER: logo + gear only ══ -->
+<!-- ══ HEADER: logo + diamonds + gear ══ -->
 <div class="hdr">
   <div class="logo">✨ Glixar</div>
-  <button class="gear-btn" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙️</button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <div class="diamond-display" onclick="openCheckin()" title="Diamantes">
+      <span class="d-icon">💎</span>
+      <span class="d-count" id="diamondCount">0</span>
+    </div>
+    <button class="gear-btn" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙️</button>
+  </div>
 </div>
 
 <!-- ══ INFO ROW: fase + jogadas + timer + pontos ══ -->
@@ -840,6 +928,26 @@ body::before{
 </div>
 
 </div><!-- /game-wrap -->
+
+<!-- CHECKIN OVERLAY -->
+<div class="checkin-overlay" id="checkinOverlay">
+  <div class="checkin-box">
+    <h2>📅 Check-in Diário</h2>
+    <div class="checkin-subtitle" id="checkinSubtitle">Colete seus diamantes diários!</div>
+    <div class="checkin-grid" id="checkinGrid"></div>
+    <button class="checkin-collect-btn" id="checkinBtn" onclick="collectCheckin()">
+      💎 Coletar Hoje
+    </button>
+    <button class="btn" style="width:100%;margin-top:8px;background:rgba(255,255,255,.06);font-size:.8rem;padding:10px;" onclick="closeCheckin()">Fechar</button>
+  </div>
+</div>
+
+<!-- DIAMOND REWARD TOAST -->
+<div class="diamond-toast" id="diamondToast">
+  <div class="dt-amount" id="dtAmount">+5 💎</div>
+  <div class="dt-label" id="dtLabel">Fase completa!</div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="combo-badge" id="comboBadge"></div>
 <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:399;display:none;"></canvas>
@@ -1058,6 +1166,195 @@ let playerName  = localStorage.getItem('glixarName') || '';
 let ranking     = JSON.parse(localStorage.getItem('glixarRank') || '[]');
 let activeTool    = null;
 const PW_MAX      = 3;
+
+// ── DIAMONDS ──
+let diamonds        = parseInt(localStorage.getItem('glixarDiamonds') || '0');
+let levelDiamonds   = JSON.parse(localStorage.getItem('glixarLevelDiamonds') || '{}');
+// levelDiamonds[lvl] = { first: bool, stars: 0-3 }
+
+// ── CHECKIN ──
+// checkinData: { month: 'YYYY-MM', nextDay: 1-31, collected: [1,2,...] }
+let checkinData     = JSON.parse(localStorage.getItem('glixarCheckin') || 'null');
+
+// ══════════════════════════════════════════════════════════
+//  DIAMONDS
+// ══════════════════════════════════════════════════════════
+function saveDiamonds() {
+  localStorage.setItem('glixarDiamonds', diamonds);
+  updateDiamondUI();
+}
+
+function earnDiamonds(amount, label) {
+  if (amount <= 0) return;
+  diamonds += amount;
+  saveDiamonds();
+  showDiamondToast('+' + amount + ' 💎', label);
+}
+
+function spendDiamonds(amount) {
+  if (diamonds < amount) return false;
+  diamonds -= amount;
+  saveDiamonds();
+  return true;
+}
+
+function updateDiamondUI() {
+  const el = document.getElementById('diamondCount');
+  if (el) el.textContent = diamonds.toLocaleString('pt-BR');
+}
+
+let _dToastTimer = null;
+function showDiamondToast(amount, label) {
+  const t = document.getElementById('diamondToast');
+  const a = document.getElementById('dtAmount');
+  const l = document.getElementById('dtLabel');
+  if (!t) return;
+  if (a) a.textContent = amount;
+  if (l) l.textContent = label || '';
+  t.classList.remove('show');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(_dToastTimer);
+  _dToastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Award diamonds for completing a level
+function awardLevelDiamonds(lvl, stars) {
+  const prev = levelDiamonds[lvl] || { first: false, stars: 0 };
+  let earned = 0;
+  // First time completion: +2
+  if (!prev.first) {
+    earned += 2;
+    prev.first = true;
+  }
+  // Stars improvement
+  if (stars > prev.stars) {
+    earned += (stars - prev.stars); // diff only
+    prev.stars = stars;
+  }
+  levelDiamonds[lvl] = prev;
+  localStorage.setItem('glixarLevelDiamonds', JSON.stringify(levelDiamonds));
+  if (earned > 0) {
+    setTimeout(() => earnDiamonds(earned, `Fase ${lvl} — ${stars}⭐`), 800);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  DAILY CHECK-IN
+// ══════════════════════════════════════════════════════════
+function getBRDate() {
+  // Brazil timezone (UTC-3)
+  const now = new Date();
+  const br  = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  return {
+    year:  br.getFullYear(),
+    month: br.getMonth() + 1,
+    day:   br.getDate(),
+    monthStr: `${br.getFullYear()}-${String(br.getMonth()+1).padStart(2,'0')}`,
+    daysInMonth: new Date(br.getFullYear(), br.getMonth()+1, 0).getDate()
+  };
+}
+
+function initCheckin() {
+  const today = getBRDate();
+  if (!checkinData || checkinData.month !== today.monthStr) {
+    // New month — reset
+    checkinData = { month: today.monthStr, nextDay: 1, collected: [] };
+    localStorage.setItem('glixarCheckin', JSON.stringify(checkinData));
+  }
+}
+
+function saveCheckin() {
+  localStorage.setItem('glixarCheckin', JSON.stringify(checkinData));
+}
+
+function canCollectToday() {
+  const today = getBRDate();
+  // Can collect if nextDay <= today's day AND nextDay <= daysInMonth AND not already collected today
+  return checkinData.nextDay <= today.day && checkinData.nextDay <= today.daysInMonth;
+}
+
+function collectCheckin() {
+  if (!canCollectToday()) return;
+  const day     = checkinData.nextDay;
+  const reward  = day; // day number = diamonds
+  checkinData.collected.push(day);
+  checkinData.nextDay = day + 1;
+  saveCheckin();
+  earnDiamonds(reward, `Check-in dia ${day}!`);
+  renderCheckinGrid();
+  updateCheckinBtn();
+  // If can still collect more days, auto-advance (collect missed days one at a time)
+}
+
+function openCheckin() {
+  initCheckin();
+  renderCheckinGrid();
+  updateCheckinBtn();
+  document.getElementById('checkinOverlay').classList.add('show');
+}
+
+function closeCheckin() {
+  document.getElementById('checkinOverlay').classList.remove('show');
+}
+
+function renderCheckinGrid() {
+  const grid    = document.getElementById('checkinGrid');
+  const today   = getBRDate();
+  const days    = today.daysInMonth;
+  const sub     = document.getElementById('checkinSubtitle');
+  if (!grid) return;
+
+  if (sub) sub.textContent = `${today.monthStr.replace('-','/')} · Próximo: Dia ${checkinData.nextDay}`;
+
+  grid.innerHTML = '';
+  // Show 7 days at a time centered around nextDay
+  const start = Math.max(1, checkinData.nextDay - 3);
+  const end   = Math.min(days, start + 6);
+
+  for (let d = start; d <= end; d++) {
+    const div       = document.createElement('div');
+    const collected = checkinData.collected.includes(d);
+    const isToday   = d === checkinData.nextDay && d <= today.day;
+    const missed    = d < checkinData.nextDay && !collected;
+
+    div.className = 'checkin-day' +
+      (collected ? ' collected' : '') +
+      (isToday   ? ' today'     : '') +
+      (missed    ? ' missed'    : '');
+
+    div.innerHTML = `
+      <div class="cd-num">${d}</div>
+      <div class="cd-gem">${collected ? '💎' : isToday ? '🎁' : missed ? '💔' : '💎'}</div>
+      <div class="cd-val">${d}💎</div>
+    `;
+    grid.appendChild(div);
+  }
+}
+
+function updateCheckinBtn() {
+  const btn     = document.getElementById('checkinBtn');
+  const today   = getBRDate();
+  if (!btn) return;
+  if (canCollectToday()) {
+    btn.disabled    = false;
+    btn.textContent = `💎 Coletar Dia ${checkinData.nextDay} (+${checkinData.nextDay} 💎)`;
+  } else if (checkinData.nextDay > today.daysInMonth) {
+    btn.disabled    = true;
+    btn.textContent = '✅ Mês completo!';
+  } else {
+    btn.disabled    = true;
+    btn.textContent = `Volte amanhã (Dia ${checkinData.nextDay})`;
+  }
+}
+
+// Auto-show checkin on first open of the day
+function maybeShowCheckin() {
+  initCheckin();
+  if (canCollectToday()) {
+    setTimeout(() => openCheckin(), 1200);
+  }
+}
 
 // ── LIVES SYSTEM ──
 const MAX_LIVES     = 3;
@@ -1611,6 +1908,10 @@ function onSwipe(r, c, dir) {
     activateRainbow(nr, nc, board[r][c]); return;
   }
 
+  // Block if obstacle involved
+  if (obstacleBoard[r][c] !== OB_NONE || obstacleBoard[nr][nc] !== OB_NONE) {
+    playNoMove(); return;
+  }
   trySwap(r, c, nr, nc);
 }
 
@@ -1676,6 +1977,11 @@ function onCellClick(r, c) {
 }
 
 async function trySwap(r1,c1,r2,c2) {
+  // Block swap if either cell has an obstacle
+  if (obstacleBoard[r1][c1] !== OB_NONE || obstacleBoard[r2][c2] !== OB_NONE) {
+    playNoMove(); vibrate([30]);
+    return;
+  }
   processing = true;
   resetInactivity();
   startWatchdog();
@@ -2501,11 +2807,12 @@ function trackMission(type, amount) {
     if (m.type === type && (dailyProgress[m.id]||0) < m.target) {
       dailyProgress[m.id] = Math.min(m.target, (dailyProgress[m.id]||0) + amount);
       if (dailyProgress[m.id] >= m.target) {
-        // Mission complete! Award power-up
+        // Mission complete! Award power-up + diamonds
         setTimeout(() => {
-          showToast('📋 Missão completa! +1 ' + m.reward);
+          showToast('📋 Missão completa! +1 ' + m.reward + ' +5💎');
           pwCounts[m.reward] = Math.min(PW_MAX, (pwCounts[m.reward]||0) + 1);
           renderPowers();
+          earnDiamonds(5, 'Missão diária!');
         }, 600);
       }
       changed = true;
@@ -2810,6 +3117,8 @@ function showWinSplash() {
   trackMission('phases', 1);
   trackMission('stars', levelStars);
   stopTimer();
+  // Award diamonds for this level
+  awardLevelDiamonds(level, levelStars);
 
   playWin();
   vibrate([50,30,50,30,100]);
@@ -2854,22 +3163,34 @@ function showContinueSplash() {
     document.getElementById('splashIcon').textContent = '😰';
     document.getElementById('splashMsg').innerHTML =
       `<strong style="color:#ff6666">${cur} vida${cur>1?'s':''}</strong> disponível${cur>1?'is':''}<br>Como quer usar?`;
-    // Show the two-option row (customized below)
     document.getElementById('splashBtnRow').style.display = 'flex';
-    // Update button labels
     const btns = document.querySelectorAll('#splashBtnRow .btn');
     if (btns[0]) { btns[0].textContent = '🔄 Recomeçar Fase'; btns[0].onclick = onRestartWithLife; }
     if (btns[1]) { btns[1].textContent = '❤️ +5 Jogadas';     btns[1].onclick = onContinue; }
   } else {
-    // No lives — show timer for next regen
+    // No lives — offer diamond options
     document.getElementById('splashIcon').textContent = '😵';
-    document.getElementById('splashMsg').innerHTML    =
-      'Sem vidas! Próxima vida em:';
-    document.getElementById('splashTimer').style.display = 'block';
-    updateSplashTimer();
-    document.getElementById('splashBtn').style.display  = 'block';
-    document.getElementById('splashBtn').textContent    = '🔄 Recomeçar do Zero';
-    splashMode = 'lose';
+    const canBuy5  = diamonds >= 20;
+    const canBuyL  = diamonds >= 30;
+    document.getElementById('splashMsg').innerHTML =
+      `Sem vidas! <span style="color:#00e5ff;font-weight:800;">💎 ${diamonds}</span><br>` +
+      `Use diamantes ou aguarde.`;
+    document.getElementById('splashBtnRow').style.display = 'flex';
+    const btns = document.querySelectorAll('#splashBtnRow .btn');
+    if (btns[0]) {
+      btns[0].textContent = canBuyL ? '💎 Comprar Vida (30💎)' : '🔄 Recomeçar';
+      btns[0].onclick     = canBuyL ? buyLifeWithDiamonds : () => { document.getElementById('splash').classList.remove('show'); splashMode='lose'; showLoseSplash(); };
+      btns[0].style.opacity = '1';
+    }
+    if (btns[1]) {
+      btns[1].textContent  = canBuy5 ? '💎 +5 Jogadas (20💎)' : '⏳ Aguardar Vida';
+      btns[1].onclick      = canBuy5 ? continueWithDiamonds : null;
+      btns[1].style.opacity = canBuy5 ? '1' : '.5';
+      if (!canBuy5) {
+        document.getElementById('splashTimer').style.display = 'block';
+        updateSplashTimer();
+      }
+    }
   }
 
   document.getElementById('splash').classList.add('show');
@@ -2892,6 +3213,29 @@ function showLoseSplash() {
   document.getElementById('livesSplashHearts').style.display = 'none';
   document.getElementById('splashTimer').style.display       = 'none';
   document.getElementById('splash').classList.add('show');
+}
+
+// Buy life with diamonds
+function buyLifeWithDiamonds() {
+  if (!spendDiamonds(30)) return;
+  // Add a life manually
+  const idx = lifeTimestamps.findIndex(t => t > Date.now());
+  if (idx !== -1) lifeTimestamps[idx] = 0; // restore one
+  saveLives(); updateLivesUI();
+  onContinue(); // then use the life
+}
+
+// Buy +5 moves with diamonds (no life spent)
+function continueWithDiamonds() {
+  if (!spendDiamonds(20)) return;
+  moves += 5;
+  levelOver = false;
+  document.getElementById('splash').classList.remove('show');
+  if (timerPhase) {
+    timerSeconds = Math.max(20, (timerSeconds||0) + 30);
+    updateTimerUI(); startTimer();
+  }
+  updateUI();
 }
 
 // Use life → +5 moves, keep current board state
@@ -3244,6 +3588,8 @@ window.addEventListener('resize', () => {
   loadLives();
   updateLivesUI();
   startLifeTimer();
+  updateDiamondUI();
+  initCheckin();
   // Clean up expired timestamps
   const _now = Date.now();
   lifeTimestamps = lifeTimestamps.map(t => (t>0 && t<=_now) ? 0 : t);
@@ -3254,10 +3600,12 @@ window.addEventListener('resize', () => {
       const msg = document.getElementById('resumeMsg');
       if (msg) msg.textContent = `Fase ${level} — ${moves} jogadas restantes`;
       el.classList.add('show');
+      maybeShowCheckin();
       return;
     }
   }
   newGame();
+  maybeShowCheckin();
 })();
 </script>
 <!-- LIVES OVERLAY -->
