@@ -916,61 +916,72 @@ body::before{
 .menu-confirm-btns .btn{flex:1;font-size:.88rem;padding:11px 6px;}
 
 /* ── MAP SCREEN ── */
-/* ── MAP SCREEN ── */
 .map-overlay{
   display:none;position:fixed;inset:0;z-index:250;
-  background:linear-gradient(180deg,#0e0a40 0%,#1a0e68 20%,#0e1a50 45%,#081830 70%,#040c20 100%);
+  background:linear-gradient(180deg,#02000a 0%,#050a30 40%,#001219 100%);
   flex-direction:column;overflow:hidden;
-  position:fixed;
 }
+.map-overlay.show{display:flex;}
 .map-overlay::before{
   content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(1.5px 1.5px at 8% 15%,rgba(255,255,255,.6),transparent),
-    radial-gradient(1px 1px at 92% 8%,rgba(255,255,255,.5),transparent),
-    radial-gradient(2px 2px at 55% 22%,rgba(255,215,0,.4),transparent),
-    radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,.3),transparent),
-    radial-gradient(1.5px 1.5px at 75% 55%,rgba(100,150,255,.5),transparent),
-    radial-gradient(1px 1px at 18% 68%,rgba(255,255,255,.4),transparent),
-    radial-gradient(2px 2px at 85% 75%,rgba(255,215,0,.3),transparent);
+    radial-gradient(circle at 20% 25%,rgba(0,242,254,.18) 0%,transparent 50%),
+    radial-gradient(circle at 80% 65%,rgba(79,172,254,.2) 0%,transparent 55%),
+    radial-gradient(circle at 55% 80%,rgba(0,180,220,.1) 0%,transparent 40%),
+    radial-gradient(1.5px 1.5px at 8% 12%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1px 1px at 93% 7%,rgba(255,255,255,.6),transparent),
+    radial-gradient(2px 2px at 56% 20%,rgba(0,242,254,.5),transparent),
+    radial-gradient(1px 1px at 28% 38%,rgba(255,255,255,.3),transparent),
+    radial-gradient(1.5px 1.5px at 76% 52%,rgba(100,150,255,.5),transparent),
+    radial-gradient(1px 1px at 42% 68%,rgba(255,255,255,.25),transparent),
+    radial-gradient(1px 1px at 88% 35%,rgba(0,242,254,.3),transparent);
 }
-.map-overlay.show{display:flex;}
 
 .map-topbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px 10px;position:relative;z-index:5;
-  background:linear-gradient(180deg,rgba(14,10,64,.95) 0%,transparent 100%);
+  padding:14px 16px 12px;position:relative;z-index:10;
+  background:linear-gradient(180deg,rgba(2,0,10,.92) 0%,transparent 100%);
+  flex-shrink:0;
 }
-.map-topbar-title{font-family:'Luckiest Guy',cursive;font-size:1.1rem;color:#FFD700;letter-spacing:1px;}
-.map-topbar-sub{font-size:.55rem;color:rgba(255,255,255,.4);margin-top:1px;text-align:center;}
+.map-topbar-title{
+  font-family:'Luckiest Guy',cursive;font-size:1.25rem;
+  color:#00f2fe;letter-spacing:2px;text-align:center;
+  text-shadow:0 0 10px rgba(0,242,254,.7),0 0 20px rgba(0,242,254,.3);
+}
+.map-topbar-sub{font-size:.52rem;color:rgba(0,242,254,.5);margin-top:2px;text-align:center;letter-spacing:.5px;}
 .map-topbar-close{
-  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);
-  border-radius:10px;padding:5px 14px;color:#fff;
+  background:rgba(0,242,254,.1);border:1.5px solid rgba(0,242,254,.25);
+  border-radius:12px;padding:5px 14px;color:#00f2fe;
   font-family:'Luckiest Guy',cursive;font-size:.85rem;cursor:pointer;
 }
 .map-topbar-lives{
   display:flex;align-items:center;gap:3px;
-  background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);
-  border-radius:10px;padding:4px 8px;font-size:.8rem;
+  background:rgba(0,242,254,.1);border:1.5px solid rgba(0,242,254,.3);
+  border-radius:12px;padding:5px 10px;
 }
-.map-topbar-lives .ml-timer{font-size:.5rem;color:#ff8888;font-weight:800;margin-left:3px;}
+.map-topbar-lives span{font-size:.82rem;}
+.map-topbar-lives .ml-timer{font-size:.5rem;color:#00ffcc;font-weight:900;margin-left:3px;}
 
 .map-scroll{
   flex:1;overflow-y:auto;overflow-x:hidden;
   padding:8px 20px 100px;
-  position:relative;z-index:1;
+  position:relative;z-index:2;
 }
 .map-scroll::-webkit-scrollbar{display:none;}
 
-.world-header{text-align:center;margin:8px 0 14px;}
+.world-header{text-align:center;margin:6px 0 14px;}
 .world-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:linear-gradient(135deg,rgba(255,180,0,.15),rgba(255,100,0,.1));
-  border:1.5px solid rgba(255,180,0,.3);border-radius:20px;
-  padding:5px 16px;
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,rgba(0,242,254,.15),rgba(79,172,254,.1));
+  border:1.5px solid rgba(0,242,254,.35);border-radius:20px;
+  padding:6px 18px;box-shadow:0 0 12px rgba(0,242,254,.15);
 }
 .world-badge .wb-icon{font-size:1rem;}
-.world-badge .wb-name{font-family:'Luckiest Guy',cursive;font-size:.75rem;color:#FFD700;letter-spacing:1px;}
+.world-badge .wb-name{
+  font-family:'Luckiest Guy',cursive;font-size:.78rem;
+  color:#00f2fe;letter-spacing:1.5px;
+  text-shadow:0 0 6px rgba(0,242,254,.5);
+}
 
 /* Snake path */
 .map-path{display:flex;flex-direction:column-reverse;gap:4px;position:relative;}
@@ -979,16 +990,26 @@ body::before{
 .path-row.ltr{justify-content:flex-start;gap:14px;padding-left:4px;}
 .path-row.rtl{justify-content:flex-end;gap:14px;padding-right:4px;}
 
-.path-connector{height:26px;position:relative;margin:0 0 4px;}
+/* Glowing connectors */
+.path-connector{height:32px;position:relative;margin:2px 0;}
 .path-connector.left::before{
-  content:'';position:absolute;left:30px;top:0;width:3px;height:100%;
-  background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,215,0,.08));border-radius:2px;
+  content:'';position:absolute;left:34px;top:0;
+  width:5px;height:100%;border-radius:3px;
+  background:linear-gradient(180deg,#00f2fe,#4facfe);
+  box-shadow:0 0 10px rgba(0,242,254,.7),0 0 20px rgba(0,242,254,.3);
+  opacity:.7;
 }
 .path-connector.right::before{
-  content:'';position:absolute;right:30px;top:0;width:3px;height:100%;
-  background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,215,0,.08));border-radius:2px;
+  content:'';position:absolute;right:34px;top:0;
+  width:5px;height:100%;border-radius:3px;
+  background:linear-gradient(180deg,#00f2fe,#4facfe);
+  box-shadow:0 0 10px rgba(0,242,254,.7),0 0 20px rgba(0,242,254,.3);
+  opacity:.7;
 }
-.path-gem{font-size:.8rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
+.path-gem{
+  font-size:.8rem;flex-shrink:0;
+  filter:drop-shadow(0 0 6px #00f2fe) drop-shadow(0 0 3px #4facfe);
+}
 
 /* Bubbles */
 .map-bubble{
@@ -997,58 +1018,95 @@ body::before{
   display:flex;align-items:center;justify-content:center;
   transition:transform .15s;
 }
-.map-bubble:active{transform:scale(.9);}
+.map-bubble:active{transform:scale(.88);}
 .map-bubble.done{
-  background:radial-gradient(circle at 38% 32%,#8a5aff,#4a1a9e,#2a0a5e);
-  border:3px solid #FFD700;
-  box-shadow:0 4px 0 rgba(0,0,0,.5),0 0 12px rgba(255,215,0,.15);
+  background:
+    radial-gradient(circle at 30% 22%,rgba(255,255,255,.45) 0%,transparent 35%),
+    radial-gradient(circle at 65% 75%,rgba(0,0,0,.15) 0%,transparent 35%),
+    radial-gradient(circle at 50% 50%,#00c8e8 0%,#0088cc 45%,#004488 80%,#001a33 100%);
+  border:3px solid;
+  border-color:#00f2fe #0088cc #0066aa #44ddff;
+  box-shadow:0 5px 0 rgba(0,0,0,.45),0 0 12px rgba(0,242,254,.35),inset 0 2px 0 rgba(255,255,255,.3);
 }
 .map-bubble.current{
   width:70px;height:70px;
-  background:radial-gradient(circle at 38% 32%,#66ff88,#22aa44,#0a5020);
-  border:4px solid #88ffaa;
-  box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 20px rgba(68,255,136,.5);
-  animation:mapPulse .9s ease infinite alternate;
+  background:
+    radial-gradient(circle at 28% 20%,rgba(255,255,255,.5) 0%,transparent 32%),
+    radial-gradient(circle at 50% 50%,#aafff0 0%,#00ffcc 25%,#00aacc 55%,#001a33 100%);
+  border:3px solid;
+  border-color:#fff #00ffcc #00bbdd #aaffee;
+  box-shadow:0 6px 0 rgba(0,30,40,.5),0 0 20px rgba(0,255,204,.6),0 0 40px rgba(0,255,204,.25),inset 0 2px 0 rgba(255,255,255,.4);
+  animation:mapPulse 1.3s ease-in-out infinite alternate;
 }
 .map-bubble.locked{
-  background:radial-gradient(circle at 38% 32%,#2a2a4e,#14143a,#0a0a24);
-  border:3px solid rgba(255,255,255,.12);
-  box-shadow:0 4px 0 rgba(0,0,0,.5);
-  opacity:.45;cursor:default;
+  background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.08) 0%,transparent 35%),
+    radial-gradient(circle at 50% 50%,#1c2541 0%,#0b132b 60%,#040810 100%);
+  border:3px solid rgba(79,172,254,.12);
+  box-shadow:0 5px 0 rgba(0,0,0,.45);
+  opacity:.4;cursor:default;
 }
 .map-num{
-  font-family:'Luckiest Guy',cursive;font-size:1rem;color:#fff;
-  text-shadow:0 2px 0 rgba(0,0,0,.5);line-height:1;
+  font-family:'Luckiest Guy',cursive;font-size:1.05rem;
+  color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.6);line-height:1;
 }
-.map-bubble.done .map-num{color:#FFD700;}
-.map-bubble.locked .map-num{color:rgba(255,255,255,.3);}
+.map-bubble.done .map-num{color:#fff;text-shadow:0 0 8px rgba(0,242,254,.8),0 2px 4px rgba(0,0,0,.5);}
+.map-bubble.current .map-num{font-size:1.1rem;text-shadow:0 0 10px rgba(255,255,255,.8);}
+.map-bubble.locked .map-num{color:rgba(255,255,255,.25);}
 .map-stars{
-  position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
-  display:flex;gap:1px;font-size:.58rem;white-space:nowrap;
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.8));
+  position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);
+  display:flex;gap:1px;font-size:.6rem;white-space:nowrap;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.9));
+}
+
+/* Current bubble rings */
+.current-ring{
+  position:absolute;inset:-8px;border-radius:50%;
+  border:2px solid rgba(0,255,204,.3);
+  animation:ringPulse 1.8s ease-in-out infinite;
+}
+.current-ring2{
+  position:absolute;inset:-14px;border-radius:50%;
+  border:1px solid rgba(0,255,204,.15);
+  animation:ringPulse 1.8s ease-in-out infinite;animation-delay:.4s;
+}
+@keyframes ringPulse{
+  0%,100%{opacity:.3;transform:scale(1);}
+  50%{opacity:.8;transform:scale(1.05);}
+}
+.current-spark{
+  position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-size:1rem;filter:drop-shadow(0 0 6px #00ffcc);
+  animation:sparkFloat .7s ease-in-out infinite alternate;
+}
+@keyframes sparkFloat{
+  from{transform:translateX(-50%) translateY(0) scale(1);opacity:.8;}
+  to  {transform:translateX(-50%) translateY(-4px) scale(1.1);opacity:1;}
 }
 
 /* Bottom nav */
 .map-bottomnav{
   position:absolute;bottom:0;left:0;right:0;z-index:10;
-  background:linear-gradient(0deg,rgba(8,6,32,1) 60%,transparent);
-  padding:10px 8px 18px;
-  display:flex;justify-content:space-around;
+  background:linear-gradient(0deg,rgba(2,0,10,1) 65%,transparent);
+  padding:8px 12px 16px;
+  display:flex;justify-content:space-around;gap:4px;
 }
 .map-nav-btn{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:8px 10px;cursor:pointer;border-radius:12px;
-  transition:background .15s;min-width:52px;
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:8px 4px;cursor:pointer;border-radius:12px;transition:background .15s;
 }
-.map-nav-btn.active{background:rgba(255,215,0,.1);}
-.map-nav-btn .mnb-icon{font-size:1.2rem;}
-.map-nav-btn .mnb-label{font-size:.48rem;color:rgba(255,255,255,.4);font-weight:800;
-  text-transform:uppercase;letter-spacing:.5px;}
-.map-nav-btn.active .mnb-label{color:#FFD700;}
-.map-nav-btn.active .mnb-icon{filter:drop-shadow(0 0 6px rgba(255,215,0,.6));}
+.map-nav-btn.active{background:rgba(0,242,254,.12);}
+.map-nav-btn .mnb-icon{font-size:1.15rem;}
+.map-nav-btn .mnb-label{
+  font-size:.48rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.5px;color:rgba(255,255,255,.38);
+}
+.map-nav-btn.active .mnb-label{color:#00f2fe;}
+.map-nav-btn.active .mnb-icon{filter:drop-shadow(0 0 6px rgba(0,242,254,.8));}
 
 @keyframes mapPulse{
-  from{box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 12px rgba(68,255,136,.3);}
+  from{box-shadow:0 6px 0 rgba(0,30,40,.5),0 0 14px rgba(0,255,204,.4),0 0 25px rgba(0,255,204,.15),inset 0 2px 0 rgba(255,255,255,.4);}
+  to  {box-shadow:0 6px 0 rgba(0,30,40,.5),0 0 28px rgba(0,255,204,.75),0 0 50px rgba(0,255,204,.3),inset 0 2px 0 rgba(255,255,255,.4);}
+}
   to  {box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 28px rgba(68,255,136,.7);}
 }
   to{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 28px rgba(68,255,170,.6);}
@@ -1062,8 +1120,8 @@ body::before{
 }
 .map-preview.show{display:flex;}
 .map-preview-box{
-  background:linear-gradient(180deg,#1e0860,#100438);
-  border:2px solid rgba(255,215,0,.4);border-radius:24px 24px 0 0;
+  background:linear-gradient(180deg,#0a1128,#000411);
+  border:2px solid rgba(0,242,254,.4);border-radius:24px 24px 0 0;
   padding:18px 18px 80px;width:100%;max-width:440px;
   position:relative;overflow:hidden;
   max-height:85vh;overflow-y:auto;
@@ -1071,7 +1129,7 @@ body::before{
 }
 .map-preview-box::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,215,0,.6),transparent);
+  background:linear-gradient(90deg,transparent,rgba(0,242,254,.7),transparent);
 }
 .mp-handle{width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 14px;}
 .mp-close{
@@ -1082,28 +1140,28 @@ body::before{
   font-weight:700;
 }
 .mp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.mp-title{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:#FFD700;}
+.mp-title{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:#00f2fe;text-shadow:0 0 8px rgba(0,242,254,.5);flex:1;}
 .mp-difficulty{
   font-size:.6rem;font-weight:800;padding:3px 10px;border-radius:8px;
-  background:rgba(255,180,0,.15);border:1px solid rgba(255,180,0,.3);
-  color:#ffb84d;text-transform:uppercase;letter-spacing:1px;
+  background:rgba(0,242,254,.15);border:1px solid rgba(0,242,254,.35);
+  color:#00ffcc;text-transform:uppercase;letter-spacing:1px;
 }
 .mp-stars{display:flex;gap:4px;margin-bottom:12px;}
 .mp-star{font-size:1.3rem;filter:grayscale(1) opacity(.22);}
 .mp-star.earned{filter:none;}
 .mp-info-row{display:flex;gap:8px;margin-bottom:14px;}
 .mp-info-chip{
-  flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-  border-radius:10px;padding:8px 6px;text-align:center;
+  flex:1;background:rgba(0,242,254,.07);border:1px solid rgba(0,242,254,.18);
+  border-radius:10px;padding:8px 5px;text-align:center;
 }
 .mp-info-chip .pic-val{font-size:1rem;font-weight:900;color:#fff;line-height:1.2;}
 .mp-info-chip .pic-lbl{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
-.mp-goals-title{font-size:.6rem;color:rgba(255,255,255,.35);text-transform:uppercase;
+.mp-goals-title{font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;
   letter-spacing:1.5px;margin-bottom:8px;}
 .mp-goals{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .mp-goal{
   display:flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  background:rgba(0,242,254,.07);border:1px solid rgba(0,242,254,.15);
   border-radius:10px;padding:7px 10px;flex:1;min-width:80px;
 }
 .mp-goal .pg-icon{font-size:1rem;}
@@ -1112,12 +1170,12 @@ body::before{
 .mp-play-btn{
   width:100%;padding:16px;border:none;border-radius:14px;cursor:pointer;
   font-family:'Luckiest Guy',cursive;font-size:1.2rem;letter-spacing:1px;
-  background:linear-gradient(180deg,#55ff99,#22cc55,#119933);
-  color:#003319;box-shadow:0 5px 0 rgba(0,60,20,.5);
-  text-shadow:0 1px 0 rgba(0,60,20,.3);transition:transform .1s;
+  background:linear-gradient(180deg,#00ffcc,#00b4d8,#0077b6);
+  color:#001219;box-shadow:0 5px 0 rgba(0,80,120,.5),0 0 15px rgba(0,255,204,.3);
+  text-shadow:0 1px 0 rgba(255,255,255,.25);transition:transform .1s;
   position:sticky;bottom:0;
 }
-.mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,60,20,.5);}
+.mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,80,120,.5);}
 
 /* ── DAILY MISSIONS ── */
 .daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
@@ -1490,13 +1548,12 @@ body::before{
 <!-- MAP OVERLAY -->
 <div class="map-overlay" id="mapOverlay">
   <div class="map-topbar">
+    <div class="map-topbar-lives" id="mapTopLives">❤️❤️❤️</div>
     <div style="text-align:center;flex:1;">
       <div class="map-topbar-title">✨ GLIXAR</div>
-      <div class="map-topbar-sub" id="mapWorldSub">Galáxia Roxa</div>
+      <div class="map-topbar-sub" id="mapWorldSub">Galáxia Cristalina</div>
     </div>
-    <div class="map-topbar-lives" id="mapTopLives">
-      ❤️❤️❤️
-    </div>
+    <button class="map-topbar-close" onclick="openSettings();closeMap()">⚙️</button>
   </div>
   <div class="map-scroll" id="mapScroll">
     <div class="world-header">
@@ -3661,8 +3718,11 @@ function renderMap() {
       bubble.id = 'map-bubble-' + lvl;
 
       if (isLocked) {
-        bubble.innerHTML = '<span style="font-size:1rem;opacity:.5;">🔒</span>';
+        bubble.innerHTML = '<span style="font-size:1rem;opacity:.4;color:#4facfe;">🔒</span>';
       } else {
+        if (isCurrent) {
+          bubble.innerHTML += '<div class="current-ring"></div><div class="current-ring2"></div><div class="current-spark">✨</div>';
+        }
         const num = document.createElement('span');
         num.className = 'map-num';
         num.textContent = lvl;
@@ -3729,7 +3789,8 @@ function openMapPreview(lvl) {
 }
 
 function closeMapPreview() {
-  document.getElementById('mapPreview').classList.remove('show');
+  const el = document.getElementById('mapPreview');
+  if (el) el.classList.remove('show');
 }
 
 function playFromPreview() {
