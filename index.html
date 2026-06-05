@@ -916,145 +916,203 @@ body::before{
 .menu-confirm-btns .btn{flex:1;font-size:.88rem;padding:11px 6px;}
 
 /* ── MAP SCREEN ── */
-/* ── MAP SCREEN (Candy Crush style) ── */
+/* ── MAP SCREEN ── */
 .map-overlay{
   display:none;position:fixed;inset:0;z-index:250;
-  background:linear-gradient(180deg,#1a0660 0%,#0e1a60 40%,#0a3040 100%);
+  background:linear-gradient(180deg,#0e0a40 0%,#1a0e68 20%,#0e1a50 45%,#081830 70%,#040c20 100%);
   flex-direction:column;overflow:hidden;
+}
+.map-overlay::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1.5px 1.5px at 8% 15%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1px 1px at 92% 8%,rgba(255,255,255,.5),transparent),
+    radial-gradient(2px 2px at 55% 22%,rgba(255,215,0,.4),transparent),
+    radial-gradient(1px 1px at 30% 40%,rgba(255,255,255,.3),transparent),
+    radial-gradient(1.5px 1.5px at 75% 55%,rgba(100,150,255,.5),transparent),
+    radial-gradient(1px 1px at 18% 68%,rgba(255,255,255,.4),transparent),
+    radial-gradient(2px 2px at 85% 75%,rgba(255,215,0,.3),transparent);
 }
 .map-overlay.show{display:flex;}
 
-/* Scrollable path area */
+.map-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px 10px;position:relative;z-index:5;
+  background:linear-gradient(180deg,rgba(14,10,64,.95) 0%,transparent 100%);
+}
+.map-topbar-title{font-family:'Luckiest Guy',cursive;font-size:1.1rem;color:#FFD700;letter-spacing:1px;}
+.map-topbar-sub{font-size:.55rem;color:rgba(255,255,255,.4);margin-top:1px;text-align:center;}
+.map-topbar-close{
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);
+  border-radius:10px;padding:5px 14px;color:#fff;
+  font-family:'Luckiest Guy',cursive;font-size:.85rem;cursor:pointer;
+}
+.map-topbar-lives{
+  display:flex;align-items:center;gap:3px;
+  background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:4px 8px;font-size:.8rem;
+}
+.map-topbar-lives .ml-timer{font-size:.5rem;color:#ff8888;font-weight:800;margin-left:3px;}
+
 .map-scroll{
   flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:80px 0 120px;
-  position:relative;
+  padding:8px 20px 100px;
+  position:relative;z-index:1;
 }
 .map-scroll::-webkit-scrollbar{display:none;}
 
-/* Fixed top header */
-.map-topbar{
-  position:fixed;top:0;left:0;right:0;z-index:10;
-  background:linear-gradient(180deg,rgba(10,6,40,.95),transparent);
-  padding:12px 16px 20px;
-  display:flex;align-items:center;justify-content:space-between;
+.world-header{text-align:center;margin:8px 0 14px;}
+.world-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(255,180,0,.15),rgba(255,100,0,.1));
+  border:1.5px solid rgba(255,180,0,.3);border-radius:20px;
+  padding:5px 16px;
 }
-.map-topbar-title{font-family:'Luckiest Guy',cursive;font-size:1.6rem;
-  color:var(--gold);text-shadow:0 2px 0 var(--gold-dark);letter-spacing:1px;}
-.map-topbar-close{
-  background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.2);
-  border-radius:12px;padding:6px 16px;color:#fff;
-  font-family:'Luckiest Guy',cursive;font-size:.9rem;cursor:pointer;
-}
+.world-badge .wb-icon{font-size:1rem;}
+.world-badge .wb-name{font-family:'Luckiest Guy',cursive;font-size:.75rem;color:#FFD700;letter-spacing:1px;}
 
-/* The sinuous path */
-.map-path{
-  width:100%;max-width:400px;margin:0 auto;
-  display:flex;flex-direction:column-reverse;/* bottom = level 1 */
-  position:relative;padding:0 16px;
-}
+/* Snake path */
+.map-path{display:flex;flex-direction:column-reverse;gap:4px;position:relative;}
 
-/* Row of 3 bubbles */
-.map-row{
-  display:flex;justify-content:space-around;align-items:center;
-  margin-bottom:8px;position:relative;
-}
-/* Alternate rows shift left/right for snake effect */
-.map-row.ltr{justify-content:flex-start;gap:20px;padding-left:16px;}
-.map-row.rtl{justify-content:flex-end;gap:20px;padding-right:16px;}
-.map-row.center{justify-content:center;}
+.path-row{display:flex;align-items:center;margin-bottom:4px;position:relative;}
+.path-row.ltr{justify-content:flex-start;gap:14px;padding-left:4px;}
+.path-row.rtl{justify-content:flex-end;gap:14px;padding-right:4px;}
 
-/* Connector curves between rows */
-.map-row-connector{
-  height:28px;position:relative;margin-bottom:0;
+.path-connector{height:26px;position:relative;margin:0 0 4px;}
+.path-connector.left::before{
+  content:'';position:absolute;left:30px;top:0;width:3px;height:100%;
+  background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,215,0,.08));border-radius:2px;
 }
-.map-row-connector::before{
-  content:'';position:absolute;left:50%;top:0;
-  width:3px;height:100%;
-  background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.06));
-  transform:translateX(-50%);border-radius:2px;
+.path-connector.right::before{
+  content:'';position:absolute;right:30px;top:0;width:3px;height:100%;
+  background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,215,0,.08));border-radius:2px;
 }
+.path-gem{font-size:.8rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));}
 
-/* Individual bubble */
+/* Bubbles */
 .map-bubble{
-  width:64px;height:64px;border-radius:50%;
-  border:4px solid rgba(255,255,255,.2);
-  background:linear-gradient(145deg,#2a0a6e,#12043a);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Luckiest Guy',cursive;font-size:1rem;
-  color:rgba(255,255,255,.35);
+  width:62px;height:62px;border-radius:50%;
   flex-shrink:0;position:relative;cursor:pointer;
-  transition:transform .2s,box-shadow .2s;
-  box-shadow:0 4px 0 rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s;
 }
-.map-bubble:active{transform:scale(.92);}
+.map-bubble:active{transform:scale(.9);}
 .map-bubble.done{
-  border-color:var(--gold);
-  background:linear-gradient(145deg,#5a2a9e,#3a1070);
-  color:var(--gold);
-  box-shadow:0 4px 0 rgba(0,0,0,.4),0 0 12px rgba(255,215,0,.2);
+  background:radial-gradient(circle at 38% 32%,#8a5aff,#4a1a9e,#2a0a5e);
+  border:3px solid #FFD700;
+  box-shadow:0 4px 0 rgba(0,0,0,.5),0 0 12px rgba(255,215,0,.15);
 }
 .map-bubble.current{
-  border-color:#44ffaa;width:72px;height:72px;font-size:1.1rem;
-  background:linear-gradient(145deg,#1a6e4a,#0a3a28);
-  color:#fff;
-  box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 20px rgba(68,255,170,.4);
+  width:70px;height:70px;
+  background:radial-gradient(circle at 38% 32%,#66ff88,#22aa44,#0a5020);
+  border:4px solid #88ffaa;
+  box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 20px rgba(68,255,136,.5);
   animation:mapPulse .9s ease infinite alternate;
 }
 .map-bubble.locked{
-  opacity:.35;cursor:default;
-  background:linear-gradient(145deg,#1a1a2e,#0a0a1e);
+  background:radial-gradient(circle at 38% 32%,#2a2a4e,#14143a,#0a0a24);
+  border:3px solid rgba(255,255,255,.12);
+  box-shadow:0 4px 0 rgba(0,0,0,.5);
+  opacity:.45;cursor:default;
 }
-.map-bubble .map-lock{font-size:1.1rem;filter:grayscale(1) opacity(.5);}
+.map-num{
+  font-family:'Luckiest Guy',cursive;font-size:1rem;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.5);line-height:1;
+}
+.map-bubble.done .map-num{color:#FFD700;}
+.map-bubble.locked .map-num{color:rgba(255,255,255,.3);}
 .map-stars{
-  position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
-  display:flex;gap:1px;font-size:.6rem;white-space:nowrap;
-  filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+  position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
+  display:flex;gap:1px;font-size:.58rem;white-space:nowrap;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.8));
 }
 
-/* Preview popup */
+/* Bottom nav */
+.map-bottomnav{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  background:linear-gradient(0deg,rgba(8,6,32,1) 60%,transparent);
+  padding:10px 8px 18px;
+  display:flex;justify-content:space-around;
+}
+.map-nav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 10px;cursor:pointer;border-radius:12px;
+  transition:background .15s;min-width:52px;
+}
+.map-nav-btn.active{background:rgba(255,215,0,.1);}
+.map-nav-btn .mnb-icon{font-size:1.2rem;}
+.map-nav-btn .mnb-label{font-size:.48rem;color:rgba(255,255,255,.4);font-weight:800;
+  text-transform:uppercase;letter-spacing:.5px;}
+.map-nav-btn.active .mnb-label{color:#FFD700;}
+.map-nav-btn.active .mnb-icon{filter:drop-shadow(0 0 6px rgba(255,215,0,.6));}
+
+@keyframes mapPulse{
+  from{box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 12px rgba(68,255,136,.3);}
+  to  {box-shadow:0 5px 0 rgba(0,60,20,.6),0 0 28px rgba(68,255,136,.7);}
+}
+  to{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 28px rgba(68,255,170,.6);}
+}
+
+/* ── Preview popup ── */
 .map-preview{
   display:none;position:fixed;inset:0;z-index:260;
-  background:rgba(0,0,0,.75);align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,.72);align-items:flex-end;justify-content:center;
 }
 .map-preview.show{display:flex;}
 .map-preview-box{
-  background:linear-gradient(180deg,#2a0a6e,#150440);
-  border:3px solid var(--gold);border-radius:24px 24px 0 0;
-  padding:20px 20px 32px;width:100%;max-width:440px;
+  background:linear-gradient(180deg,#1e0860,#100438);
+  border:2px solid rgba(255,215,0,.4);border-radius:24px 24px 0 0;
+  padding:18px 18px 28px;width:100%;max-width:440px;
+  position:relative;overflow:hidden;
   animation:slideUp .35s cubic-bezier(.34,1.2,.64,1) both;
 }
-.mp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.mp-title{font-family:'Luckiest Guy',cursive;font-size:1.6rem;color:var(--gold);}
-.mp-close{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);
-  border-radius:8px;padding:4px 12px;color:#fff;font-size:.8rem;cursor:pointer;}
-.mp-stars{display:flex;gap:4px;margin-bottom:14px;}
-.mp-star{font-size:1.4rem;filter:grayscale(1) opacity(.3);transition:filter .3s;}
+.map-preview-box::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,215,0,.6),transparent);
+}
+.mp-handle{width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 14px;}
+.mp-close{
+  position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);font-size:.75rem;cursor:pointer;
+}
+.mp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.mp-title{font-family:'Luckiest Guy',cursive;font-size:1.5rem;color:#FFD700;}
+.mp-difficulty{
+  font-size:.6rem;font-weight:800;padding:3px 10px;border-radius:8px;
+  background:rgba(255,180,0,.15);border:1px solid rgba(255,180,0,.3);
+  color:#ffb84d;text-transform:uppercase;letter-spacing:1px;
+}
+.mp-stars{display:flex;gap:4px;margin-bottom:12px;}
+.mp-star{font-size:1.3rem;filter:grayscale(1) opacity(.22);}
 .mp-star.earned{filter:none;}
-.mp-info{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.mp-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-  border-radius:8px;padding:6px 12px;font-size:.75rem;color:rgba(255,255,255,.7);font-weight:700;}
-.mp-badge span{color:var(--gold);}
-.mp-goals{margin-bottom:18px;}
-.mp-goals-title{font-size:.65rem;color:rgba(255,255,255,.4);text-transform:uppercase;
+.mp-info-row{display:flex;gap:8px;margin-bottom:14px;}
+.mp-info-chip{
+  flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:8px 6px;text-align:center;
+}
+.mp-info-chip .pic-val{font-size:1rem;font-weight:900;color:#fff;line-height:1.2;}
+.mp-info-chip .pic-lbl{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
+.mp-goals-title{font-size:.6rem;color:rgba(255,255,255,.35);text-transform:uppercase;
   letter-spacing:1.5px;margin-bottom:8px;}
-.mp-goal-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;
-  background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;}
-.mp-goal-item .mg-icon{font-size:1rem;}
-.mp-goal-item .mg-text{font-size:.8rem;color:#fff;font-weight:700;flex:1;}
-.mp-goal-item .mg-amt{font-size:.7rem;color:rgba(255,255,255,.45);}
+.mp-goals{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.mp-goal{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:7px 10px;flex:1;min-width:80px;
+}
+.mp-goal .pg-icon{font-size:1rem;}
+.mp-goal .pg-text{font-size:.72rem;font-weight:800;color:#fff;}
+.mp-goal .pg-amt{font-size:.6rem;color:rgba(255,255,255,.4);}
 .mp-play-btn{
   width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;
   font-family:'Luckiest Guy',cursive;font-size:1.2rem;letter-spacing:1px;
-  background:linear-gradient(180deg,#44ff88,#22aa44);color:#003322;
-  box-shadow:0 5px 0 rgba(0,80,30,.5);transition:transform .1s;
+  background:linear-gradient(180deg,#55ff99,#22cc55,#119933);
+  color:#003319;box-shadow:0 5px 0 rgba(0,60,20,.5);
+  text-shadow:0 1px 0 rgba(0,60,20,.3);transition:transform .1s;
 }
-.mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,80,30,.5);}
-
-@keyframes mapPulse{
-  from{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 12px rgba(68,255,170,.2);}
-  to{box-shadow:0 5px 0 rgba(0,0,0,.4),0 0 28px rgba(68,255,170,.6);}
-}
+.mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,60,20,.5);}
 
 /* ── DAILY MISSIONS ── */
 .daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
@@ -1405,27 +1463,61 @@ body::before{
 <!-- MAP OVERLAY -->
 <div class="map-overlay" id="mapOverlay">
   <div class="map-topbar">
-    <div class="map-topbar-title">🗺️ Fases</div>
-    <button class="map-topbar-close" onclick="closeMap()">✕ Fechar</button>
+    <div style="text-align:center;flex:1;">
+      <div class="map-topbar-title">✨ GLIXAR</div>
+      <div class="map-topbar-sub" id="mapWorldSub">Galáxia Roxa</div>
+    </div>
+    <div class="map-topbar-lives" id="mapTopLives">
+      ❤️❤️❤️
+    </div>
   </div>
   <div class="map-scroll" id="mapScroll">
+    <div class="world-header">
+      <div class="world-badge">
+        <span class="wb-icon">🌌</span>
+        <span class="wb-name" id="mapWorldName">Galáxia Roxa</span>
+      </div>
+    </div>
     <div class="map-path" id="mapPath"></div>
+  </div>
+  <!-- Bottom nav -->
+  <div class="map-bottomnav">
+    <div class="map-nav-btn active">
+      <span class="mnb-icon">🗺️</span>
+      <span class="mnb-label">Mapa</span>
+    </div>
+    <div class="map-nav-btn" onclick="openRank();closeMap()">
+      <span class="mnb-icon">🏆</span>
+      <span class="mnb-label">Rank</span>
+    </div>
+    <div class="map-nav-btn" onclick="openCheckin();closeMap()">
+      <span class="mnb-icon">📅</span>
+      <span class="mnb-label">Check-in</span>
+    </div>
+    <div class="map-nav-btn" onclick="openProfile();closeMap()">
+      <span class="mnb-icon">👤</span>
+      <span class="mnb-label">Perfil</span>
+    </div>
+    <div class="map-nav-btn" onclick="openSettings();closeMap()">
+      <span class="mnb-icon">⚙️</span>
+      <span class="mnb-label">Config</span>
+    </div>
   </div>
 </div>
 
 <!-- PHASE PREVIEW POPUP -->
 <div class="map-preview" id="mapPreview">
   <div class="map-preview-box">
+    <div class="mp-handle"></div>
+    <div class="mp-close" onclick="closeMapPreview()">✕</div>
     <div class="mp-header">
       <div class="mp-title" id="mpTitle">Fase 1</div>
-      <button class="mp-close" onclick="closeMapPreview()">✕</button>
+      <div class="mp-difficulty" id="mpDifficulty">Normal</div>
     </div>
     <div class="mp-stars" id="mpStars"></div>
-    <div class="mp-info" id="mpInfo"></div>
-    <div class="mp-goals">
-      <div class="mp-goals-title">Objetivos</div>
-      <div id="mpGoals"></div>
-    </div>
+    <div class="mp-info-row" id="mpInfo"></div>
+    <div class="mp-goals-title">Objetivos</div>
+    <div class="mp-goals" id="mpGoals"></div>
     <button class="mp-play-btn" id="mpPlayBtn" onclick="playFromPreview()">▶ Jogar</button>
   </div>
 </div>
@@ -1500,14 +1592,17 @@ const MISSION_DEFS = [
 // Level difficulty table (infinite: extrapolates)
 function getLevelConfig(lvl) {
   // Smoother infinite scaling
-  const moves     = Math.max(14, 28 - Math.floor((lvl - 1) * 0.6));
   const gemColors = Math.min(8, 3 + Math.floor((lvl - 1) / 3));
   const goalCount = lvl <= 2 ? 1 : lvl <= 5 ? 2 : 3;
-  const goalAmt   = Math.min(30, 6 + Math.floor((lvl - 1) * 1.5));
+  const goalAmt   = Math.min(40, 6 + Math.floor((lvl - 1) * 1.8));
   const label     = lvl <= 3  ? 'Normal'  :
                     lvl <= 8  ? 'Médio'   :
                     lvl <= 15 ? 'Difícil' :
                     lvl <= 25 ? 'Épico'   : 'Lendário';
+  // Moves proportional to total goals — harder = more goals = more moves needed
+  const totalGoals = goalCount * goalAmt;
+  const diffMult   = label==='Normal'?1.0:label==='Médio'?0.95:label==='Difícil'?0.9:label==='Épico'?0.85:0.8;
+  const moves      = Math.max(20, Math.min(55, Math.round(totalGoals * 0.32 * diffMult) + 12));
   const powerUps  = lvl <= 10 ? 1 : 0;
   // Obstacles start appearing from level 3
   const rocks = 0;  // disabled temporarily
@@ -3445,14 +3540,36 @@ function closeDaily() {
 let _previewLevel    = 1;
 let _showCountdown   = false;
 
+// World names by level range
+const WORLDS = [
+  { name:'Galáxia Roxa',  icon:'🌌', from:1,  to:15 },
+  { name:'Nebulosa Azul', icon:'💫', from:16, to:30 },
+  { name:'Estrelas de Ouro', icon:'⭐', from:31, to:50 },
+  { name:'Cosmos Negro',  icon:'🌑', from:51, to:999 },
+];
+function getWorld(lvl) { return WORLDS.find(w => lvl >= w.from && lvl <= w.to) || WORLDS[0]; }
+
 function openMap() {
   renderMap();
+  renderMapLives();
   document.getElementById('mapOverlay').classList.add('show');
-  // Scroll to current level
   setTimeout(() => {
     const cur = document.getElementById('map-bubble-'+level);
     if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
-  }, 100);
+  }, 120);
+}
+
+function renderMapLives() {
+  const el = document.getElementById('mapTopLives');
+  if (!el) return;
+  const cur = getLives();
+  const ms  = getNextRegenMs();
+  let h = '';
+  for (let i = 0; i < MAX_LIVES; i++)
+    h += `<span style="${i<cur?'':'opacity:.2;filter:grayscale(1)'}">❤️</span>`;
+  if (cur < MAX_LIVES && ms > 0)
+    h += `<span class="ml-timer">${formatTimeLeft(ms)}</span>`;
+  el.innerHTML = h;
 }
 
 function closeMap() {
@@ -3463,37 +3580,49 @@ function closeMap() {
 function renderMap() {
   const path = document.getElementById('mapPath');
   path.innerHTML = '';
-  const maxReached = Math.max(level, ...Object.keys(levelStarsMap).map(Number));
-  const maxLevel   = maxReached + 4; // show a few locked levels ahead
+  const maxReached = Math.max(level, ...Object.keys(levelStarsMap).map(Number), 1);
+  const maxLevel   = maxReached + 5;
 
-  // Build bubbles grouped in rows of 3 (snake pattern)
-  const ROW_SIZE = 3;
-  const levels = [];
-  for (let i = 1; i <= maxLevel; i++) levels.push(i);
+  // Update world name
+  const world = getWorld(level);
+  const nameEl = document.getElementById('mapWorldName');
+  const subEl  = document.getElementById('mapWorldSub');
+  if (nameEl) nameEl.textContent = world.icon + ' ' + world.name;
+  if (subEl)  subEl.textContent  = world.icon + ' ' + world.name;
 
-  // Split into rows of 3
+  // Group levels into rows of 3
   const rows = [];
-  for (let i = 0; i < levels.length; i += ROW_SIZE)
-    rows.push(levels.slice(i, i + ROW_SIZE));
+  for (let i = maxLevel; i >= 1; i -= 3)
+    rows.push([Math.max(1,i-2), Math.max(1,i-1), i].filter(l=>l>=1));
 
-  // Render rows (path is column-reversed so row[0] is at bottom)
+  const GEMS_DECO = ['💜','💙','💛','❤️','💚','🧡','🩷','🩵'];
+
   rows.forEach((row, rowIdx) => {
-    // Connector between rows
+    // Connector
     if (rowIdx > 0) {
       const conn = document.createElement('div');
-      conn.className = 'map-row-connector';
+      // Alternate connector side
+      const prevDir = (rowIdx-1) % 2 === 0 ? 'left' : 'right';
+      conn.className = 'path-connector ' + (rowIdx%2===0?'right':'left');
       path.appendChild(conn);
     }
 
     const rowEl = document.createElement('div');
-    // Alternate direction: even rows left-to-right, odd rows right-to-left
-    const dir = rowIdx % 2 === 0 ? 'ltr' : 'rtl';
-    rowEl.className = `map-row ${dir}`;
+    const dir   = rowIdx % 2 === 0 ? 'ltr' : 'rtl';
+    rowEl.className = 'path-row ' + dir;
 
-    // If rtl, reverse the order for visual snake
-    const displayRow = dir === 'rtl' ? [...row].reverse() : row;
+    // Display row in correct visual order
+    const displayRow = dir === 'rtl' ? [...row].reverse() : [...row];
 
-    displayRow.forEach(lvl => {
+    displayRow.forEach((lvl, i) => {
+      // Decorative gem between bubbles
+      if (i > 0) {
+        const gem = document.createElement('span');
+        gem.className = 'path-gem';
+        gem.textContent = GEMS_DECO[(lvl + rowIdx) % GEMS_DECO.length];
+        rowEl.appendChild(gem);
+      }
+
       const stars     = levelStarsMap[lvl] || 0;
       const isCurrent = lvl === level;
       const isDone    = stars > 0;
@@ -3501,38 +3630,28 @@ function renderMap() {
 
       const bubble = document.createElement('div');
       bubble.className = 'map-bubble' +
-        (isDone    ? ' done'    : '') +
-        (isCurrent ? ' current' : '') +
-        (isLocked  ? ' locked'  : '');
+        (isDone?    ' done'    : '') +
+        (isCurrent? ' current' : '') +
+        (isLocked?  ' locked'  : '');
       bubble.id = 'map-bubble-' + lvl;
 
-      // Level number or lock
       if (isLocked) {
-        bubble.innerHTML = `<span class="map-lock">🔒</span>`;
+        bubble.innerHTML = '<span style="font-size:1rem;opacity:.5;">🔒</span>';
       } else {
-        bubble.textContent = lvl;
-      }
-
-      // Stars badge
-      if (!isLocked) {
+        const num = document.createElement('span');
+        num.className = 'map-num';
+        num.textContent = lvl;
+        bubble.appendChild(num);
         const starSpan = document.createElement('div');
         starSpan.className = 'map-stars';
-        if (isDone) {
-          starSpan.textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
-        } else if (isCurrent) {
-          starSpan.textContent = '▶';
-        }
+        starSpan.textContent = isDone
+          ? '⭐'.repeat(stars)+'☆'.repeat(3-stars)
+          : isCurrent ? '▶' : '';
         bubble.appendChild(starSpan);
-      }
-
-      // Click → open preview (not go directly)
-      if (!isLocked) {
         bubble.onclick = () => openMapPreview(lvl);
       }
-
       rowEl.appendChild(bubble);
     });
-
     path.appendChild(rowEl);
   });
 }
@@ -3543,8 +3662,8 @@ function openMapPreview(lvl) {
   const stars  = levelStarsMap[lvl] || 0;
   const isCur  = lvl === level;
 
-  // Title
-  document.getElementById('mpTitle').textContent = `Fase ${lvl}`;
+  document.getElementById('mpTitle').textContent     = `Fase ${lvl}`;
+  document.getElementById('mpDifficulty').textContent = lcfg.label || 'Normal';
 
   // Stars
   const starsEl = document.getElementById('mpStars');
@@ -3556,31 +3675,30 @@ function openMapPreview(lvl) {
     starsEl.appendChild(s);
   }
 
-  // Info badges
+  // Info chips
   const infoEl = document.getElementById('mpInfo');
+  const diamPrev = (stars > 0 ? stars : 2); // diamonds earned preview
   infoEl.innerHTML = `
-    <div class="mp-badge">⚡ <span>${lcfg.moves}</span> jogadas</div>
-    <div class="mp-badge">📊 <span>${lcfg.label}</span></div>
-    ${stars > 0 ? `<div class="mp-badge">⭐ <span>${stars}/3</span> estrelas</div>` : ''}
+    <div class="mp-info-chip"><div class="pic-val">⚡ ${lcfg.moves}</div><div class="pic-lbl">Jogadas</div></div>
+    <div class="mp-info-chip"><div class="pic-val">${stars > 0 ? '🏅 '+stars+'/3' : '🏅 —'}</div><div class="pic-lbl">Estrelas</div></div>
+    <div class="mp-info-chip"><div class="pic-val">💎 ${diamPrev}</div><div class="pic-lbl">Diamantes</div></div>
   `;
 
   // Goals
   const goalsEl = document.getElementById('mpGoals');
   goalsEl.innerHTML = '';
   const goalTypes = lcfg.goalTypes || [{type:'gem'}];
-  const gemNames  = ['Vermelha','Azul','Amarela','Verde','Roxa','Laranja','Rosa','Ciano'];
   goalTypes.forEach((gt, i) => {
-    const item = document.createElement('div');
-    item.className = 'mp-goal-item';
-    let icon = GEMS[i % GEMS.length], text = 'Colete gemas', amt = lcfg.goalAmt;
-    if (gt.type === 'combo') { icon = '🔥'; text = 'Faça combos'; amt = gt.target; }
-    item.innerHTML = `<span class="mg-icon">${icon}</span><span class="mg-text">${text}</span><span class="mg-amt">x${amt}</span>`;
-    goalsEl.appendChild(item);
+    const div = document.createElement('div');
+    div.className = 'mp-goal';
+    let icon = GEMS[i % GEMS.length], text = 'Coletar', amt = lcfg.goalAmt;
+    if (gt.type === 'combo') { icon = '🔥'; text = 'Combos'; amt = gt.target; }
+    div.innerHTML = `<span class="pg-icon">${icon}</span><div><div class="pg-text">${text}</div><div class="pg-amt">×${amt}</div></div>`;
+    goalsEl.appendChild(div);
   });
 
-  // Play button text
   const playBtn = document.getElementById('mpPlayBtn');
-  playBtn.textContent = isCur ? '▶ Continuar' : (stars > 0 ? '🔄 Rejog ar' : '▶ Jogar');
+  playBtn.textContent = isCur ? '▶ Continuar' : (stars > 0 ? '🔄 Rejogar' : `▶ Jogar Fase ${lvl}`);
 
   document.getElementById('mapPreview').classList.add('show');
 }
@@ -4401,20 +4519,15 @@ window.addEventListener('resize', () => {
   if (hasSave()) {
     const ok = loadSave();
     if (ok) {
-      // Check if has lives to play
-      if (getLives() > 0) {
-        // Has save + lives → hide resume overlay, go directly to game
-        maybeShowCheckin();
-        return; // game-wrap already visible
-      } else {
-        // Has save but no lives → show menu (can't play yet)
-        showMenu();
-        maybeShowCheckin();
-        return;
-      }
+      // Always open MAP first on boot
+      openMap();
+      maybeShowCheckin();
+      return;
     }
   }
+  // No save — new game then open map
   newGame();
+  openMap();
   maybeShowCheckin();
 })();
 </script>
