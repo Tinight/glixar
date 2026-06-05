@@ -2355,6 +2355,17 @@ async function executeHammer(r, c) {
     showToast('🔨 Bam!');
     playPowerUp(); vibrate([30,10,60]);
 
+    const g = board[r][c];
+    if (g >= 0) {
+      score += 80; totalScore += 80;
+      trackMission('score', 80);
+      const gk = 'gem_' + g;
+      if (goalsTarget[gk] !== undefined) {
+        goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+      }
+      updateUI(); renderGoals();
+    }
+
     // Hit a normal gem — remove it
     await popCells(new Set([k(r,c)]));
 
@@ -2891,7 +2902,9 @@ function resetSplashUI() {
 function checkWinLose() {
   if (levelOver) return;
 
-  const won = Object.keys(goalsTarget).every(k => (goals[k]||0) >= goalsTarget[k]);
+  const won = Object.keys(goalsTarget)
+    .filter(k => k !== 'rock' && k !== 'ice')
+    .every(k => (goals[k]||0) >= goalsTarget[k]);
   if (won) {
     levelOver  = true;
     processing = false;
@@ -2952,7 +2965,7 @@ function showWinSplash() {
   document.getElementById('chanceDots').style.display         = 'none';
   document.getElementById('livesSplashHearts').style.display  = 'none';
   document.getElementById('splashTimer').style.display        = 'none';
-  if (hasName) saveScore();
+  if (hasName) saveScore(level + 1);
   document.getElementById('splash').classList.add('show');
 }
 
@@ -3083,7 +3096,7 @@ function saveAndNext() {
   if (inp.length === 0) { document.getElementById('nameInput').focus(); return; }
   playerName = inp;
   localStorage.setItem('glixarName', playerName);
-  saveScore();
+  saveScore(level + 1);
   document.getElementById('nameRow').style.display          = 'none';
   document.getElementById('livesSplashHearts').style.display = 'none';
   document.getElementById('splashTimer').style.display       = 'none';
@@ -3091,13 +3104,14 @@ function saveAndNext() {
 }
 
 // Save to BOTH localStorage and Firebase
-async function saveScore() {
+async function saveScore(lvlToSave) {
   if (!playerName) return;
+  const targetLvl = lvlToSave || level;
 
   // Build entry with TOTAL accumulated score and highest level
   const entry = {
     name:  playerName,
-    level, // highest level reached
+    level: targetLvl, // highest level reached
     score: totalScore, // accumulated across all phases
     date:  new Date().toLocaleDateString('pt-BR')
   };
@@ -3109,7 +3123,7 @@ async function saveScore() {
     ranking[existIdx] = {
       ...ex,
       score: Math.max(ex.score, totalScore),
-      level: Math.max(ex.level, level),
+      level: Math.max(ex.level, targetLvl),
       date:  entry.date
     };
   } else {
@@ -3121,7 +3135,7 @@ async function saveScore() {
 
   // Firebase save (non-blocking)
   if (window._fb) {
-    window._fb.saveScore(playerName, level, totalScore)
+    window._fb.saveScore(playerName, targetLvl, totalScore)
       .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); });
   }
 }
