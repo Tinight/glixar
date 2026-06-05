@@ -3553,6 +3553,10 @@ function openMap() {
   renderMap();
   renderMapLives();
   document.getElementById('mapOverlay').classList.add('show');
+  // Hide game-wrap so map is fully visible
+  const gw = document.querySelector('.game-wrap');
+  if (gw) gw.style.display = 'none';
+  document.getElementById('menuScreen').classList.remove('show');
   setTimeout(() => {
     const cur = document.getElementById('map-bubble-'+level);
     if (cur) cur.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -3575,6 +3579,9 @@ function renderMapLives() {
 function closeMap() {
   document.getElementById('mapOverlay').classList.remove('show');
   closeMapPreview();
+  // Show game-wrap again
+  const gw = document.querySelector('.game-wrap');
+  if (gw) gw.style.display = 'flex';
 }
 
 function renderMap() {
@@ -3715,7 +3722,10 @@ function closeMapPreview() {
 
 function playFromPreview() {
   closeMapPreview();
-  closeMap();
+  // Show game-wrap before starting level
+  const gw = document.querySelector('.game-wrap');
+  if (gw) gw.style.display = 'flex';
+  document.getElementById('mapOverlay').classList.remove('show');
   level = _previewLevel;
   _showCountdown = true;
   startLevel();
@@ -4525,14 +4535,20 @@ window.addEventListener('resize', () => {
   if (hasSave()) {
     const ok = loadSave();
     if (ok) {
-      // Always open MAP first on boot
+      // Hide game-wrap, open map
+      const gw = document.querySelector('.game-wrap');
+      if (gw) gw.style.display = 'none';
       openMap();
       maybeShowCheckin();
       return;
     }
   }
-  // No save — new game then open map
-  newGame();
+  // No save — set up first level data but DON'T build board yet
+  // Just open map, user will click play to start
+  level = 1; totalScore = 0;
+  cfg = getLevelConfig(1);
+  const gw2 = document.querySelector('.game-wrap');
+  if (gw2) gw2.style.display = 'none';
   openMap();
   maybeShowCheckin();
 })();
