@@ -3752,9 +3752,7 @@ async function executeMine(r, c) {
     if (goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
   });
   updateUI(); renderGoals();
-  const mineBlast = new Set(cells);
   await popCells(cells);
-  await triggerChain(mineBlast);
   await gravityAndRefill([]);
 }
 
@@ -3847,9 +3845,7 @@ async function executeBomb(cr, cc) {
       if(goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
     });
     updateUI(); renderGoals();
-    const bombBlast = new Set(cells);
     await popCells(cells);
-    await triggerChain(bombBlast);
     await gravityAndRefill([]);
     comboCount = 0;
     const more = findAllMatches();
