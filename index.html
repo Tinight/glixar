@@ -2826,21 +2826,21 @@ function findAllMatches() {
     }
   });
 
-  // ── 2x2 square → SP_MINE ──
-  // Check for 2x2 squares that are part of the current match
+  // ── 2x2 square → SP_MINE (works independently of 3-match) ──
   for (let rm = 0; rm < ROWS - 1; rm++) {
     for (let cm = 0; cm < COLS - 1; cm++) {
       const gm = board[rm][cm];
       if (gm < 0) continue;
       if (board[rm][cm+1]===gm && board[rm+1][cm]===gm && board[rm+1][cm+1]===gm) {
         const sq = [k(rm,cm), k(rm,cm+1), k(rm+1,cm), k(rm+1,cm+1)];
-        if (sq.some(key => cells.has(key))) {
-          // Add all 4 to cells, but keep top-left as pivot for mine placement
+        // Detect standalone 2x2 OR overlapping with existing match
+        const alreadyMine = shapes.find(s => s.r===rm && s.c===cm && s.spType===SP_MINE);
+        if (!alreadyMine) {
           sq.forEach(key => cells.add(key));
-          // Remove pivot from cells so gravity places mine there
+          // Pivot = center of square (bottom-right of top-left, i.e. top-left)
+          // Keep pivot cell alive so mine spawns there
           cells.delete(k(rm, cm));
-          if (!shapes.find(s => s.r===rm && s.c===cm && s.spType===SP_MINE))
-            shapes.push({ r:rm, c:cm, gem:gm, spType:SP_MINE });
+          shapes.push({ r:rm, c:cm, gem:gm, spType:SP_MINE });
         }
       }
     }
@@ -3158,7 +3158,13 @@ async function gravityAndRefill(shapes) {
       }
 
       const missing = segRows.length - surviving.length;
-      const colShape = shapes.find(sh => sh.c === c);
+      // Find shape for this column — prefer shape whose row is in this segment
+      const colShape = shapes.find(sh => sh.c === c && segRows.includes(sh.r))
+                    || shapes.find(sh => sh.c === c);
+      // Target row for special: use shape's row if in segment, else bottom of segment
+      const specialTargetRow = colShape && segRows.includes(colShape.r)
+        ? colShape.r
+        : (segRows[segRows.length - 1]);
 
       // Spawn new gems above this segment
       const newGems = [];
@@ -3180,6 +3186,16 @@ async function gravityAndRefill(shapes) {
 
       // Place: new gems at top, survivors at bottom (gravity = fall down)
       const ordered = [...newGems, ...surviving];
+      // If special, swap it to the correct target row position
+      if (colShape && specialTargetRow !== undefined) {
+        const specialIdx = ordered.findIndex(g => g.sp !== SP_NONE);
+        const targetIdx  = segRows.indexOf(specialTargetRow);
+        if (specialIdx >= 0 && targetIdx >= 0 && specialIdx !== targetIdx) {
+          const tmp = ordered[specialIdx];
+          ordered[specialIdx] = ordered[targetIdx] || ordered[specialIdx];
+          if (ordered[targetIdx]) ordered[targetIdx] = tmp;
+        }
+      }
       ordered.forEach(({ type, sp, el }, idx) => {
         const targetRow = segRows[idx];
         board[targetRow][c]   = type;
@@ -3404,54 +3420,11 @@ async function activateSpecial(r, c, sp) {
   }
 }
 
-// ── REAÇÃO EM CADEIA ──
-// Detona gemas especiais atingidas por uma explosão
-async function triggerChain(blastKeys) {
-  const toChain = [];
-  blastKeys.forEach(key => {
-    const {r, c} = uk(key);
-    if (r >= 0 && r < ROWS && c >= 0 && c < COLS &&
-        special[r][c] !== SP_NONE && board[r][c] >= 0) {
-      toChain.push({r, c, sp: special[r][c]});
-    }
-  });
-  for (const ch of toChain) {
-    // Double-check still valid (may have been destroyed by previous chain)
-    if (special[ch.r][ch.c] !== SP_NONE) {
-      await delay(140);
-      await activateSpecialWithChain(ch.r, ch.c, special[ch.r][ch.c]);
-    }
-  }
-}
 
 // Activate special and trigger chain on blast cells
 async function activateSpecialWithChain(r, c, sp) {
-  if (sp === SP_MINE) {
-    // Collect 3x3 blast cells before detonating
-    const blast = new Set();
-    for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
-      const nr=r+dr, nc=c+dc;
-      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) blast.add(k(nr,nc));
-    }
-    await activateSpecial(r, c, sp);
-    await triggerChain(blast);
-  } else if (sp === SP_BOMB) {
-    const blast = new Set();
-    for (let dr=-2;dr<=2;dr++) for (let dc=-2;dc<=2;dc++) {
-      const nr=r+dr, nc=c+dc;
-      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) blast.add(k(nr,nc));
-    }
-    await activateSpecial(r, c, sp);
-    await triggerChain(blast);
-  } else if (sp === SP_ROCKET || sp === SP_CROSS) {
-    const blast = new Set();
-    for (let i=0;i<COLS;i++) blast.add(k(r,i));
-    for (let i=0;i<ROWS;i++) blast.add(k(i,c));
-    await activateSpecial(r, c, sp);
-    await triggerChain(blast);
-  } else {
-    await activateSpecial(r, c, sp);
-  }
+  // activateSpecial handles chain reactions internally
+  await activateSpecial(r, c, sp);
 }
 
 async function executeMine(r, c) {
