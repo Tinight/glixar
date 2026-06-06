@@ -2568,6 +2568,10 @@ function onSwipe(r, c, dir) {
   if (obstacleBoard[r][c] !== OB_NONE || obstacleBoard[nr][nc] !== OB_NONE) {
     playNoMove(); return;
   }
+  // If swiping two specials together — combo activation
+  if (special[r][c] !== SP_NONE && special[nr][nc] !== SP_NONE) {
+    trySwap(r, c, nr, nc); return;
+  }
   trySwap(r, c, nr, nc);
 }
 
@@ -2599,8 +2603,34 @@ function onCellClick(r, c) {
     executeBomb(cr, cc); return;
   }
 
-  // If clicking a rainbow gem while another is selected, activate rainbow
-  if (selected && special[r][c] === SP_RAINBOW) {
+  // ── TAP TO ACTIVATE SPECIALS ──
+  // Click directly on a special gem to activate it (costs 1 move)
+  const sp = special[r][c];
+  if (sp !== SP_NONE && !activeTool) {
+    // Clear any selection first
+    if (selected) {
+      gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
+      selected = null;
+    }
+    // Activate the special directly
+    moves--; updateUI();
+    processing = true;
+    (async () => {
+      try {
+        await activateSpecial(r, c, sp);
+        await gravityAndRefill([]);
+        comboCount = 0;
+        const more = findAllMatches();
+        if (more.cells.size > 0) await resolveMatches(more, null);
+        if (!levelOver) { saveGame(); checkWinLose(); }
+      } catch(e) { console.error('tap special error:', e); }
+      finally { processing = false; resetInactivity(); }
+    })();
+    return;
+  }
+
+  // Rainbow: clicking while another gem selected → activate with that color
+  if (selected && sp === SP_RAINBOW) {
     const {r:sr, c:sc} = selected;
     gemEls[sr][sc].classList.remove('selected');
     selected = null;
