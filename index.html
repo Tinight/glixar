@@ -1523,19 +1523,19 @@ body::before{
 </div>
 
 <!-- TUTORIAL OVERLAY -->
-<div class="tutorial-overlay" id="tutorialOverlay" onclick="closeTutorial()">
-  <div class="tutorial-box" onclick="event.stopPropagation()">
+<div class="tutorial-overlay" id="tutorialOverlay">
+  <div class="tutorial-box">
     <div class="tut-handle"></div>
     <div class="tut-title">📖 Como Jogar</div>
     <div class="tut-subtitle">Aprenda todas as mecânicas do Glixar</div>
 
     <!-- Tabs -->
     <div class="tut-tabs">
-      <div class="tut-tab active" onclick="showTutPage('basico')">🎮 Básico</div>
-      <div class="tut-tab" onclick="showTutPage('especiais')">✨ Especiais</div>
-      <div class="tut-tab" onclick="showTutPage('combos')">💥 Combos</div>
-      <div class="tut-tab" onclick="showTutPage('poderes')">🔨 Poderes</div>
-      <div class="tut-tab" onclick="showTutPage('dicas')">💡 Dicas</div>
+      <div class="tut-tab active" data-page="basico" onclick="showTutPage('basico',event)">🎮 Básico</div>
+      <div class="tut-tab" data-page="especiais" onclick="showTutPage('especiais',event)">✨ Especiais</div>
+      <div class="tut-tab" data-page="combos" onclick="showTutPage('combos',event)">💥 Combos</div>
+      <div class="tut-tab" data-page="poderes" onclick="showTutPage('poderes',event)">🔨 Poderes</div>
+      <div class="tut-tab" data-page="dicas" onclick="showTutPage('dicas',event)">💡 Dicas</div>
     </div>
 
     <!-- Página: Básico -->
@@ -1743,7 +1743,7 @@ body::before{
       </div>
     </div>
 
-    <button class="tut-close-btn" onclick="closeTutorial()">✓ Entendido!</button>
+    <button class="tut-close-btn" onclick="event.stopPropagation();closeTutorial()">✓ Entendido!</button>
   </div>
 </div>
 
@@ -2015,12 +2015,14 @@ const GOAL_COMBO = 'combo'; // make X combos
 
 // Mission definitions (daily)
 const MISSION_DEFS = [
-  { id:'matches',  icon:'💎', name:'Combinar 30 gemas',    target:30,  type:'matches',  reward:'hammer' },
-  { id:'combos',   icon:'🔥', name:'Fazer 5 combos',       target:5,   type:'combos',   reward:'bomb'   },
-  { id:'rocks',    icon:'🪨', name:'Quebrar 8 pedras',      target:8,   type:'rocks',    reward:'shuffle'},
-  { id:'phases',   icon:'🏆', name:'Completar 2 fases',    target:2,   type:'phases',   reward:'hammer' },
-  { id:'specials', icon:'✨', name:'Criar 3 gemas especiais',target:3,  type:'specials', reward:'bomb'   },
-  { id:'stars',    icon:'⭐', name:'Ganhar 5 estrelas',     target:5,   type:'stars',    reward:'shuffle'},
+  { id:'matches',  icon:'💎', name:'Combinar 30 gemas',       target:30, type:'matches',  reward:'hammer' },
+  { id:'combos',   icon:'🔥', name:'Fazer 5 combos',          target:5,  type:'combos',   reward:'bomb'   },
+  { id:'phases',   icon:'🏆', name:'Completar 2 fases',       target:2,  type:'phases',   reward:'hammer' },
+  { id:'specials', icon:'✨', name:'Criar 3 gemas especiais',  target:3,  type:'specials', reward:'bomb'   },
+  { id:'stars',    icon:'⭐', name:'Ganhar 5 estrelas',        target:5,  type:'stars',    reward:'shuffle'},
+  { id:'score',    icon:'🎯', name:'Fazer 5.000 pontos',       target:5000,type:'score',   reward:'shuffle'},
+  { id:'moves',    icon:'⚡', name:'Usar menos de 20 jogadas', target:1,  type:'moves',    reward:'hammer' },
+  { id:'cascade',  icon:'🌊', name:'Fazer 3 cascatas',         target:3,  type:'cascade',  reward:'bomb'   },
 ];
 
 // Level difficulty table (infinite: extrapolates)
@@ -5045,13 +5047,18 @@ function openTutorial() {
   ov.style.display = 'flex';
   ov.classList.add('show');
   showTutPage('basico');
+  // Close on backdrop click only
+  ov.onclick = function(e) {
+    if (e.target === ov) closeTutorial();
+  };
 }
 function closeTutorial() {
   const ov = document.getElementById('tutorialOverlay');
   ov.style.display = 'none';
   ov.classList.remove('show');
 }
-function showTutPage(id) {
+function showTutPage(id, e) {
+  if (e) e.stopPropagation();
   // Hide all pages
   document.querySelectorAll('.tut-page').forEach(p => {
     p.classList.remove('active');
@@ -5065,11 +5072,9 @@ function showTutPage(id) {
     page.classList.add('active');
     page.style.display = 'block';
   }
-  // Activate matching tab
+  // Activate matching tab by data attribute
   document.querySelectorAll('.tut-tab').forEach(t => {
-    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) {
-      t.classList.add('active');
-    }
+    if (t.dataset.page === id) t.classList.add('active');
   });
 }
 
