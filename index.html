@@ -634,10 +634,10 @@ body::before{
 
 /* ── TUTORIAL OVERLAY ── */
 .tutorial-overlay{
-  display:none;position:fixed;inset:0;z-index:380;
+  display:none;position:fixed;inset:0;z-index:420;
   background:rgba(0,0,0,.88);align-items:flex-end;justify-content:center;
 }
-.tutorial-overlay.show{display:flex;}
+.tutorial-overlay.show{display:flex!important;}
 .tutorial-box{
   background:linear-gradient(180deg,#1a0550,#0a0220);
   border:2px solid rgba(0,242,254,.35);border-radius:24px 24px 0 0;
@@ -5033,20 +5033,35 @@ function closeSettings() {
 
 // ── TUTORIAL ──
 function openTutorial() {
-  document.getElementById('tutorialOverlay').classList.add('show');
+  const ov = document.getElementById('tutorialOverlay');
+  ov.style.display = 'flex';
+  ov.classList.add('show');
   showTutPage('basico');
 }
 function closeTutorial() {
-  document.getElementById('tutorialOverlay').classList.remove('show');
+  const ov = document.getElementById('tutorialOverlay');
+  ov.style.display = 'none';
+  ov.classList.remove('show');
 }
 function showTutPage(id) {
-  document.querySelectorAll('.tut-page').forEach(p => p.classList.remove('active'));
+  // Hide all pages
+  document.querySelectorAll('.tut-page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  // Deactivate all tabs
   document.querySelectorAll('.tut-tab').forEach(t => t.classList.remove('active'));
+  // Show target page
   const page = document.getElementById('tut-' + id);
-  if (page) page.classList.add('active');
-  // Find matching tab
+  if (page) {
+    page.classList.add('active');
+    page.style.display = 'block';
+  }
+  // Activate matching tab
   document.querySelectorAll('.tut-tab').forEach(t => {
-    if (t.getAttribute('onclick')?.includes("'" + id + "'")) t.classList.add('active');
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) {
+      t.classList.add('active');
+    }
   });
 }
 
