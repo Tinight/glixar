@@ -2963,7 +2963,6 @@ function onCellClick(r, c) {
 }
 
 async function trySwap(r1,c1,r2,c2) {
-  // Block swap if either cell has an obstacle
   if (obstacleBoard[r1][c1] !== OB_NONE || obstacleBoard[r2][c2] !== OB_NONE) {
     playNoMove(); vibrate([30]);
     return;
@@ -2972,10 +2971,39 @@ async function trySwap(r1,c1,r2,c2) {
   document.querySelectorAll('.hint-glow').forEach(el=>el.classList.remove('hint-glow'));
   startWatchdog();
   try {
+    // ── Capture specials BEFORE swap ──
+    const sp1Before = special[r1][c1];
+    const sp2Before = special[r2][c2];
+    const bothSpecial = sp1Before !== SP_NONE && sp2Before !== SP_NONE;
+
     animSwap(r1,c1,r2,c2);
     dataSwap(r1,c1,r2,c2);
     await delay(190);
 
+    // ── Two specials swapped → COMBO ──
+    if (bothSpecial) {
+      moves--; updateUI();
+      await comboSpecials(r2, c2, sp1Before, r1, c1, sp2Before);
+      if (!levelOver) { saveGame(); checkWinLose(); }
+      return;
+    }
+
+    // ── One special moved → activate it ──
+    if (sp1Before !== SP_NONE || sp2Before !== SP_NONE) {
+      // After dataSwap: sp1Before is now at (r2,c2), sp2Before at (r1,c1)
+      const spR = sp1Before !== SP_NONE ? r2 : r1;
+      const spC = sp1Before !== SP_NONE ? c2 : c1;
+      const sp   = sp1Before !== SP_NONE ? sp1Before : sp2Before;
+      moves--; updateUI();
+      await activateSpecialWithChain(spR, spC, sp);
+      comboCount = 0;
+      const more = findAllMatches();
+      if (more.cells.size > 0) await resolveMatches(more, null);
+      if (!levelOver) { saveGame(); checkWinLose(); }
+      return;
+    }
+
+    // ── Normal swap ──
     const matches = findAllMatches();
     if (matches.cells.size === 0) {
       animSwap(r1,c1,r2,c2);
@@ -2983,19 +3011,9 @@ async function trySwap(r1,c1,r2,c2) {
       await delay(190);
       return;
     }
-
     moves--; updateUI();
     comboCount = 0;
-
-    // If either swapped gem is special and NO match formed, activate it
-    const sp1 = special[r1][c1], sp2 = special[r2][c2];
-    if (sp1 !== SP_NONE && !matches.cells.has(k(r1,c1))) {
-      await activateSpecialWithChain(r1, c1, sp1);
-    } else if (sp2 !== SP_NONE && !matches.cells.has(k(r2,c2))) {
-      await activateSpecialWithChain(r2, c2, sp2);
-    } else {
-      await resolveMatches(matches, null);
-    }
+    await resolveMatches(matches, null);
     if (!levelOver) { saveGame(); checkWinLose(); }
   } catch(e) {
     console.error('trySwap error:', e);
@@ -3003,6 +3021,74 @@ async function trySwap(r1,c1,r2,c2) {
     processing = false;
     resetInactivity();
   }
+}
+
+// ── SPECIAL + SPECIAL COMBO ──
+async function comboSpecials(r1, c1, sp1, r2, c2, sp2) {
+  showToast('⚡ COMBO!'); shakeScreen(); vibrate([80,30,80,30,80]);
+
+  // Same type → bigger explosion
+  if (sp1 === sp2) {
+    if (sp1 === SP_ROCKET || sp1 === SP_CROSS) {
+      // Double rocket/cross: clear 3 rows + 3 columns
+      const cells = new Set();
+      for (let dr=-1; dr<=1; dr++) for (let cc=0; cc<COLS; cc++) {
+        if(r1+dr>=0&&r1+dr<ROWS) cells.add(k(r1+dr,cc));
+        if(r2+dr>=0&&r2+dr<ROWS) cells.add(k(r2+dr,cc));
+      }
+      for (let rr=0; rr<ROWS; rr++) for (let dc=-1; dc<=1; dc++) {
+        if(c1+dc>=0&&c1+dc<COLS) cells.add(k(rr,c1+dc));
+        if(c2+dc>=0&&c2+dc<COLS) cells.add(k(rr,c2+dc));
+      }
+      await _comboBlast(r1,c1,r2,c2,cells);
+    } else if (sp1 === SP_BOMB || sp1 === SP_MINE) {
+      // Double bomb: 7×7 explosion
+      const cells = new Set();
+      const mid = { r:Math.round((r1+r2)/2), c:Math.round((c1+c2)/2) };
+      for (let dr=-3; dr<=3; dr++) for (let dc=-3; dc<=3; dc++) {
+        const nr=mid.r+dr, nc=mid.c+dc;
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) cells.add(k(nr,nc));
+      }
+      await _comboBlast(r1,c1,r2,c2,cells);
+    } else if (sp1 === SP_RAINBOW) {
+      // Double rainbow: clear 2 most common colors
+      const count = new Array(cfg.gemColors).fill(0);
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(board[r][c]>=0) count[board[r][c]]++;
+      const sorted = [...count.keys()].sort((a,b)=>count[b]-count[a]);
+      const cells = new Set();
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++)
+        if(board[r][c]===sorted[0]||board[r][c]===sorted[1]) cells.add(k(r,c));
+      await _comboBlast(r1,c1,r2,c2,cells);
+    }
+  } else {
+    // Different types → activate both
+    await activateSpecialWithChain(r1, c1, sp1);
+    await delay(150);
+    await activateSpecialWithChain(r2, c2, sp2);
+  }
+  comboCount = 0;
+  const more = findAllMatches();
+  if (more.cells.size > 0) await resolveMatches(more, null);
+}
+
+async function _comboBlast(r1,c1,r2,c2,cells) {
+  // Remove both specials
+  [r1,r2].forEach((r,i)=>{
+    const c=[c1,c2][i];
+    board[r][c]=-1; special[r][c]=SP_NONE;
+    if(gemEls[r][c]){gemEls[r][c].remove();gemEls[r][c]=null;}
+  });
+  // Score
+  cells.forEach(key=>{
+    const {r,c}=uk(key);
+    const g=board[r][c]; if(g<0) return;
+    score+=120; totalScore+=120;
+    const gk='gem_'+g;
+    if(goalsTarget[gk]!==undefined) goals[gk]=Math.min((goals[gk]||0)+1,goalsTarget[gk]);
+  });
+  updateUI(); renderGoals();
+  await popCells(cells);
+  await gravityAndRefill([]);
 }
 
 function animSwap(r1,c1,r2,c2) {
