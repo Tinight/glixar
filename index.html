@@ -2514,35 +2514,8 @@ function startLevel() {
   const _now = Date.now();
   lifeTimestamps = lifeTimestamps.map(t => (t>0 && t<=_now) ? 0 : t);
 
-  // Build goals from goalTypes config
+  // Goals will be assigned after buildBoard() so we know which colors exist
   goals = {}; goalsTarget = {};
-  const goalTypesArr = cfg.goalTypes && cfg.goalTypes.length > 0
-    ? cfg.goalTypes : [{type:GOAL_GEM}];
-  const gemPicks = shuffle(Array.from({length:cfg.gemColors},(_,i)=>i));
-  let gemIdx = 0;
-  goalTypesArr.forEach(gt => {
-    if (gt.type === GOAL_GEM) {
-      const g = gemPicks[gemIdx++ % cfg.gemColors];
-      const key = 'gem_'+g;
-      // Avoid duplicate keys
-      if (goalsTarget[key] !== undefined) {
-        const g2 = gemPicks[(gemIdx++) % cfg.gemColors];
-        goalsTarget['gem_'+g2] = cfg.goalAmt;
-        goals['gem_'+g2] = 0;
-      } else {
-        goalsTarget[key] = cfg.goalAmt;
-        goals[key] = 0;
-      }
-    } else if (gt.type === GOAL_COMBO) {
-      goalsTarget['combo'] = gt.target;
-      goals['combo'] = 0;
-    }
-  });
-  // Safety: ensure at least 1 gem goal
-  if (Object.keys(goalsTarget).filter(k=>k!=='rock'&&k!=='ice').length === 0) {
-    goalsTarget['gem_0'] = cfg.goalAmt;
-    goals['gem_0'] = 0;
-  }
   sessionCombos = 0; sessionMatches = 0; sessionSpecials = 0; sessionRocks = 0;
 
   // Power-ups: give 1 of each if empty, otherwise keep accumulated (max 3)
@@ -2565,7 +2538,42 @@ function startLevel() {
   renderGoals();
   renderPowers();
   buildBoard();
-  // Show countdown if coming from map preview
+
+  // ── Assign goals based on colors that actually exist in the board ──
+  goals = {}; goalsTarget = {};
+  // Count which colors are actually on the board
+  const boardColors = new Set();
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (board[r][c] >= 0) boardColors.add(board[r][c]);
+  // Shuffle available colors and pick goal colors
+  const availColors = shuffle([...boardColors]);
+  const goalTypesArr = cfg.goalTypes && cfg.goalTypes.length > 0
+    ? cfg.goalTypes : [{type:GOAL_GEM}];
+  let colorIdx = 0;
+  const usedColors = new Set();
+  goalTypesArr.forEach(gt => {
+    if (gt.type === GOAL_GEM) {
+      // Pick a color that exists and hasn't been used yet
+      let g = -1;
+      for (let i = 0; i < availColors.length; i++) {
+        const candidate = availColors[(colorIdx + i) % availColors.length];
+        if (!usedColors.has(candidate)) { g = candidate; colorIdx++; break; }
+      }
+      if (g === -1) g = availColors[0]; // fallback
+      usedColors.add(g);
+      goalsTarget['gem_' + g] = cfg.goalAmt;
+      goals['gem_' + g] = 0;
+    } else if (gt.type === GOAL_COMBO) {
+      goalsTarget['combo'] = gt.target;
+      goals['combo'] = 0;
+    }
+  });
+  if (Object.keys(goalsTarget).length === 0) {
+    const fallback = availColors[0] ?? 0;
+    goalsTarget['gem_' + fallback] = cfg.goalAmt;
+    goals['gem_' + fallback] = 0;
+  }  // Show countdown if coming from map preview
   if (_showCountdown) {
     _showCountdown = false;
     processing = true;
