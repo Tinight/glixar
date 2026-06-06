@@ -2605,11 +2605,38 @@ function onCellClick(r, c) {
 
   // ── DOUBLE-TAP TO ACTIVATE SPECIALS (sem gastar jogada) ──
   const sp = special[r][c];
+
+  // Se tem arco-íris selecionado e clicou numa gema colorida → ativa com essa cor
+  if (selected && special[selected.r][selected.c] === SP_RAINBOW && sp === SP_NONE && board[r][c] >= 0) {
+    const {r:sr, c:sc} = selected;
+    const color = board[r][c];
+    gemEls[sr][sc].classList.remove('selected');
+    selected = null;
+    processing = true;
+    (async () => {
+      try {
+        await activateRainbow(sr, sc, color);
+        await gravityAndRefill([]);
+        comboCount = 0;
+        const more = findAllMatches();
+        if (more.cells.size > 0) await resolveMatches(more, null);
+        if (!levelOver) { saveGame(); checkWinLose(); }
+      } catch(e) { console.error('rainbow tap error:', e); }
+      finally { processing = false; resetInactivity(); }
+    })();
+    return;
+  }
+
   if (sp !== SP_NONE && !activeTool) {
     if (selected && selected.r === r && selected.c === c) {
-      // Segundo toque na mesma especial → ATIVA sem gastar jogada
+      // Segundo toque na mesma especial (não arco-íris) → ATIVA
       gemEls[r][c].classList.remove('selected');
       selected = null;
+      if (sp === SP_RAINBOW) {
+        // Arco-íris precisa de cor — aguarda próximo toque numa gema
+        showToast('🌈 Toque numa cor!');
+        return;
+      }
       processing = true;
       (async () => {
         try {
@@ -2627,24 +2654,16 @@ function onCellClick(r, c) {
       if (selected) gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
       selected = {r, c};
       gemEls[r][c].classList.add('selected');
+      // Hint for rainbow
+      if (sp === SP_RAINBOW) showToast('🌈 Toque numa cor para ativar!');
     }
     return;
   }
 
-  // Rainbow: clicking while another gem selected → activate with that color
-  if (selected && sp === SP_RAINBOW) {
-    const {r:sr, c:sc} = selected;
-    gemEls[sr][sc].classList.remove('selected');
-    selected = null;
-    activateRainbow(r, c, board[sr][sc]);
-    return;
-  }
+  // Se arco-íris selecionado e clicou em outra especial — cancela
   if (selected && special[selected.r][selected.c] === SP_RAINBOW) {
-    const {r:sr, c:sc} = selected;
-    gemEls[sr][sc].classList.remove('selected');
+    gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
     selected = null;
-    activateRainbow(sr, sc, board[r][c]);
-    return;
   }
 
   if (!selected) {
@@ -3319,20 +3338,12 @@ function cancelActiveTool() {
 // ── MINE: 3x3 explosion with chain reaction ──
 // ── ACTIVAR ESPECIAL DIRETO ──
 async function activateSpecial(r, c, sp) {
-  // Remove gem
+  // Remove gem first
   board[r][c]   = -1;
   special[r][c] = SP_NONE;
   if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
 
-  if (sp === SP_RAINBOW) {
-    // Rainbow needs a color target — pick most common color on board
-    let best = 0, bestColor = 0;
-    const count = new Array(8).fill(0);
-    for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(board[rr][cc]>=0) count[board[rr][cc]]++;
-    count.forEach((n,i)=>{ if(n>best){best=n;bestColor=i;} });
-    await activateRainbow(r, c, bestColor);
-    return;
-  }
+  if (sp === SP_RAINBOW) return; // handled separately
 
   // Build blast cells
   const cells = new Set();
@@ -3363,6 +3374,15 @@ async function activateSpecial(r, c, sp) {
 
   shakeScreen(); vibrate([60,20,60]); playSpecial();
 
+  // ── Collect chain targets BEFORE popCells destroys them ──
+  const chainTargets = [];
+  cells.forEach(key => {
+    const {r:rr,c:cc} = uk(key);
+    if (rr===r && cc===c) return; // skip self
+    if (special[rr][cc] !== SP_NONE && board[rr][cc] >= 0)
+      chainTargets.push({r:rr, c:cc, sp:special[rr][cc]});
+  });
+
   // Score + goals
   cells.forEach(key => {
     const {r:rr,c:cc} = uk(key);
@@ -3374,6 +3394,14 @@ async function activateSpecial(r, c, sp) {
   });
   updateUI(); renderGoals();
   await popCells(cells);
+
+  // ── Trigger chains after pop ──
+  for (const ch of chainTargets) {
+    if (special[ch.r] !== undefined && special[ch.r][ch.c] !== SP_NONE) {
+      await delay(130);
+      await activateSpecialWithChain(ch.r, ch.c, special[ch.r][ch.c]);
+    }
+  }
 }
 
 // ── REAÇÃO EM CADEIA ──
