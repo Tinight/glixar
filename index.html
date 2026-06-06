@@ -2906,19 +2906,22 @@ function onCellClick(r, c) {
 
   if (sp !== SP_NONE && !activeTool) {
     if (selected && selected.r === r && selected.c === c) {
-      // Segundo toque na mesma especial (não arco-íris) → ATIVA
+      // Segundo toque na mesma especial → ATIVA (gasta 1 jogada)
       gemEls[r][c].classList.remove('selected');
       selected = null;
       if (sp === SP_RAINBOW) {
-        // Arco-íris precisa de cor — aguarda próximo toque numa gema
-        showToast('🌈 Toque numa cor!');
+        // Arco-íris: re-seleciona e espera toque em gema colorida
+        showToast('🌈 Toque numa cor para ativar!');
+        selected = {r, c};
+        gemEls[r][c].classList.add('selected');
         return;
       }
+      moves--; updateUI(); // gasta 1 jogada
       processing = true;
       (async () => {
         try {
           await activateSpecialWithChain(r, c, sp);
-          await gravityAndRefill([]);
+          // gravity já chamado dentro de activateSpecialWithChain
           comboCount = 0;
           const more = findAllMatches();
           if (more.cells.size > 0) await resolveMatches(more, null);
@@ -2931,7 +2934,6 @@ function onCellClick(r, c) {
       if (selected) gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
       selected = {r, c};
       gemEls[r][c].classList.add('selected');
-      // Hint for rainbow
       if (sp === SP_RAINBOW) showToast('🌈 Toque numa cor para ativar!');
     }
     return;
@@ -2989,10 +2991,8 @@ async function trySwap(r1,c1,r2,c2) {
     const sp1 = special[r1][c1], sp2 = special[r2][c2];
     if (sp1 !== SP_NONE && !matches.cells.has(k(r1,c1))) {
       await activateSpecialWithChain(r1, c1, sp1);
-      await gravityAndRefill([]);
     } else if (sp2 !== SP_NONE && !matches.cells.has(k(r2,c2))) {
       await activateSpecialWithChain(r2, c2, sp2);
-      await gravityAndRefill([]);
     } else {
       await resolveMatches(matches, null);
     }
@@ -3711,10 +3711,17 @@ async function activateSpecialWithChain(r, c, sp) {
   // 5. Pop blast cells
   await popCells(blastCells);
 
-  // 6. Cascade chains
+  // 6. Gravity after this explosion (fills holes)
+  await gravityAndRefill([]);
+
+  // 7. Cascade chains with delay
   for(const ch of chains) {
-    await delay(120);
-    await activateSpecialWithChain(ch.r, ch.c, ch.sp);
+    await delay(150);
+    // Only activate if the special is still alive
+    // (it might have been destroyed by a previous chain)
+    if (ch.r < ROWS && special[ch.r] && special[ch.r][ch.c] !== SP_NONE) {
+      await activateSpecialWithChain(ch.r, ch.c, ch.sp);
+    }
   }
 }
 
