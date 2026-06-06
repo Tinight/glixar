@@ -2603,29 +2603,31 @@ function onCellClick(r, c) {
     executeBomb(cr, cc); return;
   }
 
-  // ── TAP TO ACTIVATE SPECIALS ──
-  // Click directly on a special gem to activate it (costs 1 move)
+  // ── DOUBLE-TAP TO ACTIVATE SPECIALS (sem gastar jogada) ──
   const sp = special[r][c];
   if (sp !== SP_NONE && !activeTool) {
-    // Clear any selection first
-    if (selected) {
-      gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
+    if (selected && selected.r === r && selected.c === c) {
+      // Segundo toque na mesma especial → ATIVA sem gastar jogada
+      gemEls[r][c].classList.remove('selected');
       selected = null;
+      processing = true;
+      (async () => {
+        try {
+          await activateSpecialWithChain(r, c, sp);
+          await gravityAndRefill([]);
+          comboCount = 0;
+          const more = findAllMatches();
+          if (more.cells.size > 0) await resolveMatches(more, null);
+          if (!levelOver) { saveGame(); checkWinLose(); }
+        } catch(e) { console.error('double-tap error:', e); }
+        finally { processing = false; resetInactivity(); }
+      })();
+    } else {
+      // Primeiro toque → seleciona (destaca)
+      if (selected) gemEls[selected.r]?.[selected.c]?.classList.remove('selected');
+      selected = {r, c};
+      gemEls[r][c].classList.add('selected');
     }
-    // Activate the special directly
-    moves--; updateUI();
-    processing = true;
-    (async () => {
-      try {
-        await activateSpecial(r, c, sp);
-        await gravityAndRefill([]);
-        comboCount = 0;
-        const more = findAllMatches();
-        if (more.cells.size > 0) await resolveMatches(more, null);
-        if (!levelOver) { saveGame(); checkWinLose(); }
-      } catch(e) { console.error('tap special error:', e); }
-      finally { processing = false; resetInactivity(); }
-    })();
     return;
   }
 
@@ -3315,6 +3317,56 @@ function cancelActiveTool() {
 
 // Called from onCellClick when activeTool is set
 // ── MINE: 3x3 explosion with chain reaction ──
+// ── REAÇÃO EM CADEIA ──
+// Detona gemas especiais atingidas por uma explosão
+async function triggerChain(blastKeys) {
+  const toChain = [];
+  blastKeys.forEach(key => {
+    const {r, c} = uk(key);
+    if (r >= 0 && r < ROWS && c >= 0 && c < COLS &&
+        special[r][c] !== SP_NONE && board[r][c] >= 0) {
+      toChain.push({r, c, sp: special[r][c]});
+    }
+  });
+  for (const ch of toChain) {
+    // Double-check still valid (may have been destroyed by previous chain)
+    if (special[ch.r][ch.c] !== SP_NONE) {
+      await delay(140);
+      await activateSpecialWithChain(ch.r, ch.c, special[ch.r][ch.c]);
+    }
+  }
+}
+
+// Activate special and trigger chain on blast cells
+async function activateSpecialWithChain(r, c, sp) {
+  if (sp === SP_MINE) {
+    // Collect 3x3 blast cells before detonating
+    const blast = new Set();
+    for (let dr=-1;dr<=1;dr++) for (let dc=-1;dc<=1;dc++) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) blast.add(k(nr,nc));
+    }
+    await activateSpecial(r, c, sp);
+    await triggerChain(blast);
+  } else if (sp === SP_BOMB) {
+    const blast = new Set();
+    for (let dr=-2;dr<=2;dr++) for (let dc=-2;dc<=2;dc++) {
+      const nr=r+dr, nc=c+dc;
+      if (nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) blast.add(k(nr,nc));
+    }
+    await activateSpecial(r, c, sp);
+    await triggerChain(blast);
+  } else if (sp === SP_ROCKET || sp === SP_CROSS) {
+    const blast = new Set();
+    for (let i=0;i<COLS;i++) blast.add(k(r,i));
+    for (let i=0;i<ROWS;i++) blast.add(k(i,c));
+    await activateSpecial(r, c, sp);
+    await triggerChain(blast);
+  } else {
+    await activateSpecial(r, c, sp);
+  }
+}
+
 async function executeMine(r, c) {
   const cells = new Set();
   const chainSpecials = [];
@@ -3341,16 +3393,10 @@ async function executeMine(r, c) {
     if (goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
   });
   updateUI(); renderGoals();
+  const mineBlast = new Set(cells);
   await popCells(cells);
+  await triggerChain(mineBlast);
   await gravityAndRefill([]);
-
-  // Chain reaction: trigger other specials caught in blast
-  for (const ch of chainSpecials) {
-    if (board[ch.r] && board[ch.r][ch.c] >= 0 && special[ch.r][ch.c] !== SP_NONE) {
-      await delay(150);
-      await activateSpecial(ch.r, ch.c, special[ch.r][ch.c]);
-    }
-  }
 }
 
 // ── CHAIN REACTION helper ── already in executeMine above
@@ -3442,7 +3488,9 @@ async function executeBomb(cr, cc) {
       if(goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
     });
     updateUI(); renderGoals();
+    const bombBlast = new Set(cells);
     await popCells(cells);
+    await triggerChain(bombBlast);
     await gravityAndRefill([]);
     comboCount = 0;
     const more = findAllMatches();
