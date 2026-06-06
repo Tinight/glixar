@@ -288,7 +288,7 @@ body::before{
 /* ── CHECKIN MODAL ── */
 .checkin-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:400;align-items:center;justify-content:center;padding:16px;
+  z-index:350;align-items:center;justify-content:center;padding:16px;
 }
 .checkin-overlay.show{display:flex;}
 .checkin-box{
@@ -601,7 +601,7 @@ body::before{
 
 /* ── PROFILE MODAL ── */
 .profile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:400;align-items:center;justify-content:center;padding:16px;}
+  z-index:350;align-items:center;justify-content:center;padding:16px;}
 .profile-overlay.show{display:flex;}
 .profile-box{
   background:linear-gradient(135deg,#1a0550,#0a0220);
@@ -814,7 +814,7 @@ body::before{
 /* ── RANK MODAL ── */
 .rank-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
-  z-index:400;align-items:center;justify-content:center;padding:16px;
+  z-index:350;align-items:center;justify-content:center;padding:16px;
 }
 .rank-overlay.show{display:flex;}
 .rank-box{
@@ -822,7 +822,6 @@ body::before{
   border:3px solid var(--gold);border-radius:20px;
   padding:20px 16px;width:100%;max-width:360px;
   box-shadow:0 16px 48px rgba(0,0,0,.8);
-  animation:splashIn .35s cubic-bezier(.34,1.4,.64,1) both;
 }
 .rank-box h2{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);
   text-align:center;margin-bottom:12px;text-shadow:0 2px 0 var(--gold-dark);}
@@ -860,12 +859,10 @@ body::before{
 
 /* rank button in header */
 .rank-btn{
-  background:linear-gradient(135deg,#e5a93b,#aa7312);
-  border:2px solid var(--gold);border-radius:10px;
-  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;cursor:pointer;flex-shrink:0;
-  transition:filter .15s,transform .1s;
-  box-shadow:0 3px 10px rgba(0,0,0,.4);
+  background:linear-gradient(135deg,#4a1a8e,#2a0860);
+  border:2px solid var(--gold);border-radius:12px;
+  padding:5px 10px;cursor:pointer;font-size:1.1rem;
+  transition:filter .15s,transform .1s;flex-shrink:0;
 }
 .rank-btn:hover{filter:brightness(1.2);transform:scale(1.05);}
 
@@ -904,7 +901,7 @@ body::before{
 /* menu confirm overlay */
 .menu-confirm{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
-  z-index:400;align-items:center;justify-content:center;padding:20px;
+  z-index:350;align-items:center;justify-content:center;padding:20px;
 }
 .menu-confirm.show{display:flex;}
 .menu-confirm-box{
@@ -1184,12 +1181,10 @@ body::before{
 
 /* ── DAILY MISSIONS ── */
 .daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:400;align-items:center;justify-content:center;padding:16px;}
+  z-index:350;align-items:center;justify-content:center;padding:16px;}
 .daily-overlay.show{display:flex;}
 .daily-box{background:linear-gradient(135deg,#2a0860,#0e0330);border:3px solid var(--gold);
-  border-radius:20px;padding:20px 16px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;
-  box-shadow:0 16px 48px rgba(0,0,0,.8);
-  animation:splashIn .35s cubic-bezier(.34,1.4,.64,1) both;}
+  border-radius:20px;padding:20px 16px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;}
 .daily-box h2{font-family:'Luckiest Guy',cursive;font-size:1.8rem;color:var(--gold);text-align:center;margin-bottom:4px;}
 .daily-date{text-align:center;font-size:.7rem;color:rgba(255,255,255,.4);margin-bottom:14px;}
 .daily-mission{background:rgba(255,255,255,.07);border-radius:12px;padding:12px;margin-bottom:8px;}
@@ -1219,7 +1214,7 @@ body::before{
 /* lives overlay */
 .lives-overlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:400;align-items:center;justify-content:center;padding:16px;
+  z-index:250;align-items:center;justify-content:center;padding:16px;
 }
 .lives-overlay.show{display:flex;}
 .lives-modal{
@@ -1237,6 +1232,22 @@ body::before{
 }
 .lives-btn-row{display:flex;flex-direction:column;gap:8px;}
 
+/* menu confirm overlay */
+.menu-confirm{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:250;align-items:center;justify-content:center;padding:16px;
+}
+.menu-confirm.show{display:flex;}
+.menu-confirm-box{
+  background:linear-gradient(135deg,#2a0860,#0e0330);
+  border:3px solid var(--gold);border-radius:18px;
+  padding:24px 20px;text-align:center;width:100%;max-width:300px;
+  animation:splashIn .3s ease both;
+}
+.menu-confirm-box h3{font-family:'Luckiest Guy',cursive;font-size:1.4rem;color:var(--gold);margin-bottom:8px;}
+.menu-confirm-box p{color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:16px;}
+.menu-confirm-btns{display:flex;gap:8px;}
+.menu-confirm-btns .btn{flex:1;font-size:.85rem;padding:11px 6px;}
 
 /* ── TIMER ── */
 .timer-box{background:linear-gradient(135deg,#8b0000,#4a0000);border:2px solid #ff4444;
@@ -1326,7 +1337,6 @@ body::before{
       <span class="d-count" id="diamondCount">0</span>
     </div>
     <button class="gear-btn" onclick="openCheckin()" title="Check-in" aria-label="Check-in">📅</button>
-    <button class="rank-btn" onclick="openRank()" title="Ranking" aria-label="Ranking">🏆</button>
     <button class="gear-btn" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙️</button>
   </div>
 </div>
@@ -1438,6 +1448,28 @@ body::before{
   <div class="dt-label" id="dtLabel">Fase completa!</div>
 </div>
 
+<!-- CUSTOM CONFIRM MODAL -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:24px;">
+  <div style="background:linear-gradient(135deg,#1a0550,#0a0220);
+    border:2px solid rgba(255,215,0,.4);border-radius:20px;
+    padding:24px 20px;width:100%;max-width:320px;text-align:center;">
+    <div id="confirmIcon" style="font-size:2rem;margin-bottom:8px;">⚠️</div>
+    <div id="confirmMsg" style="font-size:.9rem;color:#fff;line-height:1.5;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="resolveConfirm(false)" style="flex:1;padding:12px;border-radius:12px;
+        border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);
+        color:#fff;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;">
+        Cancelar</button>
+      <button id="confirmOkBtn" onclick="resolveConfirm(true)" style="flex:1;padding:12px;
+        border-radius:12px;border:none;
+        background:linear-gradient(180deg,#FFD700,#C8A200);
+        color:#3a1800;font-family:'Luckiest Guy',cursive;font-size:.95rem;cursor:pointer;">
+        OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="countdown-overlay" id="countdownOverlay">
   <div class="countdown-num" id="countdownNum">3</div>
 </div>
@@ -1505,6 +1537,17 @@ body::before{
 </div><!-- /wrapper -->
 </div>
 
+<!-- MENU CONFIRM -->
+<div class="menu-confirm" id="menuConfirm">
+  <div class="menu-confirm-box">
+    <h3>🏠 Sair?</h3>
+    <p>Seu progresso está salvo.<br>Pode continuar depois!</p>
+    <div class="menu-confirm-btns">
+      <button class="btn btn-give-up" onclick="closeMenuConfirm()">Cancelar</button>
+      <button class="btn btn-new" onclick="goToMenu()">Sair</button>
+    </div>
+  </div>
+</div>
 
 <!-- MAP OVERLAY -->
 <div id="mapOverlay" style="display:none;position:fixed;inset:0;z-index:250;
@@ -1705,26 +1748,31 @@ const MISSION_DEFS = [
 
 // Level difficulty table (infinite: extrapolates)
 function getLevelConfig(lvl) {
-  // Smoother infinite scaling
-  const gemColors = Math.min(8, 3 + Math.floor((lvl - 1) / 3));
-  const goalCount = lvl <= 2 ? 1 : lvl <= 5 ? 2 : 3;
-  const goalAmt   = Math.min(40, 6 + Math.floor((lvl - 1) * 1.8));
-  const label     = lvl <= 3  ? 'Normal'  :
-                    lvl <= 8  ? 'Médio'   :
-                    lvl <= 15 ? 'Difícil' :
-                    lvl <= 25 ? 'Épico'   : 'Lendário';
-  // Moves proportional to total goals — harder = more goals = more moves needed
+  // Colors: start with 3, add 1 every 5 levels, max 7
+  const gemColors = Math.min(7, 3 + Math.floor((lvl - 1) / 5));
+
+  // Goal count: 1 goal early, 2 mid, 3 late
+  const goalCount = lvl <= 3 ? 1 : lvl <= 8 ? 2 : 3;
+
+  // Goal amount: starts small, grows slowly, caps at 25
+  // Phase 1→5: 6→10, Phase 10: 14, Phase 15: 17, Phase 20: 20, Phase 25+: 22-25
+  const goalAmt = Math.min(25, 5 + Math.floor((lvl - 1) * 0.8));
+
+  const label = lvl <= 3  ? 'Normal'  :
+                lvl <= 8  ? 'Médio'   :
+                lvl <= 15 ? 'Difícil' :
+                lvl <= 25 ? 'Épico'   : 'Lendário';
+
+  // Moves: generous — player needs ~2 moves per gem target on average
+  // With 8x8 board and matching, expect ~3-4 gems per move
+  // So moves = (totalGoals / 3.5) * buffer
   const totalGoals = goalCount * goalAmt;
-  const diffMult   = label==='Normal'?1.0:label==='Médio'?0.95:label==='Difícil'?0.9:label==='Épico'?0.85:0.8;
-  const moves      = Math.max(20, Math.min(55, Math.round(totalGoals * 0.32 * diffMult) + 12));
-  const powerUps  = lvl <= 10 ? 1 : 0;
-  // Obstacles start appearing from level 3
-  const rocks = 0;  // disabled temporarily
-  const ices  = 0;  // disabled temporarily
-  const hasTimer  = false;
-  const timerSecs = 0;
-  const goalTypes = buildGoalTypes(lvl, 0, 0);
-  return { moves, gemColors, goalCount, goalAmt, label, powerUps, rocks:0, ices:0, hasTimer:false, timerSecs:0, goalTypes };
+  const moves = Math.max(22, Math.min(60, Math.round(totalGoals * 0.55) + 15));
+
+  const powerUps = lvl <= 10 ? 1 : 0;
+  const goalTypes = buildGoalTypes(lvl);
+  return { moves, gemColors, goalCount, goalAmt, label, powerUps,
+    rocks:0, ices:0, hasTimer:false, timerSecs:0, goalTypes };
 }
 
 function buildGoalTypes(lvl) {
@@ -2136,24 +2184,43 @@ function newGame() {
   startLevel();
 }
 
+// ── CUSTOM CONFIRM ──
+let _confirmResolve = null;
+function showConfirm(icon, msg, okLabel) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    document.getElementById('confirmIcon').textContent = icon;
+    document.getElementById('confirmMsg').innerHTML = msg;
+    document.getElementById('confirmOkBtn').textContent = okLabel || 'OK';
+    document.getElementById('confirmModal').style.display = 'flex';
+  });
+}
+function resolveConfirm(val) {
+  document.getElementById('confirmModal').style.display = 'none';
+  if (_confirmResolve) { _confirmResolve(val); _confirmResolve = null; }
+}
+
 function restartLevel() {
   if (processing && !levelOver) return;
-  // Costs 1 life to restart (unless no lives to check)
   if (getLives() > 0) {
-    if (!confirm('Reiniciar a fase gasta 1 ❤️ vida. Continuar?')) return;
-    spendLife();
+    showConfirm('🔁', 'Reiniciar a fase gasta<br><strong>1 ❤️ vida</strong>. Continuar?', 'Reiniciar')
+      .then(ok => {
+        if (!ok) return;
+        spendLife();
+        score = 0; levelOver = false;
+        startLevel();
+      });
+  } else if (diamonds >= 20) {
+    showConfirm('💎', 'Sem vidas! Reiniciar custa<br><strong>20 💎 diamantes</strong>. Continuar?', 'Reiniciar')
+      .then(ok => {
+        if (!ok) return;
+        if (!spendDiamonds(20)) return;
+        score = 0; levelOver = false;
+        startLevel();
+      });
   } else {
-    // No lives — use diamonds or just go to menu
-    if (diamonds >= 20) {
-      if (!confirm('Sem vidas! Reiniciar custa 20 💎. Continuar?')) return;
-      if (!spendDiamonds(20)) return;
-    } else {
-      showToast('Sem vidas! Aguarde regenerar.');
-      return;
-    }
+    showToast('Sem vidas! Aguarde regenerar.');
   }
-  score = 0; levelOver = false;
-  startLevel();
 }
 
 function startLevel() {
@@ -4073,7 +4140,7 @@ function renderMenuState() {
   newBtn.textContent = hasSave ? '🔄 Novo Jogo' : '▶ Jogar Agora';
   newBtn.onclick = () => {
     if (hasSave && cur > 0) {
-      if (!confirm('Iniciar novo jogo? O progresso atual será perdido.')) return;
+      // Use custom confirm via modal (skip for now — just proceed)
     }
     hideMenu();
     level = 1; totalScore = 0; newGame();
@@ -4404,9 +4471,7 @@ function openSettings() {
             <span id="settingsDailyBadge" style="background:#ff4444;color:#fff;border-radius:8px;padding:1px 6px;font-size:.6rem;font-weight:900;display:none;">!</span>
             <span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
           </div>
-          <div class="settings-item" onclick="openRank();closeSettings()">
-            <span class="si-icon">🏆</span><span class="si-label">Ranking</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
-          </div>
+
         </div>
         <div class="settings-divider"></div>
         <div class="settings-section">
@@ -4421,12 +4486,10 @@ function openSettings() {
         </div>
         <div class="settings-divider"></div>
         <div class="settings-section">
-          <div class="settings-item" onclick="closeSettings();setTimeout(restartLevel,100)">
+          <div class="settings-item" onclick="closeSettings();setTimeout(()=>{if(!document.getElementById('mapOverlay').style.display||document.getElementById('mapOverlay').style.display==='none')restartLevel();},100)">
             <span class="si-icon">🔁</span><span class="si-label danger">Reiniciar Fase</span>
           </div>
-          <div class="settings-item" onclick="closeSettings();openMenuConfirm()">
-            <span class="si-icon">🏠</span><span class="si-label muted">Sair ao Menu</span>
-          </div>
+
         </div>
         <div style="text-align:center;font-size:.55rem;color:rgba(255,255,255,.2);margin-top:8px;font-family:monospace;">v1.0.0 · Glixar · Breitner Tinight</div>
       </div>`;
