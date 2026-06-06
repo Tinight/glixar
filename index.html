@@ -2707,7 +2707,18 @@ async function trySwap(r1,c1,r2,c2) {
 
     moves--; updateUI();
     comboCount = 0;
-    await resolveMatches(matches, null);
+
+    // If either swapped gem is special and NO match formed, activate it
+    const sp1 = special[r1][c1], sp2 = special[r2][c2];
+    if (sp1 !== SP_NONE && !matches.cells.has(k(r1,c1))) {
+      await activateSpecialWithChain(r1, c1, sp1);
+      await gravityAndRefill([]);
+    } else if (sp2 !== SP_NONE && !matches.cells.has(k(r2,c2))) {
+      await activateSpecialWithChain(r2, c2, sp2);
+      await gravityAndRefill([]);
+    } else {
+      await resolveMatches(matches, null);
+    }
     if (!levelOver) { saveGame(); checkWinLose(); }
   } catch(e) {
     console.error('trySwap error:', e);
@@ -3352,18 +3363,9 @@ function cancelActiveTool() {
 
 // Called from onCellClick when activeTool is set
 // ── MINE: 3x3 explosion with chain reaction ──
-// ── ACTIVAR ESPECIAL DIRETO ──
-async function activateSpecial(r, c, sp) {
-  // Remove gem first
-  board[r][c]   = -1;
-  special[r][c] = SP_NONE;
-  if (gemEls[r][c]) { gemEls[r][c].remove(); gemEls[r][c] = null; }
-
-  if (sp === SP_RAINBOW) return; // handled separately
-
-  // Build blast cells
+// ── Build blast cells for any special ──
+function getBlastCells(r, c, sp) {
   const cells = new Set();
-  cells.add(k(r,c));
   if (sp === SP_ROCKET || sp === SP_CROSS) {
     for(let cc=0;cc<COLS;cc++) cells.add(k(r,cc));
     for(let rr=0;rr<ROWS;rr++) cells.add(k(rr,c));
@@ -3373,59 +3375,72 @@ async function activateSpecial(r, c, sp) {
         if(c+d>=0&&c+d<COLS) { cells.add(k(r-1,c+d)); cells.add(k(r+1,c+d)); }
       }
     }
-    showToast(sp===SP_ROCKET?'🚀 Foguete!':'✳️ Cruz!');
   } else if (sp === SP_BOMB) {
     for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++) {
       const nr=r+dr, nc=c+dc;
       if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) cells.add(k(nr,nc));
     }
-    showToast('💥 Bomba!');
   } else if (sp === SP_MINE) {
     for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++) {
       const nr=r+dr, nc=c+dc;
       if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS) cells.add(k(nr,nc));
     }
-    showToast('💥 Mina!');
+  }
+  return cells;
+}
+
+// ── Activate special with cascade chain reactions ──
+async function activateSpecialWithChain(r, c, sp) {
+  if (sp === SP_RAINBOW) {
+    const count = new Array(cfg.gemColors).fill(0);
+    for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++)
+      if(board[rr][cc]>=0) count[board[rr][cc]]++;
+    let best=0; count.forEach((n,i)=>{ if(n>count[best]) best=i; });
+    await activateRainbow(r, c, best);
+    return;
   }
 
+  const toasts={[SP_ROCKET]:'🚀 Foguete!',[SP_BOMB]:'💥 Bomba!',[SP_CROSS]:'✳️ Cruz!',[SP_MINE]:'💥 Mina!'};
+  if(toasts[sp]) showToast(toasts[sp]);
   shakeScreen(); vibrate([60,20,60]); playSpecial();
 
-  // ── Collect chain targets BEFORE popCells destroys them ──
-  const chainTargets = [];
-  cells.forEach(key => {
-    const {r:rr,c:cc} = uk(key);
-    if (rr===r && cc===c) return; // skip self
-    if (special[rr][cc] !== SP_NONE && board[rr][cc] >= 0)
-      chainTargets.push({r:rr, c:cc, sp:special[rr][cc]});
+  // 1. Build blast cells
+  const blastCells = getBlastCells(r, c, sp);
+
+  // 2. Collect chain specials NOW before any removal
+  const chains = [];
+  blastCells.forEach(key => {
+    const {r:rr, c:cc} = uk(key);
+    if(rr===r && cc===c) return;
+    if(special[rr] && special[rr][cc] !== SP_NONE && board[rr][cc] >= 0)
+      chains.push({r:rr, c:cc, sp:special[rr][cc]});
   });
 
-  // Score + goals
-  cells.forEach(key => {
-    const {r:rr,c:cc} = uk(key);
-    if(obstacleBoard[rr][cc] !== OB_NONE) return;
-    const g = board[rr][cc]; if(g<0) return;
-    score += 90; totalScore += 90;
-    const gk = 'gem_'+g;
-    if(goalsTarget[gk] !== undefined) goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+  // 3. Remove self
+  board[r][c]=-1; special[r][c]=SP_NONE;
+  if(gemEls[r][c]){ gemEls[r][c].remove(); gemEls[r][c]=null; }
+
+  // 4. Score + goals
+  blastCells.forEach(key => {
+    const {r:rr,c:cc}=uk(key);
+    if(obstacleBoard[rr][cc]!==OB_NONE) return;
+    const g=board[rr][cc]; if(g<0) return;
+    score+=90; totalScore+=90;
+    const gk='gem_'+g;
+    if(goalsTarget[gk]!==undefined) goals[gk]=Math.min((goals[gk]||0)+1,goalsTarget[gk]);
   });
   updateUI(); renderGoals();
-  await popCells(cells);
 
-  // ── Trigger chains after pop ──
-  for (const ch of chainTargets) {
-    if (special[ch.r] !== undefined && special[ch.r][ch.c] !== SP_NONE) {
-      await delay(130);
-      await activateSpecialWithChain(ch.r, ch.c, special[ch.r][ch.c]);
-    }
+  // 5. Pop blast cells
+  await popCells(blastCells);
+
+  // 6. Cascade chains
+  for(const ch of chains) {
+    await delay(120);
+    await activateSpecialWithChain(ch.r, ch.c, ch.sp);
   }
 }
 
-
-// Activate special and trigger chain on blast cells
-async function activateSpecialWithChain(r, c, sp) {
-  // activateSpecial handles chain reactions internally
-  await activateSpecial(r, c, sp);
-}
 
 async function executeMine(r, c) {
   const cells = new Set();
