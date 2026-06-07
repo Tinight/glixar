@@ -1232,8 +1232,8 @@ body::before{
 .mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,80,120,.5);}
 
 /* ── DAILY MISSIONS ── */
-.daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
-  z-index:350;align-items:center;justify-content:center;padding:16px;}
+.daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+  z-index:360;align-items:center;justify-content:center;padding:16px;}
 .daily-overlay.show{display:flex;}
 .daily-box{background:linear-gradient(135deg,#2a0860,#0e0330);border:3px solid var(--gold);
   border-radius:20px;padding:20px 16px;width:100%;max-width:360px;max-height:85vh;overflow-y:auto;}
@@ -1523,227 +1523,180 @@ body::before{
 </div>
 
 <!-- TUTORIAL OVERLAY -->
-<div class="tutorial-overlay" id="tutorialOverlay">
-  <div class="tutorial-box">
-    <div class="tut-handle"></div>
-    <div class="tut-title">📖 Como Jogar</div>
-    <div class="tut-subtitle">Aprenda todas as mecânicas do Glixar</div>
+<div id="tutorialOverlay" style="display:none;position:fixed;inset:0;z-index:420;
+  background:rgba(0,0,0,.88);align-items:flex-end;justify-content:center;">
+  <div id="tutorialBox" style="
+    background:linear-gradient(180deg,#1a0550,#0a0220);
+    border:2px solid rgba(0,242,254,.35);border-radius:24px 24px 0 0;
+    width:100%;max-width:440px;max-height:90vh;overflow-y:auto;
+    padding:16px 18px 28px;">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 14px;"></div>
+    <div style="font-family:'Luckiest Guy',cursive;font-size:1.4rem;color:#00f2fe;
+      text-align:center;margin-bottom:4px;text-shadow:0 0 8px rgba(0,242,254,.5);">📖 COMO JOGAR</div>
+    <div style="font-size:.7rem;color:rgba(255,255,255,.4);text-align:center;margin-bottom:16px;">
+      Aprenda todas as mecânicas do Glixar</div>
 
     <!-- Tabs -->
-    <div class="tut-tabs">
-      <div class="tut-tab active" data-page="basico" onclick="showTutPage('basico',event)">🎮 Básico</div>
-      <div class="tut-tab" data-page="especiais" onclick="showTutPage('especiais',event)">✨ Especiais</div>
-      <div class="tut-tab" data-page="combos" onclick="showTutPage('combos',event)">💥 Combos</div>
-      <div class="tut-tab" data-page="poderes" onclick="showTutPage('poderes',event)">🔨 Poderes</div>
-      <div class="tut-tab" data-page="dicas" onclick="showTutPage('dicas',event)">💡 Dicas</div>
+    <div id="tutTabs" style="display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
+      <button id="ttab-basico" onclick="tutTab('basico')" style="flex-shrink:0;padding:6px 14px;border-radius:20px;
+        font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;
+        border:1.5px solid rgba(0,242,254,.4);background:rgba(0,242,254,.15);color:#00f2fe;">🎮 Básico</button>
+      <button id="ttab-especiais" onclick="tutTab('especiais')" style="flex-shrink:0;padding:6px 14px;border-radius:20px;
+        font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;
+        border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);">✨ Especiais</button>
+      <button id="ttab-combos" onclick="tutTab('combos')" style="flex-shrink:0;padding:6px 14px;border-radius:20px;
+        font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;
+        border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);">💥 Combos</button>
+      <button id="ttab-poderes" onclick="tutTab('poderes')" style="flex-shrink:0;padding:6px 14px;border-radius:20px;
+        font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;
+        border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);">🔨 Poderes</button>
+      <button id="ttab-dicas" onclick="tutTab('dicas')" style="flex-shrink:0;padding:6px 14px;border-radius:20px;
+        font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap;
+        border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);">💡 Dicas</button>
     </div>
 
-    <!-- Página: Básico -->
-    <div class="tut-page active" id="tut-basico">
-      <div class="tut-section-title">Objetivo</div>
-      <div class="tut-card">
-        <div class="tc-icon">🎯</div>
-        <div class="tc-body">
-          <div class="tc-title">Complete as metas da fase</div>
-          <div class="tc-desc">Cada fase tem objetivos: colete gemas de <strong>cores específicas</strong> dentro do número de jogadas disponível.</div>
-        </div>
+    <!-- Pages -->
+    <div id="tpage-basico">
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Objetivo</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🎯</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Complete as metas da fase</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Cada fase tem objetivos: colete gemas de <strong style="color:#00f2fe;">cores específicas</strong> dentro do número de jogadas disponível.</div></div>
       </div>
-      <div class="tut-section-title">Movimentos</div>
-      <div class="tut-card">
-        <div class="tc-icon">👆</div>
-        <div class="tc-body">
-          <div class="tc-title">Arrastar ou tocar</div>
-          <div class="tc-desc">Deslize uma gema para trocar com uma adjacente. Você também pode <strong>tocar em uma</strong> e depois tocar na outra para trocar.</div>
-        </div>
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:14px 0 8px;">Movimentos</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">👆</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Arrastar ou tocar</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Deslize uma gema para trocar com uma adjacente. Você também pode <strong style="color:#00f2fe;">tocar em uma</strong> e depois tocar na outra.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">❤️</div>
-        <div class="tc-body">
-          <div class="tc-title">Vidas</div>
-          <div class="tc-desc">Você tem <strong>3 vidas</strong>. Perde uma quando fica sem jogadas. Cada vida regenera em <strong>30 minutos</strong>.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">❤️</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Vidas</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Você tem <strong style="color:#00f2fe;">3 vidas</strong>. Perde uma quando fica sem jogadas. Cada vida regenera em <strong style="color:#00f2fe;">30 minutos</strong>.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">⭐</div>
-        <div class="tc-body">
-          <div class="tc-title">Estrelas</div>
-          <div class="tc-desc">Ganhe <strong>1 a 3 estrelas</strong> por fase dependendo da pontuação. Melhorar sua estrela te dá <strong>💎 diamantes bônus</strong>.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Página: Especiais -->
-    <div class="tut-page" id="tut-especiais">
-      <div class="tut-section-title">Como criar especiais</div>
-      <div class="tut-card">
-        <div class="tc-icon">🚀</div>
-        <div class="tc-body">
-          <div class="tc-title">Foguete — combine 4 em linha</div>
-          <div class="tc-desc">Faça um match de <strong>4 gemas iguais</strong> em linha reta. Ao ativar, limpa <strong>toda uma linha e coluna</strong>.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">💣</div>
-        <div class="tc-body">
-          <div class="tc-title">Bomba — combine 5 em L ou T</div>
-          <div class="tc-desc">Combine <strong>5 gemas em forma de L ou T</strong>. Ao ativar, explode uma área <strong>5×5</strong> ao redor.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">✳️</div>
-        <div class="tc-body">
-          <div class="tc-title">Cruz — combine 5 em cruz</div>
-          <div class="tc-desc">Faça um match em <strong>formato de cruz (+)</strong>. Explode a <strong>linha, coluna e área</strong> ao redor.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">🌈</div>
-        <div class="tc-body">
-          <div class="tc-title">Arco-íris — combine 6 ou mais</div>
-          <div class="tc-desc">Combine <strong>6 ou mais gemas</strong>. Ao ativar: <strong>1º toque</strong> seleciona, <strong>toque numa gema colorida</strong> elimina todas daquela cor.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">💥</div>
-        <div class="tc-body">
-          <div class="tc-title">Mina — forme um quadrado 2×2</div>
-          <div class="tc-desc">Coloque <strong>4 gemas iguais em quadrado</strong>. Ao ativar, explode <strong>toda a área 3×3</strong> ao redor.</div>
-        </div>
-      </div>
-      <div class="tut-section-title">Como ativar</div>
-      <div class="tut-card">
-        <div class="tc-icon">✌️</div>
-        <div class="tc-body">
-          <div class="tc-title">Duplo toque = ativar grátis</div>
-          <div class="tc-desc">Toque <strong>duas vezes</strong> na mesma gema especial para ativá-la <strong>sem gastar jogada</strong>.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">↔️</div>
-        <div class="tc-body">
-          <div class="tc-title">Mover = também ativa</div>
-          <div class="tc-desc">Ao <strong>arrastar um especial</strong> para trocar com outra gema, ele também <strong>ativa automaticamente</strong>.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">⭐</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Estrelas</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Ganhe <strong style="color:#00f2fe;">1 a 3 estrelas</strong> por fase dependendo da pontuação. Melhorar sua estrela te dá 💎 diamantes bônus.</div></div>
       </div>
     </div>
 
-    <!-- Página: Combos -->
-    <div class="tut-page" id="tut-combos">
-      <div class="tut-section-title">Reação em cadeia</div>
-      <div class="tut-card">
-        <div class="tc-icon">🔗</div>
-        <div class="tc-body">
-          <div class="tc-title">Explosão em cascata</div>
-          <div class="tc-desc">Quando uma explosão atinge outra gema especial, ela <strong>detona automaticamente</strong> em sequência com um pequeno delay.</div>
-        </div>
+    <div id="tpage-especiais" style="display:none;">
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Como criar especiais</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🚀</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Foguete — 4 em linha</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Faça match de <strong style="color:#00f2fe;">4 gemas iguais</strong> em linha. Ativa limpando toda uma linha e coluna.</div></div>
       </div>
-      <div class="tut-section-title">Combinações especiais + especiais</div>
-      <div class="tut-card">
-        <div class="tc-icon">🚀🚀</div>
-        <div class="tc-body">
-          <div class="tc-title">Foguete + Foguete</div>
-          <div class="tc-desc">Dois foguetes juntos limpam <strong>linha e coluna de ambos</strong> simultaneamente.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💣</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Bomba — 5 em L ou T</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Combine <strong style="color:#00f2fe;">5 gemas em L ou T</strong>. Explode área <strong style="color:#00f2fe;">5×5</strong>.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">💣💣</div>
-        <div class="tc-body">
-          <div class="tc-title">Bomba + Bomba</div>
-          <div class="tc-desc">Duas bombas criam uma <strong>explosão em área maior</strong>, cobrindo quase metade do tabuleiro.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">✳️</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Cruz — 5 em cruz (+)</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Match em <strong style="color:#00f2fe;">formato de cruz</strong>. Explode linha, coluna e área ao redor.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">🌈💣</div>
-        <div class="tc-body">
-          <div class="tc-title">Arco-íris + Qualquer</div>
-          <div class="tc-desc">Combine arco-íris com outro especial para ativar o especial em <strong>todas as gemas</strong> daquela cor.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🌈</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Arco-íris — 6 ou mais</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Combine <strong style="color:#00f2fe;">6+</strong>. Toque 2x para selecionar, depois toque numa gema para eliminar toda aquela cor.</div></div>
       </div>
-      <div class="tut-section-title">Combos automáticos</div>
-      <div class="tut-card">
-        <div class="tc-icon">🔄</div>
-        <div class="tc-body">
-          <div class="tc-title">Cascata</div>
-          <div class="tc-desc">Após cada match, as gemas caem e podem formar <strong>novos matches automaticamente</strong>. Quanto mais cascatas, mais pontos!</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💥</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Mina — quadrado 2×2</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Forme <strong style="color:#00f2fe;">4 iguais em quadrado</strong>. Explode área <strong style="color:#00f2fe;">3×3</strong>.</div></div>
+      </div>
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:14px 0 8px;">Como ativar</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">✌️</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Duplo toque = ativa</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Toque <strong style="color:#00f2fe;">duas vezes</strong> na mesma gema especial. Gasta <strong style="color:#00f2fe;">1 jogada</strong>.</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">↔️</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Mover = também ativa</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Arrastar um especial para qualquer gema <strong style="color:#00f2fe;">ativa automaticamente</strong>.</div></div>
       </div>
     </div>
 
-    <!-- Página: Poderes -->
-    <div class="tut-page" id="tut-poderes">
-      <div class="tut-section-title">Power-ups (pagos com 💎)</div>
-      <div class="tut-card">
-        <div class="tc-icon">🔨</div>
-        <div class="tc-body">
-          <div class="tc-title">Martelo — 15 💎</div>
-          <div class="tc-desc">Destrói <strong>qualquer gema</strong> do tabuleiro, incluindo pedras e gelo. Toque no martelo e depois na gema.</div>
-        </div>
+    <div id="tpage-combos" style="display:none;">
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🔗</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Reação em cadeia</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Quando uma explosão atinge outra gema especial, ela <strong style="color:#00f2fe;">detona automaticamente</strong> em cascata.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">🔀</div>
-        <div class="tc-body">
-          <div class="tc-title">Shuffle — 10 💎</div>
-          <div class="tc-desc"><strong>Embaralha todo o tabuleiro</strong> aleatoriamente. Útil quando não há boas jogadas disponíveis.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🚀🚀</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Foguete + Foguete</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Limpa <strong style="color:#00f2fe;">3 linhas + 3 colunas</strong> simultaneamente.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">💣</div>
-        <div class="tc-body">
-          <div class="tc-title">Bomba — 20 💎</div>
-          <div class="tc-desc">Coloca uma bomba no tabuleiro que explode uma <strong>área 5×5</strong>. Clique onde quer explodir.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💣💣</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Bomba + Bomba</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Explosão <strong style="color:#00f2fe;">7×7</strong> — quase metade do tabuleiro!</div></div>
       </div>
-      <div class="tut-section-title">Como ganhar 💎 diamantes</div>
-      <div class="tut-card">
-        <div class="tc-icon">💎</div>
-        <div class="tc-body">
-          <div class="tc-title">Fontes de diamantes</div>
-          <div class="tc-desc">• <strong>1ª vez</strong> numa fase: +2 💎<br>• <strong>Melhorar estrelas</strong>: +diferença<br>• <strong>Missão diária</strong>: +5 💎<br>• <strong>Check-in diário</strong>: +1 a +31 💎</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🌈💣</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Arco-íris + Qualquer</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Ativa o especial em <strong style="color:#00f2fe;">todas as gemas</strong> daquela cor.</div></div>
       </div>
     </div>
 
-    <!-- Página: Dicas -->
-    <div class="tut-page" id="tut-dicas">
-      <div class="tut-section-title">Estratégia</div>
-      <div class="tut-card">
-        <div class="tc-icon">💡</div>
-        <div class="tc-body">
-          <div class="tc-title">Jogue embaixo</div>
-          <div class="tc-desc">Matches na parte <strong>inferior do tabuleiro</strong> causam mais cascatas, já que mais gemas caem por cima.</div>
-        </div>
+    <div id="tpage-poderes" style="display:none;">
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Power-ups (💎)</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🔨</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Martelo — 15 💎</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Destrói <strong style="color:#00f2fe;">qualquer gema</strong> do tabuleiro.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">🎯</div>
-        <div class="tc-body">
-          <div class="tc-title">Foque nas metas</div>
-          <div class="tc-desc">Sempre priorize as <strong>cores da meta</strong>. Matches de outras cores só valem se criarem especiais ou cascatas.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🔀</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Shuffle — 10 💎</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;"><strong style="color:#00f2fe;">Embaralha</strong> todo o tabuleiro.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">⏳</div>
-        <div class="tc-body">
-          <div class="tc-title">Dica automática</div>
-          <div class="tc-desc">Ficou <strong>6 segundos sem jogar?</strong> O jogo vai destacar automaticamente uma jogada possível.</div>
-        </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💣</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Bomba — 20 💎</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Explode área <strong style="color:#00f2fe;">5×5</strong> onde você tocar.</div></div>
       </div>
-      <div class="tut-card">
-        <div class="tc-icon">📅</div>
-        <div class="tc-body">
-          <div class="tc-title">Check-in diário</div>
-          <div class="tc-desc">Entre todo dia para o check-in. O dia 31 vale <strong>31 💎</strong>! Pular um dia atrasa seu calendário.</div>
-        </div>
-      </div>
-      <div class="tut-card">
-        <div class="tc-icon">🏆</div>
-        <div class="tc-body">
-          <div class="tc-title">Ranking global</div>
-          <div class="tc-desc">Seu score total acumula entre fases. Configure seu <strong>nome e país</strong> no perfil para aparecer no ranking!</div>
-        </div>
+      <div style="font-size:.6rem;color:rgba(0,242,254,.5);text-transform:uppercase;letter-spacing:1.5px;margin:14px 0 8px;">Como ganhar 💎</div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💎</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Fontes de diamantes</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">• 1ª vez na fase: <strong style="color:#00f2fe;">+2 💎</strong><br>• Melhorar estrelas: <strong style="color:#00f2fe;">+diferença</strong><br>• Missão diária: <strong style="color:#00f2fe;">+5 💎</strong><br>• Check-in diário: <strong style="color:#00f2fe;">+1 a +31 💎</strong></div></div>
       </div>
     </div>
 
-    <button class="tut-close-btn" onclick="event.stopPropagation();closeTutorial()">✓ Entendido!</button>
+    <div id="tpage-dicas" style="display:none;">
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">💡</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Jogue embaixo</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Matches na parte <strong style="color:#00f2fe;">inferior</strong> causam mais cascatas automáticas.</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🎯</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Foque nas metas</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Priorize as <strong style="color:#00f2fe;">cores das metas</strong>. Outros matches só valem se criarem especiais.</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">📅</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Check-in diário</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Entre todo dia! O dia 31 vale <strong style="color:#00f2fe;">31 💎</strong>!</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.8rem;">🏆</span>
+        <div><div style="font-weight:900;font-size:.85rem;color:#fff;margin-bottom:3px;">Ranking global</div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);line-height:1.5;">Configure seu <strong style="color:#00f2fe;">nome e país</strong> no perfil para aparecer no ranking!</div></div>
+      </div>
+    </div>
+
+    <button onclick="closeTutorial()" style="
+      width:100%;margin-top:16px;padding:14px;border:none;border-radius:14px;cursor:pointer;
+      font-family:'Luckiest Guy',cursive;font-size:1.1rem;letter-spacing:1px;
+      background:linear-gradient(180deg,#00ffcc,#00b4d8,#0077b6);
+      color:#001219;box-shadow:0 4px 0 rgba(0,80,120,.4);">✓ Entendido!</button>
   </div>
 </div>
 
@@ -5045,37 +4998,38 @@ function closeSettings() {
 function openTutorial() {
   const ov = document.getElementById('tutorialOverlay');
   ov.style.display = 'flex';
-  ov.classList.add('show');
-  showTutPage('basico');
-  // Close on backdrop click only
-  ov.onclick = function(e) {
-    if (e.target === ov) closeTutorial();
-  };
+  tutTab('basico');
 }
+function closeTutorial() {
+  document.getElementById('tutorialOverlay').style.display = 'none';
+}
+function tutTab(id) {
+  // Update tab buttons
+  ['basico','especiais','combos','poderes','dicas'].forEach(t => {
+    const btn = document.getElementById('ttab-' + t);
+    const pg  = document.getElementById('tpage-' + t);
+    if (!btn || !pg) return;
+    if (t === id) {
+      btn.style.background = 'rgba(0,242,254,.15)';
+      btn.style.borderColor = 'rgba(0,242,254,.4)';
+      btn.style.color = '#00f2fe';
+      pg.style.display = 'block';
+    } else {
+      btn.style.background = 'rgba(255,255,255,.06)';
+      btn.style.borderColor = 'rgba(255,255,255,.15)';
+      btn.style.color = 'rgba(255,255,255,.5)';
+      pg.style.display = 'none';
+    }
+  });
+  // Scroll box to top
+  const box = document.getElementById('tutorialBox');
+  if (box) box.scrollTop = 0;
+}
+
 function closeTutorial() {
   const ov = document.getElementById('tutorialOverlay');
   ov.style.display = 'none';
   ov.classList.remove('show');
-}
-function showTutPage(id, e) {
-  if (e) e.stopPropagation();
-  // Hide all pages
-  document.querySelectorAll('.tut-page').forEach(p => {
-    p.classList.remove('active');
-    p.style.display = 'none';
-  });
-  // Deactivate all tabs
-  document.querySelectorAll('.tut-tab').forEach(t => t.classList.remove('active'));
-  // Show target page
-  const page = document.getElementById('tut-' + id);
-  if (page) {
-    page.classList.add('active');
-    page.style.display = 'block';
-  }
-  // Activate matching tab by data attribute
-  document.querySelectorAll('.tut-tab').forEach(t => {
-    if (t.dataset.page === id) t.classList.add('active');
-  });
 }
 
 function toggleSound() {
