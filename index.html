@@ -1232,7 +1232,7 @@ body::before{
 .mp-play-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,80,120,.5);}
 
 /* ── DAILY MISSIONS ── */
-.daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);
+.daily-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
   z-index:360;align-items:center;justify-content:center;padding:16px;}
 .daily-overlay.show{display:flex;}
 .daily-box{background:linear-gradient(135deg,#2a0860,#0e0330);border:3px solid var(--gold);
@@ -4166,6 +4166,7 @@ function updateDailyBadge() {
 }
 
 function openDaily() {
+  rememberMapState();
   initDailyMissions();
   const list = document.getElementById('dailyList');
   const dateEl = document.getElementById('dailyDate');
@@ -4196,6 +4197,7 @@ function openDaily() {
 
 function closeDaily() {
   document.getElementById('dailyOverlay').classList.remove('show');
+  maybeReturnToMap();
 }
 
 // ═══════════════════════════════════════════════════
@@ -4996,12 +4998,15 @@ function closeSettings() {
 
 // ── TUTORIAL ──
 function openTutorial() {
+  rememberMapState();
   const ov = document.getElementById('tutorialOverlay');
   ov.style.display = 'flex';
   tutTab('basico');
 }
 function closeTutorial() {
   document.getElementById('tutorialOverlay').style.display = 'none';
+  // Restore the correct screen underneath
+  maybeReturnToMap();
 }
 function tutTab(id) {
   // Update tab buttons
