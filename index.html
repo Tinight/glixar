@@ -2490,7 +2490,6 @@ function startLevel() {
 
   document.getElementById('splash').classList.remove('show');
   updateUI();
-  renderGoals();
   renderPowers();
   buildBoard();
 
@@ -2528,7 +2527,8 @@ function startLevel() {
     const fallback = availColors[0] ?? 0;
     goalsTarget['gem_' + fallback] = cfg.goalAmt;
     goals['gem_' + fallback] = 0;
-  }  // Show countdown if coming from map preview
+  }
+  renderGoals(); // render goals AFTER they are assigned from real board colors  // Show countdown if coming from map preview
   if (_showCountdown) {
     _showCountdown = false;
     processing = true;
