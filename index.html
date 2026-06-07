@@ -4116,8 +4116,16 @@ function todayStr() {
 function initDailyMissions() {
   const today = todayStr();
   const saved = JSON.parse(localStorage.getItem('glixarDaily') || '{}');
-  if (saved.date !== today) {
-    // New day — pick 3 random missions
+
+  // Valid mission IDs from current MISSION_DEFS
+  const validIds = new Set(MISSION_DEFS.map(m => m.id));
+
+  // Check if saved missions are still valid (no old/removed missions)
+  const savedMissions = saved.missions || [];
+  const hasInvalidMissions = savedMissions.some(m => !validIds.has(m.id));
+
+  if (saved.date !== today || hasInvalidMissions) {
+    // New day OR stale missions — pick 3 fresh missions
     const picks = shuffle([...MISSION_DEFS]).slice(0, 3);
     dailyMissions = picks;
     dailyProgress = {};
@@ -4125,7 +4133,8 @@ function initDailyMissions() {
     lastDailyDate = today;
     localStorage.setItem('glixarDaily', JSON.stringify({ date: today, missions: picks, progress: dailyProgress }));
   } else {
-    dailyMissions = saved.missions || [];
+    // Restore saved missions with fresh MISSION_DEFS data (name/icon/target may have changed)
+    dailyMissions = savedMissions.map(sm => MISSION_DEFS.find(d => d.id === sm.id) || sm);
     dailyProgress = saved.progress || {};
     lastDailyDate = today;
   }
