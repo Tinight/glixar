@@ -4197,7 +4197,9 @@ function openDaily() {
 
 function closeDaily() {
   document.getElementById('dailyOverlay').classList.remove('show');
-  maybeReturnToMap();
+  // Always go back to map
+  const mo = document.getElementById('mapOverlay');
+  if (mo && mo.style.display !== 'flex') openMap();
 }
 
 // ═══════════════════════════════════════════════════
@@ -4229,11 +4231,16 @@ function rememberMapState() {
   _mapWasOpen = mo && mo.style.display === 'flex';
 }
 
-// Called when any overlay closes — restore map if it was open
+// Called when any overlay closes — always restore map
 function maybeReturnToMap() {
-  if (_mapWasOpen) {
-    _mapWasOpen = false;
-    // Map is still visible (z-index stacking), nothing to do
+  _mapWasOpen = false;
+  const mo = document.getElementById('mapOverlay');
+  const gw = document.querySelector('.game-wrap');
+  const moVisible = mo && mo.style.display === 'flex';
+  const gwVisible = gw && gw.style.display === 'flex';
+  // If nothing is showing, open map
+  if (!moVisible && !gwVisible) {
+    openMap();
   }
 }
 
@@ -5005,8 +5012,9 @@ function openTutorial() {
 }
 function closeTutorial() {
   document.getElementById('tutorialOverlay').style.display = 'none';
-  // Restore the correct screen underneath
-  maybeReturnToMap();
+  // Always go back to map
+  const mo = document.getElementById('mapOverlay');
+  if (mo && mo.style.display !== 'flex') openMap();
 }
 function tutTab(id) {
   // Update tab buttons
