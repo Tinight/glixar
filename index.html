@@ -3852,7 +3852,16 @@ async function executeHammer(r, c) {
       }
       renderGoals();
     } else {
-      // Hit a normal gem — remove it
+      // Hit a normal gem — remove it and count toward goals + score
+      const g = board[r][c];
+      if (g >= 0) {
+        score += 60; totalScore += 60;
+        const gk = 'gem_' + g;
+        if (goalsTarget[gk] !== undefined)
+          goals[gk] = Math.min((goals[gk]||0)+1, goalsTarget[gk]);
+        trackMission('matches', 1);
+        updateUI(); renderGoals();
+      }
       await popCells(new Set([k(r,c)]));
     }
 
