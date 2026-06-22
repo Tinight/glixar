@@ -22,63 +22,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Glixar ✨</title>
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, getDoc, setDoc, getDocs,
-         query, orderBy, limit, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:            "AIzaSyBpREe4gru6rOwd37p0WfJ_jbebPDfPpoo",
-  authDomain:        "glixar-378b8.firebaseapp.com",
-  projectId:         "glixar-378b8",
-  storageBucket:     "glixar-378b8.firebasestorage.app",
-  messagingSenderId: "995894560957",
-  appId:             "1:995894560957:web:6e8e7e53c6a10a722e8fd4"
-};
-
-const fbApp = initializeApp(firebaseConfig);
-const db    = getFirestore(fbApp);
-
-// ── Expose Firebase helpers to global scope ──
-window._fb = {
-  // Upsert: one document per player (docId = sanitized name)
-  // Keeps highest totalScore and highest level reached
-  async saveScore(name, lvl, totalPts, country) {
-    try {
-      const docId  = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 40);
-      const docRef = doc(db, 'ranking', docId);
-      const snap   = await getDoc(docRef);
-      const existing = snap.exists() ? snap.data() : null;
-
-      const bestScore = Math.max(totalPts, existing?.score || 0);
-      const bestLevel = Math.max(lvl,      existing?.level || 0);
-
-      await setDoc(docRef, {
-        name,
-        country: country || existing?.country || '',
-        score:   bestScore,
-        level:   bestLevel,
-        date:    new Date().toLocaleDateString('pt-BR'),
-        ts:      serverTimestamp()
-      }, { merge: true });
-      return true;
-    } catch(e) { console.warn('Firebase saveScore:', e); return false; }
-  },
-
-  async getTop(n = 100) {
-    try {
-      const q    = query(collection(db, 'ranking'), orderBy('score','desc'), limit(n));
-      const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch(e) { console.warn('Firebase getTop:', e); return []; }
-  }
-};
-
-console.log('🔥 Firebase connected!');
-</script>
+<!-- No external services -->
 <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1924,8 +1868,7 @@ body::before{
   <div class="rank-box">
     <h2>🏆 Ranking</h2>
     <div style="display:flex;gap:8px;margin-bottom:12px;">
-      <button id="tabGlobal" class="btn btn-hint" style="flex:1;font-size:.85rem;padding:8px;" onclick="switchRankTab('global')">🌐 Global</button>
-      <button id="tabLocal"  class="btn"          style="flex:1;font-size:.85rem;padding:8px;background:rgba(255,255,255,.1);" onclick="switchRankTab('local')">📱 Meu dispositivo</button>
+      <button class="btn btn-hint" style="flex:1;font-size:.85rem;padding:8px;">🏆 Minhas Pontuações</button>
     </div>
     <div id="rankLoading" style="text-align:center;padding:20px;color:rgba(255,255,255,.5);display:none;">
       ⏳ Carregando...
@@ -4948,207 +4891,43 @@ async function saveScore() {
   if (ranking.length > 100) ranking.length = 100;
   localStorage.setItem('glixarRank', JSON.stringify(ranking));
 
-  // Firebase save (non-blocking)
-  if (window._fb) {
-    window._fb.saveScore(playerName, level, totalScore, playerCountry)
-      .then(ok => { if(ok) console.log('✅ Score saved to Firebase'); })
-      .catch(e => console.warn('Firebase save error:', e));
+
+}
+
+
+function renderRankList() {
+  const list = document.getElementById('rankList');
+  const loading = document.getElementById('rankLoading');
+  if (loading) loading.style.display = 'none';
+  list.innerHTML = '';
+
+  // Load local ranking
+  let ranking = [];
+  try { ranking = JSON.parse(localStorage.getItem('glixarRank') || '[]'); } catch(e){}
+  ranking.sort((a,b) => b.score - a.score);
+
+  if (ranking.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.4);padding:20px;font-size:.85rem;">Nenhuma pontuação ainda.<br>Complete uma fase para aparecer aqui!</div>';
+    return;
   }
-}
 
-// Current rank tab
-let _rankTab = 'global';
-
-function switchRankTab(tab) {
-  _rankTab = tab;
-  const gBtn = document.getElementById('tabGlobal');
-  const lBtn = document.getElementById('tabLocal');
-  if (gBtn && lBtn) {
-    gBtn.style.background = tab==='global' ? '' : 'rgba(255,255,255,.1)';
-    lBtn.style.background = tab==='local'  ? '' : 'rgba(255,255,255,.1)';
-    gBtn.className = 'btn ' + (tab==='global' ? 'btn-hint' : '');
-    lBtn.className = 'btn ' + (tab==='local'  ? 'btn-hint' : '');
-  }
-  renderRankList();
-}
-
-// ── RANKING UI ──
-// ── SETTINGS ──
-let soundEnabled    = localStorage.getItem('glixarSound')    !== 'off';
-let vibrateEnabled  = localStorage.getItem('glixarVibrate')  !== 'off';
-
-function openSettings() {
-  // Build settings overlay dynamically
-  let overlay = document.getElementById('settingsOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.className = 'settings-overlay';
-    overlay.id = 'settingsOverlay';
-    overlay.innerHTML = `
-      <div class="settings-box" onclick="event.stopPropagation()">
-        <div class="settings-handle"></div>
-        <div class="settings-title">⚙️ Configurações</div>
-        <div class="settings-section">
-          <div class="settings-item" onclick="openTutorial();closeSettings()">
-            <span class="si-icon">📖</span><span class="si-label">Como Jogar</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
-          </div>
-          <div class="settings-item" onclick="openProfile();closeSettings()">
-            <span class="si-icon">👤</span><span class="si-label">Meu Perfil</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
-          </div>
-          <div class="settings-item" onclick="openMap();closeSettings()">
-            <span class="si-icon">🗺️</span><span class="si-label">Mapa de Fases</span><span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
-          </div>
-          <div class="settings-item" onclick="openDaily();closeSettings()">
-            <span class="si-icon">📋</span><span class="si-label">Missões Diárias</span>
-            <span id="settingsDailyBadge" style="background:#ff4444;color:#fff;border-radius:8px;padding:1px 6px;font-size:.6rem;font-weight:900;display:none;">!</span>
-            <span style="color:rgba(255,255,255,.3);font-size:.8rem;">›</span>
-          </div>
-
-        </div>
-        <div class="settings-divider"></div>
-        <div class="settings-section">
-          <div class="settings-item" onclick="toggleSound()">
-            <span class="si-icon">🔊</span><span class="si-label">Som</span>
-            <div class="si-toggle ${soundEnabled?'on':'off'}" id="soundToggle"></div>
-          </div>
-          <div class="settings-item" onclick="toggleVibrate()">
-            <span class="si-icon">📳</span><span class="si-label">Vibração</span>
-            <div class="si-toggle ${vibrateEnabled?'on':'off'}" id="vibrateToggle"></div>
-          </div>
-        </div>
-        <div class="settings-divider"></div>
-        <div class="settings-section">
-          <div class="settings-item" onclick="closeSettings();setTimeout(()=>{if(!document.getElementById('mapOverlay').style.display||document.getElementById('mapOverlay').style.display==='none')restartLevel();},100)">
-            <span class="si-icon">🔁</span><span class="si-label danger">Reiniciar Fase</span>
-          </div>
-
-        </div>
-        <div style="text-align:center;font-size:.55rem;color:rgba(255,255,255,.2);margin-top:8px;font-family:monospace;">v1.0.0 · Glixar · Breitner Tinight</div>
-      </div>`;
-    overlay.onclick = closeSettings;
-    document.body.appendChild(overlay);
-  }
-  // Sync daily badge
-  const db = document.getElementById('settingsDailyBadge');
-  const mb = document.getElementById('dailyBadge');
-  if (db && mb) db.style.display = mb.style.display;
-  overlay.classList.add('show');
-}
-
-function closeSettings() {
-  const overlay = document.getElementById('settingsOverlay');
-  if (overlay) overlay.classList.remove('show');
-  maybeReturnToMap();
-}
-
-// ── TUTORIAL ──
-function openTutorial() {
-  rememberMapState();
-  const ov = document.getElementById('tutorialOverlay');
-  ov.style.display = 'flex';
-  tutTab('basico');
-}
-function closeTutorial() {
-  document.getElementById('tutorialOverlay').style.display = 'none';
-  // Always go back to map
-  const mo = document.getElementById('mapOverlay');
-  if (mo && mo.style.display !== 'flex') openMap();
-}
-function tutTab(id) {
-  // Update tab buttons
-  ['basico','especiais','combos','poderes','dicas'].forEach(t => {
-    const btn = document.getElementById('ttab-' + t);
-    const pg  = document.getElementById('tpage-' + t);
-    if (!btn || !pg) return;
-    if (t === id) {
-      btn.style.background = 'rgba(0,242,254,.15)';
-      btn.style.borderColor = 'rgba(0,242,254,.4)';
-      btn.style.color = '#00f2fe';
-      pg.style.display = 'block';
-    } else {
-      btn.style.background = 'rgba(255,255,255,.06)';
-      btn.style.borderColor = 'rgba(255,255,255,.15)';
-      btn.style.color = 'rgba(255,255,255,.5)';
-      pg.style.display = 'none';
-    }
+  ranking.slice(0, 50).forEach((e, i) => {
+    const medals = ['🥇','🥈','🥉'];
+    const medal  = medals[i] || `#${i+1}`;
+    const isMe   = e.name === playerName;
+    const li = document.createElement('div');
+    li.className = 'rank-item' + (isMe ? ' rank-me' : '');
+    li.innerHTML = `
+      <span class="rank-pos">${medal}</span>
+      <span class="rank-name">${e.country ? e.country.split(' ')[0]+' ' : ''}${e.name || 'Jogador'} ${isMe ? '<span style="color:var(--gold);">👈 Você</span>' : ''}</span>
+      <span class="rank-score">${(e.score||0).toLocaleString()}</span>`;
+    list.appendChild(li);
   });
-  // Scroll box to top
-  const box = document.getElementById('tutorialBox');
-  if (box) box.scrollTop = 0;
 }
 
-function closeTutorial() {
-  const ov = document.getElementById('tutorialOverlay');
-  ov.style.display = 'none';
-  ov.classList.remove('show');
-}
-
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  localStorage.setItem('glixarSound', soundEnabled ? 'on' : 'off');
-  const t = document.getElementById('soundToggle');
-  if (t) { t.className = 'si-toggle ' + (soundEnabled?'on':'off'); }
-}
-
-function toggleVibrate() {
-  vibrateEnabled = !vibrateEnabled;
-  localStorage.setItem('glixarVibrate', vibrateEnabled ? 'on' : 'off');
-  const t = document.getElementById('vibrateToggle');
-  if (t) { t.className = 'si-toggle ' + (vibrateEnabled?'on':'off'); }
-}
-
-// ── PROFILE ──
-function openProfile() {
-  const nameEl    = document.getElementById('profileName');
-  const countryEl = document.getElementById('profileCountry');
-  const avatarEl  = document.getElementById('profileAvatar');
-  const avNameEl  = document.getElementById('profileAvatarName');
-  if (nameEl)    nameEl.value    = playerName;
-  if (countryEl) countryEl.value = playerCountry;
-  if (avatarEl)  avatarEl.textContent = playerName ? playerName[0].toUpperCase() : '🎮';
-  if (avNameEl)  avNameEl.textContent = playerName || 'Sem apelido';
-  document.getElementById('profileOverlay').classList.add('show');
-}
-
-function closeProfile() {
-  document.getElementById('profileOverlay').classList.remove('show');
-  maybeReturnToMap();
-}
-
-function saveProfile() {
-  const newName    = document.getElementById('profileName').value.trim();
-  const newCountry = document.getElementById('profileCountry').value;
-  if (!newName) { showToast('Digite um apelido!'); return; }
-
-  const oldName = playerName;
-  playerName    = newName;
-  playerCountry = newCountry || '';
-  localStorage.setItem('glixarName',    playerName);
-  localStorage.setItem('glixarCountry', playerCountry);
-
-  // If name changed, update local ranking entry
-  if (oldName && oldName !== newName) {
-    const idx = ranking.findIndex(r => r.name === oldName);
-    if (idx >= 0) {
-      ranking[idx].name    = newName;
-      ranking[idx].country = newCountry;
-      localStorage.setItem('glixarRank', JSON.stringify(ranking));
-    }
-  }
-
-  // Save to Firebase with new name
-  if (window._fb && totalScore > 0) {
-    window._fb.saveScore(playerName, level, totalScore, playerCountry)
-      .then(() => console.log('Profile updated in Firebase'));
-  }
-
-  showToast('✅ Perfil salvo!');
-  closeProfile();
-}
 
 function openRank() {
-  _rankTab = 'global';
-  switchRankTab('global');
+  renderRankList();
   document.getElementById('rankOverlay').classList.add('show');
 }
 function closeRank() {
@@ -5165,7 +4944,6 @@ async function renderRankList() {
     if (loading) loading.style.display = 'block';
     let entries = [];
     try {
-      if (window._fb) entries = await window._fb.getTop(100);
     } catch(e) {
       console.warn('Ranking load error:', e);
     }
